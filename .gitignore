@@ -1,8 +1,9 @@
 Configuration.ini
 
 # Directories
-*Debug*
-*Release*
+*Debug/
+*Release/
+*tests/
 
 *logs*
 *archive*
