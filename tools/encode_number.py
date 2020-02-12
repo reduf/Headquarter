@@ -1,0 +1,5 @@
+WORD_VALUE_BASE  = 0x100
+WORD_BIT_MORE    = 0x8000
+WORD_VALUE_RANGE = 0x7f00
+
+def decode()
