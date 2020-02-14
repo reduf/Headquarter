@@ -1,38 +1,39 @@
 Configuration.ini
 
-# Directories
-*Debug/
-*Release/
-*tests/
+# Build directories
+.vs/
+Debug/
+Release/
+tests/
 
-*logs*
-*archive*
-*accounts*
+archive/
+logs/
 
 *.exe
 *.user
 *.vars
 
 # Bloated Windows Databases
-*.sdf
-*.opensdf
-*.suo
-*.exp
 *.db
-*.pdb
+*.exp
 *.idb
 *.ilk
-*.opendb
-*.log
 *.lastbuildstate
+*.log
+*.opendb
+*.opensdf
+*.pdb
+*.sdf
+*.suo
 
-# Compiled Object files
-*.slo
+# Compiled files
+*.dll
+*.exe
+*.lib
 *.lo
 *.o
 *.obj
-*.dll
-*.lib
+*.slo
 
 # Python
 __pycache__/
@@ -42,4 +43,3 @@ __pycache__/
 
 # Vim
 *.swp
-
