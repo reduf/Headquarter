@@ -7,7 +7,7 @@
 # error "We currently don't support big endian machine"
 #endif
 
-#define ARC4_KEY mbedtls_arc4_context
+#define ARC4_KEY 
 typedef struct Connection Connection;
 
 typedef enum ConnectionType {
@@ -15,15 +15,16 @@ typedef enum ConnectionType {
     ConnectionType_Auth     = 1,
     ConnectionType_Game     = 2,
     ConnectionType_Portal   = 3,
-    ConnectionType_Obsv     = 4,
 
     ConnectionType_Count
 } ConnectionType;
 
-#define NETCONN_PAUSE       (1 << 0)
-#define NETCONN_REMOVE      (1 << 1)
-#define NETCONN_RECORD      (1 << 2)
-#define NETCONN_RECONNECT   (1 << 3)
+typedef enum ConnectionFlags {
+    NETCONN_PAUSE       = 1 << 0,
+    NETCONN_REMOVE      = 1 << 1,
+    NETCONN_RECORD      = 1 << 2,
+    NETCONN_RECONNECT   = 1 << 3,
+} ConnectionFlags;
 
 typedef array(uint8_t)          ByteBuffer;
 typedef array(MsgFormat)        MsgFormatArray;
@@ -41,48 +42,39 @@ typedef array(MsgHandler) MsgHandlerArray;
 #define NewPacket(opcode, ...) {(opcode)}
 
 typedef struct Connection {
-    struct list         node;
-    void               *data;
+    void                   *data;
 
-    char               *name;
-    uint32_t            flags;
-    int                 proto;
+    char                   *name;
+    uint32_t                flags;
+    int                     proto;
 
-    msec_t              t0; // Time when socket is opened.
-    struct socket       fd; // Os file descriptor / handle.
-    struct sockaddr     host;
+    msec_t                  t0; // Time when socket is opened.
+    struct socket           fd; // Os file descriptor / handle.
+    struct sockaddr         host;
 
     // struct sockaddr host;
-    WSAOVERLAPPED       rovlp;
+    WSAOVERLAPPED           rovlp;
 
-    msec_t              ping;
-    msec_t              pong;
-    msec_t              latency;
+    msec_t                  ping;
+    msec_t                  pong;
+    msec_t                  latency;
 
-    thread_mutex_t      mutex;
-    ByteBuffer          in;
-    ByteBuffer          out;
+    thread_mutex_t          mutex;
+    ByteBuffer              in;
+    ByteBuffer              out;
 
-    bool                secured;
-    ARC4_KEY            decrypt;
-    ARC4_KEY            encrypt;
+    bool                    secured;
+    mbedtls_arc4_context    decrypt;
+    mbedtls_arc4_context    encrypt;
 
-    MsgFormatArray      server_msg_format;
-    MsgFormatArray      client_msg_format;
-    MsgHandlerArray     handlers;
+    MsgFormatArray          server_msg_format;
+    MsgFormatArray          client_msg_format;
+    MsgHandlerArray         handlers;
 
-    msec_t              last_tick_time;
-
-    // recording stuff
-    struct Connection  *broadcast;
-    struct replay_ctx   replay_ctx;
+    msec_t                  last_tick_time;
 } Connection;
 
-extern struct list connections;
-extern struct list conns_to_release;
-
-void init_connection(Connection *conn);
-Connection *ConnectionAlloc(void *context);
+void init_connection(Connection *conn, void *data);
 
 static size_t utf8_to_unicode16(uint16_t *buf, size_t buflen, const char *str, int strlen);
 static size_t unicode16_to_utf8(char *buf, size_t buflen, const uint16_t *str, int strlen);

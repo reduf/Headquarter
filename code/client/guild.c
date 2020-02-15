@@ -32,7 +32,7 @@ void HandleGuildPlayerRole(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     PlayerRole *pack = cast(PlayerRole *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayGuild *guilds = &client->world.guilds;
     if (!array_inside(*guilds, pack->guild_id)) {
@@ -77,7 +77,7 @@ void HandleGuildGeneralInfo(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     GuildInfo *pack = cast(GuildInfo *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayGuild *guilds = &client->world.guilds;
     if ((size_t)pack->guild_id >= guilds->size) {
@@ -129,7 +129,7 @@ void HandleGuildChangeFaction(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     Payload *pack = cast(Payload *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayGuild *guilds = &client->world.guilds;
     if (!array_inside(*guilds, pack->guild_id)) {
@@ -167,7 +167,7 @@ void HandleGuildInviteReceived(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     GuildInvite *pack = cast(GuildInvite *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     LogInfo("%S sent you a guild invite '%S [%S]' of type '%d'", pack->inviter, pack->name,
         pack->tag, pack->type);

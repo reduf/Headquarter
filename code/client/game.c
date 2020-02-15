@@ -64,7 +64,7 @@ static void HandleAccountCurrency(Connection *conn, size_t psize, Packet *packet
 
     GwClient *client = cast(GwClient *)conn->data;
     AccountCurrency *pack = cast(AccountCurrency *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     (void)pack;
 }
 
@@ -83,7 +83,7 @@ static void HandleUpdateActiveWeaponSet(Connection *conn, size_t psize, Packet *
 
     GwClient *client = cast(GwClient *)conn->data;
     UpdateActiveWeapon *pack = cast(UpdateActiveWeapon *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     (void)pack;
     // LogInfo("UpdateActiveWeapon {slot: %d}", pack->slot);
 }
@@ -103,7 +103,7 @@ static void HandleGoldCharacterAdd(Connection *conn, size_t psize, Packet *packe
 
     GwClient *client = cast(GwClient *)conn->data;
     AddGold *pack = cast(AddGold *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->inventory.gold_character += pack->gold;
 }
@@ -123,7 +123,7 @@ static void HandleGoldStorageAdd(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     UpdateGold *pack = cast(UpdateGold *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->inventory.gold_storage += pack->gold;
 }
@@ -132,7 +132,7 @@ void HandleReadyForMapSpawn(Connection *conn, size_t psize, Packet *packet)
 {
     (void)packet;
     GwClient *client = cast(GwClient *)conn->data;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     assert(!client->ingame);
     Packet spawn = NewPacket(GAME_CMSG_INSTANCE_LOAD_REQUEST_SPAWN);
     SendPacket(conn, sizeof(Packet), &spawn); // 2
@@ -153,7 +153,7 @@ void HandleGoldCharacterRemove(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     RemoveGold *pack = cast(RemoveGold *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->inventory.gold_character -= pack->gold;
 }
@@ -173,7 +173,7 @@ static void HandleGoldStorageRemove(Connection *conn, size_t psize, Packet *pack
 
     GwClient *client = cast(GwClient *)conn->data;
     RemoveGold *pack = cast(RemoveGold *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->inventory.gold_storage -= pack->gold;
 }
@@ -205,6 +205,7 @@ void HandleInstanceLoadSpawnPoint(Connection *conn, size_t psize, Packet *packet
         int16_t plane;
         uint8_t unk0;
         uint8_t is_cinematic;
+        uint8_t unknow[8];
     } SpawnPoint;
 #pragma pack(pop)
 
@@ -213,7 +214,7 @@ void HandleInstanceLoadSpawnPoint(Connection *conn, size_t psize, Packet *packet
 
     GwClient *client = cast(GwClient *)conn->data;
     SpawnPoint *pack = cast(SpawnPoint *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
 #pragma pack(push, 1)
     typedef struct {
@@ -248,7 +249,7 @@ void HandleInstanceLoadInfo(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     InstanceInfo *pack = cast(InstanceInfo *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     World *world = &client->world;
     world->map_id = pack->map_id;
@@ -276,8 +277,7 @@ void HandleInstanceLoadHead(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     InstanceHead *pack = cast(InstanceHead *)packet;
-    assert(client && client->ingame);
-    (void)pack;
+    assert(client && client->game_srv.secured);
 }
 
 void HandleInstanceLoadPlayerName(Connection *conn, size_t psize, Packet *packet)
@@ -294,7 +294,7 @@ void HandleInstanceLoadPlayerName(Connection *conn, size_t psize, Packet *packet
 
     GwClient *client = cast(GwClient *)conn->data;
     InstancePlayerName *pack = cast(InstancePlayerName *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     (void)pack;
 }
 
@@ -304,7 +304,7 @@ void HandleCinematicSkipEveryone(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(Packet) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     World *world = &client->world;
     world->cinematic_skip_count = world->cinematic_member_count;
@@ -325,7 +325,7 @@ void HandleCinematicSkipCount(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     SkipCount *pack = cast(SkipCount *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->world.cinematic_skip_count = pack->skip_count;
     client->world.cinematic_member_count = pack->member_count;
@@ -345,7 +345,7 @@ void HandleCinematicStart(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     CinematicStart *pack = cast(CinematicStart *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->world.in_cinematic = true;
     if (pack->start) {
@@ -359,7 +359,7 @@ void HandleCinematicDataEnd(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(Packet) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandleCinematicData(Connection *conn, size_t psize, Packet *packet)
@@ -377,7 +377,7 @@ void HandleCinematicData(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     CinematicData *pack = cast(CinematicData *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandleCinematicEnd(Connection *conn, size_t psize, Packet *packet)
@@ -386,7 +386,7 @@ void HandleCinematicEnd(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(Packet) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->world.in_cinematic = false;
 }
@@ -397,7 +397,7 @@ void HandleInstanceShowWin(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(Packet) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandleMissionAddGoal(Connection *conn, size_t psize, Packet *packet)
@@ -415,7 +415,7 @@ void HandleMissionAddGoal(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     Payload *pack = cast(Payload *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->world.objective_count += 1;
 }
@@ -638,7 +638,7 @@ void HandleCantEnterOutpost(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     Payload *pack = cast(Payload *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     LogInfo("Can't enter outpost: %d\n", pack->value);
     client->try_changing_zone = false;

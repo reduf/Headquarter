@@ -3,9 +3,9 @@
 #endif
 #define PORTAL_C
 
-typedef void (*OnPortalNotify_t)(uint32_t msg, uint32_t unk1, void *data, void *param);
+typedef void (*OnPortalNotify_t)(uint32_t msgid, uint32_t unk1, void *data, void *param);
 
-typedef void     (*PortalInitialize_t)(void);
+typedef void     (*PortalInitialize_t)(uint32_t port);
 typedef void     (*PortalDestroy_t)(void);
 typedef void     (*PortalStartCleanup_t)(void);
 typedef void     (*PortalRegisterNotify_t)(OnPortalNotify_t cb, void *param);
@@ -14,14 +14,14 @@ typedef void     (*PortalListGameAccounts_t)(const wchar_t *game);
 typedef void     (*PortalRequestGameToken_t)(const wchar_t *game1, const wchar_t *game2);
 typedef uint8_t *(*PortalGetUserId_t)(void);
 
-static PortalInitialize_t       PortalInitialize;
-static PortalDestroy_t          PortalDestroy;
-static PortalStartCleanup_t     PortalStartCleanup;
-static PortalRegisterNotify_t   PortalRegisterNotify;
-static PortalLogin_t            PortalLogin;
-static PortalListGameAccounts_t PortalListGameAccounts;
-static PortalRequestGameToken_t PortalRequestGameToken;
-static PortalGetUserId_t        PortalGetUserId;
+static PortalInitialize_t           PortalInitialize;
+static PortalDestroy_t              PortalDestroy;
+static PortalStartCleanup_t         PortalStartCleanup;
+static PortalRegisterNotify_t       PortalRegisterNotify;
+static PortalLogin_t                PortalLogin;
+static PortalListGameAccounts_t     PortalListGameAccounts;
+static PortalRequestGameToken_t     PortalRequestGameToken;
+static PortalGetUserId_t            PortalGetUserId;
 
 static HMODULE hPortal;
 
@@ -29,12 +29,12 @@ bool   portal_received_key;
 uuid_t portal_user_id;
 uuid_t portal_session_id;
 
-static void OnPortalNotify(uint32_t msg, uint32_t unk1, void *data, void *param)
+static void OnPortalNotify(uint32_t msgid, uint32_t unk1, void *data, void *param)
 {
     uint8_t *user_id = NULL;
     uint8_t *bytes = (uint8_t *)data;
 
-    switch (msg) {
+    switch (msgid) {
     case 0:
         PortalListGameAccounts(L"gw1");
         break;
@@ -52,6 +52,8 @@ static void OnPortalNotify(uint32_t msg, uint32_t unk1, void *data, void *param)
     case 4:
         PortalRequestGameToken(L"gw1", L"gw1");
         break;
+    default:
+        LogError("Unknow portal message: %lu", msgid);
     }
 }
 
@@ -63,16 +65,16 @@ bool portal_init(void)
         return false;
     }
 
-    *(FARPROC *)&PortalInitialize       = GetProcAddress(hPortal, "PortalInitialize");
-    *(FARPROC *)&PortalDestroy          = GetProcAddress(hPortal, "PortalDestroy");
-    *(FARPROC *)&PortalStartCleanup     = GetProcAddress(hPortal, "PortalStartCleanup");
-    *(FARPROC *)&PortalRegisterNotify   = GetProcAddress(hPortal, "PortalRegisterNotify");
-    *(FARPROC *)&PortalLogin            = GetProcAddress(hPortal, "PortalLogin");
-    *(FARPROC *)&PortalListGameAccounts = GetProcAddress(hPortal, "PortalListGameAccounts");
-    *(FARPROC *)&PortalRequestGameToken = GetProcAddress(hPortal, "PortalRequestGameToken");
-    *(FARPROC *)&PortalGetUserId        = GetProcAddress(hPortal, "PortalGetUserId");
+    *(FARPROC *)&PortalInitialize           = GetProcAddress(hPortal, "PortalInitialize");
+    *(FARPROC *)&PortalDestroy              = GetProcAddress(hPortal, "PortalDestroy");
+    *(FARPROC *)&PortalStartCleanup         = GetProcAddress(hPortal, "PortalStartCleanup");
+    *(FARPROC *)&PortalRegisterNotify       = GetProcAddress(hPortal, "PortalRegisterNotify");
+    *(FARPROC *)&PortalLogin                = GetProcAddress(hPortal, "PortalLogin");
+    *(FARPROC *)&PortalListGameAccounts     = GetProcAddress(hPortal, "PortalListGameAccounts");
+    *(FARPROC *)&PortalRequestGameToken     = GetProcAddress(hPortal, "PortalRequestGameToken");
+    *(FARPROC *)&PortalGetUserId            = GetProcAddress(hPortal, "PortalGetUserId");
 
-    PortalInitialize();
+    PortalInitialize(6112);
     PortalRegisterNotify(OnPortalNotify, NULL);
     return true;
 }

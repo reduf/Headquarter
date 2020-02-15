@@ -55,15 +55,12 @@
 #include <common/endian.h>
 #include <common/rbtree.h>
 
-#include "Headquarter.h"
+#include "headquarter.h"
 #include "command.h"
 #include "error.h"
 
-#include "iocp.h"
-#include "replay.h"
 #include "portal.h"
 #include "opcodes.h"
-#include "obsv_opcodes.h"
 #include "packets.h"
 #include "network.h"
 
@@ -94,13 +91,11 @@
 #include "auth.h"
 #include "game.h"
 #include "plugins.h"
-#include "broadcast.h"
 
 #include "api.c"
 #include "auth.c"
 #include "game.c"
 #include "plugins.c"
-#include "broadcast.c"
 
 #include "chat.c"
 #include "hero.c"
@@ -124,11 +119,8 @@
 #include "event.c"
 #include "client.c"
 
-#include "iocp.c"
-#include "replay.c"
 #include "portal.c"
 #include "packets.c"
-#include "obsv_packets.c"
 #include "network.c"
 
 #include "vars.c"
@@ -276,13 +268,6 @@ int main(int argc, const char *argv[])
 
     main_loop();
 
-    while (!list_empty(&connections)) {
-        Connection *conn = list_first_entry(&connections, Connection, node);
-        NetConn_Reset(conn);
-        free(conn);
-        list_remove(&conn->node);
-    }
-
     while (!list_empty(&plugins)) {
         Plugin *it = plugin_first();
         plugin_unload(it);
@@ -313,11 +298,6 @@ static void main_loop(void)
         long frame_delta_nsec = time_diff_nsec(&t0, &last_frame_time);
         msec_t frame_delta = frame_delta_nsec / 1000;
 
-        release_connections();
-
-        // Update(networks) (i.e. update input)
-        // iocp_process_all(&iocp);
-
         NetConn_Update(&client->auth_srv);
         NetConn_Update(&client->game_srv);
 
@@ -326,9 +306,6 @@ static void main_loop(void)
 
         // trigger all timers event
         process_timers();
-
-        // repost the recv & the send or any event
-        // iocp_process_posted_event(&iocp);
 
         {
             long frame_target_nsec = 1000000000 / fps;

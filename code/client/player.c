@@ -51,7 +51,7 @@ void HandlePlayerAttrSet(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     PlayerAttr *pack = cast(PlayerAttr *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->player_hero.experience = pack->experience;
     client->player_hero.level = pack->level;
@@ -85,7 +85,7 @@ void HandlePlayerAttrMaxKurzick(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     MaxFaction *pack = cast(MaxFaction *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->player_hero.kurzick.max = pack->value;
 }
@@ -104,7 +104,7 @@ void HandlePlayerAttrMaxLuxon(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     MaxFaction *pack = cast(MaxFaction *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->player_hero.luxon.max = pack->value;
 }
@@ -123,7 +123,7 @@ void HandlePlayerAttrMaxBalthazar(Connection *conn, size_t psize, Packet *packet
 
     GwClient *client = cast(GwClient *)conn->data;
     MaxFaction *pack = cast(MaxFaction *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->player_hero.balthazar.max = pack->value;
 }
@@ -142,7 +142,7 @@ void HandlePlayerAttrMaxImperial(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     MaxFaction *pack = cast(MaxFaction *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->player_hero.imperial.max = pack->value;
 }
@@ -162,7 +162,7 @@ void HandlePlayerAttrUpdate(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     UpdateAttr *pack = cast(UpdateAttr *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     PlayerHero *hero = &client->player_hero;
 
@@ -200,7 +200,7 @@ void GameSrv_DonateFaction(GwClient *client, FactionType faction, int amount)
     } DepositFaction;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     assert((faction == FactionType_Kurzick) || (faction == FactionType_Luxon));
 
     DepositFaction packet = NewPacket(GAME_CMSG_DEPOSIT_FACTION);

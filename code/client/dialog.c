@@ -20,7 +20,7 @@ void HandleDialogButton(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     Button *pack = cast(Button *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     DialogInfo *dialog = &client->dialog;
     // LogInfo("DialogButton {icon: %d, dialog_id: %X}", pack->icon_id, pack->dialog_id);
@@ -52,7 +52,7 @@ void HandleDialogBody(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     DialogBody *pack = cast(DialogBody *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     DialogInfo *dialog = &client->dialog;
     unicode16_cpy(dialog->body, pack->body, ARRAY_SIZE(dialog->body));
@@ -72,7 +72,7 @@ void HandleDialogSender(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     DialogSender *pack = cast(DialogSender *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     DialogInfo *dialog = &client->dialog;
     dialog->opened = true;

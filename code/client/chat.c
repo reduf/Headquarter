@@ -69,7 +69,7 @@ void HandleChatMessageCore(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     MessageCore *pack = cast(MessageCore *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     array_u16_t *sb = &client->chat.str_builder;
     array_reserve(*sb, 123);
@@ -95,7 +95,7 @@ void HandleChatMessageLocal(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     MessageLocal *pack = cast(MessageLocal *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Channel channel = (Channel)pack->channel;
     if (channel >= Channel_Count) {
@@ -144,7 +144,7 @@ void HandleChatMessageGlobal(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     MessageGlobal *pack = cast(MessageGlobal *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Channel channel = (Channel)pack->channel;
     if (channel >= Channel_Count) {
@@ -184,7 +184,7 @@ void HandleWhisperReceived(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     WhisperReceived *pack = cast(WhisperReceived *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     string sender, message;
     char sender_buffer[40];

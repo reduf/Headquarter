@@ -1,7 +1,7 @@
 #ifndef HEADQUARTER_H
 #define HEADQUARTER_H
 
-#define GUILD_WARS_VERSION          (37007)
+#define GUILD_WARS_VERSION          (37010)
 #define HEADQUARTER_VERSION_MAJOR   (1)
 #define HEADQUARTER_VERSION_MINOR   (0)
 
@@ -10,8 +10,6 @@
 # else
 # define HQAPI extern
 #endif
-
-#define M_PI 3.14159265358979323846
 
 #include "str.h"
 #include <common/array.h>

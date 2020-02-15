@@ -3,12 +3,7 @@
 #endif
 #define CORE_NETWORK_C
 
-static void recv_completed_handler(struct event *ev);
-
 static bool NetIsInitialized;
-
-struct list connections      = LIST_INITIALIZER(connections);
-struct list conns_to_release = LIST_INITIALIZER(conns_to_release);
 
 typedef struct DiffieHellmanCtx {
     mbedtls_mpi prime_modulus;
@@ -30,14 +25,6 @@ static size_t unicode16_to_utf8(char *buf, size_t buflen, const uint16_t *str, i
 
 void NetConn_Reset(Connection *conn)
 {
-    list_remove(&conn->node);
-    replay_close_file(&conn->replay_ctx);
-
-    if (conn->broadcast) {
-        NetConn_Reset(conn->broadcast);
-        free(conn->broadcast);
-    }
-
     if ((conn->fd.handle != 0) && (conn->fd.handle != INVALID_SOCKET)) {
         closesocket(conn->fd.handle);
         conn->fd.handle = INVALID_SOCKET;
@@ -61,26 +48,20 @@ void NetConn_Remove(Connection *conn)
 {
     conn->flags |= NETCONN_REMOVE;
     shutdown(conn->fd.handle, SHUT_RDWR);
-
-    list_remove(&conn->node);
-    list_insert_tail(&conns_to_release, &conn->node);
 }
 
-void init_connection(Connection *conn)
+void init_connection(Connection *conn, void *data)
 {
     assert(conn != NULL);
-    list_insert_tail(&connections, &conn->node);
-    conn->rovlp.hEvent = CreateEventW(NULL, TRUE, TRUE, NULL);
-}
+    memzero(conn, sizeof(*conn));
 
-Connection *ConnectionAlloc(void *context)
-{
-    Connection *conn = cast(Connection *)calloc(1, sizeof(Connection));
-    if (conn != NULL) {
-        conn->data = context;
-        init_connection(conn);
-    }
-    return conn;
+    conn->data = data;
+    conn->rovlp.hEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
+
+    thread_mutex_init(&conn->mutex);
+
+    array_init(conn->in, 5840);
+    array_init(conn->out, 5840);
 }
 
 #pragma pack(push, 1)
@@ -316,6 +297,17 @@ static bool socket_would_block(void)
 #endif
 }
 
+static bool socket_set_nonblock(struct socket *sock)
+{
+    int nonblock = 1;
+    int iresult = ioctlsocket(sock->handle, FIONBIO, &nonblock);
+    if (iresult == SOCKET_ERROR) {
+        LogError("ioctlsocket failed: %d", os_errno);
+        return false;
+    }
+    return true;
+}
+
 static bool key_exchange_helper(Connection *conn, DiffieHellmanCtx *dhm)
 {
     // Compute g^x (mod p)
@@ -370,9 +362,9 @@ static bool key_exchange_helper(Connection *conn, DiffieHellmanCtx *dhm)
     arc4_hash(server_seed.seed, arc4_key);
 
     mbedtls_arc4_setup(&conn->encrypt, arc4_key, 20);
-    conn->decrypt = conn->encrypt;
+    mbedtls_arc4_setup(&conn->decrypt, arc4_key, 20);
     conn->secured = true;
-    NetConn_Recv(conn);
+
 quick_exist:
     mbedtls_mpi_free(&private_key);
     mbedtls_mpi_free(&public_key);
@@ -401,10 +393,6 @@ bool AuthSrv_Connect(Connection *conn)
 
     conn->name = "AuthSrv";
     conn->proto = ConnectionType_Auth;
-
-    thread_mutex_init(&conn->mutex);
-    array_init(conn->in,  5840);
-    array_init(conn->out, 5840);
 
     if (conn->host.sa_family == 0) {
         // This could happend if we don't have an internet connection
@@ -457,7 +445,8 @@ bool AuthSrv_Connect(Connection *conn)
         return false;        
     }
 
-    LogInfo("Auth Handshake successful !");
+    socket_set_nonblock(&conn->fd);
+    LogInfo("Auth Handshake successful!");
     return true;
 }
 
@@ -469,10 +458,6 @@ bool GameSrv_Connect(Connection *conn, uuid_t account,
 
     conn->name = "GameSrv";
     conn->proto = ConnectionType_Game;
-
-    thread_mutex_init(&conn->mutex);
-    array_init(conn->in,  5840);
-    array_init(conn->out, 5840);
 
     conn->fd = create_socket();
     conn->t0 = time_get_ms();
@@ -523,68 +508,8 @@ bool GameSrv_Connect(Connection *conn, uuid_t account,
         return false;
     }
 
-    LogInfo("Game Handshake successful !");
-    return true;
-}
-
-bool ObsvSrv_Connect(Connection *conn)
-{
-    assert(Net_Initialized);
-    int result;
-
-    conn->name = "ObsvSrv";
-    conn->proto = ConnectionType_Obsv;
-
-    thread_mutex_init(&conn->mutex);
-    array_init(conn->in, 5840);
-    array_init(conn->out, 5840);
-
-    if (!IPv4ToAddr("127.0.0.1", "1337", &conn->host)) {
-        LogError("Couldn't get the host address for the broadcast ip");
-        NetConn_Reset(conn);
-        return false;
-    }
-
-    conn->fd = create_socket();
-    conn->t0 = time_get_ms();
-    conn->secured = false;
-
-    if (conn->fd.handle == INVALID_SOCKET) {
-        LogError("'socket' failed. (%d)", os_errno);
-        NetConn_Reset(conn);
-        return false;
-    }
-
-    result = connect(conn->fd.handle, cast(struct sockaddr *)&conn->host, sizeof(conn->host));
-    if (result == SOCKET_ERROR) {
-        LogError("'connect' failed. (%d)", os_errno);
-        NetConn_Reset(conn);
-        return false;
-    }
-
-    conn->server_msg_format.size = OBSV_SMSG_COUNT;
-    conn->server_msg_format.data = OBSV_SERVER_FORMATS;
-    conn->client_msg_format.size = OBSV_CMSG_COUNT;
-    conn->client_msg_format.data = OBSV_CLIENT_FORMATS;
-
-    OBSV_CMSG_VERSION version;
-    version.source  = 0;
-    version.version = GUILD_WARS_VERSION;
-
-    result = send(conn->fd.handle, cast(char *)&version, sizeof(version), 0);
-    if (result == SOCKET_ERROR) {
-        LogError("'send' failed. (%d)", os_errno);
-        NetConn_Reset(conn);
-        return false;
-    }
-
-    if (!key_exchange_helper(conn, &custom_server_keys)) {
-        NetConn_Reset(conn);
-        return false;        
-    }
-
-    LogInfo("Obsv Handshake successful !");
-    conn->secured = true;
+    socket_set_nonblock(&conn->fd);
+    LogInfo("Game Handshake successful!");
     return true;
 }
 
@@ -695,6 +620,7 @@ void SendPacket(Connection *conn, size_t size, void *p)
         goto leave;
     }
 
+    LogDebug("SendPacket: {opcode: %u, size: %zu}", header, size);
     out->size += written;
 leave:
     thread_mutex_unlock(&conn->mutex);
@@ -720,34 +646,16 @@ void NetConn_Send(Connection *conn)
 
     mbedtls_arc4_crypt(&conn->encrypt, size, buff, buff);
 
-    WSABUF buf;
-    buf.len = out->size;
-    buf.buf = out->data;
-
-    DWORD bytes;
-    int error = WSASend(
-        conn->fd.handle,
-        &buf,
-        1,
-        &bytes,
-        0,
-        NULL,
-        NULL);
-
-    error = error ? os_errno : 0;
-    if (error != 0) {
-        LogError("WSASend failed (%d)", error);
+    int result = send(conn->fd.handle, out->data, out->size, 0);
+    if (result == SOCKET_ERROR) {
+        LogError("send failed: %d", os_errno);
         NetConn_Remove(conn);
         goto leave;
     }
 
-    if (bytes != out->size)
-        LogWarn("%lu bytes sent instead of expected %zu", bytes, conn->out.size);
-
-    assert(out->size >= bytes);
-    size_t new_size = out->size - bytes;
+    size_t new_size = out->size - (size_t)result;
     if (new_size)
-        memmove(out->data, out->data + bytes, new_size);
+        memmove(out->data, out->data + (size_t)result, new_size);
     out->size = new_size;
 
 leave:
@@ -758,45 +666,30 @@ void NetConn_Recv(Connection *conn)
 {
     assert(conn && conn->secured);
 
-    DWORD reason = WaitForSingleObject(conn->rovlp.hEvent, 0);
-    if (reason != WAIT_OBJECT_0) {
-        if (reason != WAIT_TIMEOUT) {
-            LogError("WaitForSingleObject failed: %d", os_errno);
-            // @Cleanup:
-            // We should probably close the connection
+    char buffer[5840];
+    size_t size = conn->in.capacity - conn->in.size;
+    int iresult = recv(conn->fd.handle, buffer, size, 0);
+
+    int err = os_errno;
+    if (iresult == SOCKET_ERROR) {
+        if (err != WSAEWOULDBLOCK) {
+            LogError("WSARecv failed. (%d)", err);
+            NetConn_Remove(conn);
         }
+        thread_mutex_unlock(&conn->mutex);
         return;
     }
 
-    thread_mutex_lock(&conn->mutex);
+    char *dest = conn->in.data + conn->in.size;
+    mbedtls_arc4_crypt(&conn->decrypt, cast(size_t)iresult, buffer, dest);
+    conn->in.size += cast(size_t)iresult;
+
+    NetConn_DispatchPackets(conn);
+
     if (conn->flags & NETCONN_REMOVE) {
-        thread_mutex_unlock(&conn->mutex);
-        return;
-    }
-
-    WSABUF buf;
-    buf.buf = conn->in.data + conn->in.size;
-    buf.len = conn->in.capacity - conn->in.size;
-    DWORD flags = 0;
-
-    int error = WSARecv(
-        conn->fd.handle,
-        &buf,
-        1,
-        NULL,
-        &flags,
-        &conn->rovlp,
-        NULL);
-
-    error = error ? os_errno : 0;
-    if (error && (error != WSA_IO_PENDING)) {
-        LogError("WSARecv failed. (%d)", os_errno);
         NetConn_Remove(conn);
-        thread_mutex_unlock(&conn->mutex);
         return;
     }
-
-    thread_mutex_unlock(&conn->mutex);
 }
 
 void NetConn_DispatchPackets(Connection *conn)
@@ -831,7 +724,9 @@ void NetConn_DispatchPackets(Connection *conn)
         }
 
         MsgHandler handler = array_at(conn->handlers, header);
-        if (handler) handler(conn, format.unpack_size, &buffer.packet);
+        LogDebug("Dispatch packet: {Opcode: %u, Handler: %p}", header, handler);
+        if (handler)
+            handler(conn, format.unpack_size, &buffer.packet);
 
         // @Remark: We don't want to dispatch packet if we close the connection. but
         // it might make us loose some packet.
@@ -847,56 +742,11 @@ void NetConn_DispatchPackets(Connection *conn)
 
 void NetConn_Update(Connection *conn)
 {
-    if (!conn->fd.handle)
+    if ((conn->fd.handle == 0) || (conn->fd.handle == INVALID_SOCKET))
         return;
-
-    thread_mutex_lock(&conn->mutex);
 
     NetConn_Send(conn);
-
-    DWORD reason = WaitForSingleObject(conn->rovlp.hEvent, 0);
-    if (reason != WAIT_TIMEOUT) {
-        if (reason == WAIT_OBJECT_0) {
-            DWORD bytes;
-            BOOL success = GetOverlappedResultEx(
-                (HANDLE)conn->fd.handle,
-                &conn->rovlp,
-                &bytes,
-                0,
-                FALSE);
-
-            int error = success ? os_errno : 0;
-            if (error != 0) {
-                ByteBuffer *in = &conn->in;
-
-                assert(in->size + bytes <= in->capacity);
-                uint8_t *new_data = in->data + in->size;
-                mbedtls_arc4_crypt(&conn->decrypt, bytes, new_data, new_data);
-
-                in->size += bytes;
-
-                // @Enhancement:
-                // We might want to record just before calling the handler to ignore some packet.
-                // also, we have to do something for GAME_CMSG_MOVE_TO_COORD.
-                if (conn->flags & NETCONN_RECORD) {
-                    replay_record_segment(&conn->replay_ctx, conn->in.data, conn->in.size);
-                }
-
-                if (conn->broadcast) {
-                    broadcast_stream(conn->broadcast, &conn->in);
-                }
-
-                NetConn_DispatchPackets(conn);
-            }
-        } else {
-            LogError("WaitForSingleObject failed: %d", os_errno);
-        }
-
-        NetConn_Recv(conn);
-        return;
-    }
-
-    thread_mutex_unlock(&conn->mutex);
+    NetConn_Recv(conn);
 }
 
 // @Cleanup:

@@ -92,8 +92,6 @@ void init_client(GwClient *client);
 void retire_transaction(Transaction *trans);
 Transaction *issue_next_transaction(GwClient *client);
 
-static void release_connections(void);
-
 void client_frame_update(GwClient *client, msec_t diff);
 
 void compute_pswd_hash(string _email, string _pswd, char digest[20]);

@@ -150,7 +150,7 @@ void HandleAgentMovementTick(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     MovementTick *pack = cast(MovementTick *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->world.time_server += pack->delta;
 
@@ -173,7 +173,7 @@ void HandleAgentInstanceTimer(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     InstanceTimer *pack = cast(InstanceTimer *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->world.load_time = pack->time;
     client->world.time_server = pack->time;
@@ -218,7 +218,7 @@ void HandleAgentSpawned(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     AgentSpawned *pack = cast(AgentSpawned *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayAgent *agents = &client->world.agents;
     ensure_agent_exist(client, pack->agent_id);
@@ -279,7 +279,7 @@ void HandleAgentDespawned(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     AgentDespawned *pack = cast(AgentDespawned *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Agent *agent = get_agent_safe(client, pack->agent_id);
     if (!agent) return;
@@ -307,7 +307,7 @@ void HandleAgentStopMoving(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     AgentDespawned *pack = cast(AgentDespawned *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Agent *agent = get_agent_safe(client, pack->agent_id);
     if (!agent) {
@@ -335,7 +335,7 @@ void HandleAgentSetPlayer(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     SetPlayer *pack = cast(SetPlayer *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Agent *me = get_agent_safe(client, pack->agent_id);
     // @Cleanup:
@@ -366,7 +366,7 @@ void HandleAgentUpdateDirection(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     UpdateDirection *pack = cast(UpdateDirection *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Agent *agent = get_agent_safe(client, pack->agent_id);
     if (!agent) {
@@ -393,7 +393,7 @@ void HandleAgentUpdateSpeedBase(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     UpdateSpeedBase *pack = cast(UpdateSpeedBase *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Agent *agent = get_agent_safe(client, pack->agent_id);
     if (!agent) {
@@ -420,7 +420,7 @@ void HandleAgentUpdateSpeedModifier(Connection *conn, size_t psize, Packet *pack
 
     GwClient *client = cast(GwClient *)conn->data;
     UpdateSpeedModifier *pack = cast(UpdateSpeedModifier *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Agent *agent = get_agent_safe(client, pack->agent_id);
     if (!agent) {
@@ -447,7 +447,7 @@ void HandleAgentUpdatePosition(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     UpdatePosition *pack = cast(UpdatePosition *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Agent *agent = get_agent_safe(client, pack->agent_id);
     if (!agent) {
@@ -474,7 +474,7 @@ void HandleAgentUpdateRotation(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     UpdateRotation *pack = cast(UpdateRotation *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Agent *agent = get_agent_safe(client, pack->agent_id);
     if (!agent) {
@@ -505,7 +505,7 @@ void HandleAgentMoveToPoint(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     Destination *pack = cast(Destination *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     // @Cleanup:
     // It happend to receive a `MoveToPoint` before spawning an agent.
@@ -542,7 +542,7 @@ void HandleAgentUpdateDestination(Connection *conn, size_t psize, Packet *packet
 
     GwClient *client = cast(GwClient *)conn->data;
     Destination *pack = cast(Destination *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Agent *agent = get_agent_safe(client, pack->agent_id);
     if (!agent) {
@@ -577,7 +577,7 @@ void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     PlayerInfo *pack = cast(PlayerInfo *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayAgent *agents = &client->world.agents;
     ensure_agent_exist(client, pack->agent_id);
@@ -629,7 +629,7 @@ void HandleAgentUpdateProfession(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     UpdateProfession *pack = cast(UpdateProfession *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayAgent *agents = &client->world.agents;
     ensure_agent_exist(client, pack->agent_id);
@@ -656,7 +656,7 @@ void HandleAgentAttrUpdateInt(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     AttrValue *pack = cast(AttrValue *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     int attr_id = pack->attr_id;
     if (attr_id < 0 || 66 < attr_id) {
@@ -717,7 +717,7 @@ void HandleAgentAttrUpdateIntTarget(Connection *conn, size_t psize, Packet *pack
 
     GwClient *client = cast(GwClient *)conn->data;
     AttrValue *pack = cast(AttrValue *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     int attr_id = pack->attr_id;
     if (attr_id < 0 || 65 < attr_id) {
@@ -742,7 +742,7 @@ void HandleAgentAttrUpdateFloat(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     AttrValue *pack = cast(AttrValue *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     int attr_id = pack->attr_id;
     if (attr_id < 0 || 65 < attr_id) {
@@ -786,7 +786,7 @@ void HandleAgentAttrUpdateFloatTarget(Connection *conn, size_t psize, Packet *pa
 
     GwClient *client = cast(GwClient *)conn->data;
     AttrValue *pack = cast(AttrValue *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     int attr_id = pack->attr_id;
     if (attr_id < 0 || 65 < attr_id) {
@@ -825,7 +825,7 @@ void HandleAgentUpdateNpcName(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     NpcName *pack = cast(NpcName *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandleNPCUpdateProperties(Connection *conn, size_t psize, Packet *packet)
@@ -850,7 +850,7 @@ void HandleNPCUpdateProperties(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     NPCProperties *pack = cast(NPCProperties *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandleNPCUpdateModel(Connection *conn, size_t psize, Packet *packet)
@@ -869,7 +869,7 @@ void HandleNPCUpdateModel(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     NpcModel *pack = cast(NpcModel *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandleAgentCreateNPC(Connection *conn, size_t psize, Packet *packet)
@@ -888,7 +888,7 @@ void HandleAgentCreateNPC(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     NPCAgent *pack = cast(NPCAgent *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandlePlayerUnlockedProfession(Connection *conn, size_t psize, Packet *packet)
@@ -906,7 +906,7 @@ void HandlePlayerUnlockedProfession(Connection *conn, size_t psize, Packet *pack
 
     GwClient *client = cast(GwClient *)conn->data;
     UnlockedProf *pack = cast(UnlockedProf *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Player *player = client->player;
     if (!player || (player->agent_id != pack->agent_id))
@@ -931,7 +931,7 @@ void HandlePlayerUpdateProfession(Connection *conn, size_t psize, Packet *packet
 
     GwClient *client = cast(GwClient *)conn->data;
     UpdateProf *pack = cast(UpdateProf *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     // @Remark: The agent structure profession are updated by GAME_SMSG_AGENT_UPDATE_PROFESSION
     Skillbar *sb;
@@ -964,7 +964,7 @@ void HandleAgentUpdateEffects(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     UpdateEffects *pack = cast(UpdateEffects *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Agent *agent = get_agent_safe(client, pack->agent_id);
     if (!agent) {
@@ -984,7 +984,7 @@ void GameSrv_MoveToCoord(GwClient *client, float x, float y)
     } MovePacket;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     MovePacket move_pack = NewPacket(GAME_CMSG_MOVE_TO_COORD);
     move_pack.pos.x = x;
     move_pack.pos.y = y;
@@ -1007,7 +1007,7 @@ void GameSrv_InteractLiving(GwClient *client, AgentId agent_id)
     } Payload;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     Payload packet = NewPacket(GAME_CMSG_INTERACT_LIVING);
     packet.agent_id = agent_id;
 
@@ -1024,7 +1024,7 @@ void GameSrv_InteractGadget(GwClient *client, AgentId agent_id)
     } Payload;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     Payload packet = NewPacket(GAME_CMSG_INTERACT_GADGET);
     packet.agent_id = agent_id;
 
@@ -1041,7 +1041,7 @@ void GameSrv_RotateToAngle(GwClient *client, float rotation)
     } RotatePlayer;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     RotatePlayer packet = NewPacket(GAME_CMSG_ROTATE_PLAYER);
     // @Cleanup: Not portable
     memcpy(&packet.rotation, &rotation, 4);
@@ -1064,7 +1064,7 @@ void HandleAgentPingeg(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     AgentPinged *pack = cast(AgentPinged *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Event_AgentFocus params;
     params.agent_id  = pack->agent_id;

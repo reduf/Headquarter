@@ -63,3 +63,20 @@ void HandleFriendUpdateLocation(Connection *conn, size_t psize, Packet *packet)
     UpdateLocation *pack = cast(UpdateLocation *)packet;
     assert(client);
 }
+
+void HandleFriendStreamEnd(Connection *conn, size_t psize, Packet *packet)
+{
+#pragma pack(push, 1)
+    typedef struct {
+        Header header;
+        uint32_t unk1;
+        uint32_t unk2;
+    } FriendStreamEnd;
+#pragma pack(pop)
+
+    assert(packet->header == AUTH_SMSG_FRIEND_STREAM_END);
+    assert(sizeof(FriendStreamEnd) == psize);
+
+    GwClient *client = cast(GwClient *)conn->data;
+    FriendStreamEnd *pack = cast(FriendStreamEnd *)packet;
+}

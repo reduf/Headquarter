@@ -46,7 +46,7 @@ void HandleSkillbarUpdateSkill(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     UpdateSkill *pack = cast(UpdateSkill *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Skillbar *sb = get_skillbar_safe(client, pack->agent_id);
     if (sb == NULL) {
@@ -75,7 +75,7 @@ void HandleSkillbarUpdate(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     SkillbarUpdate *pack = cast(SkillbarUpdate *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Skillbar *sb = get_skillbar_safe(client, pack->agent_id);
     if (sb != NULL) {
@@ -104,7 +104,7 @@ void HandleSkillAddToWindowsData(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     WindowsData *pack = cast(WindowsData *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     (void)pack;
 }
 
@@ -121,7 +121,7 @@ void HandleSkillAddToWindowsEnd(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     WindowsEnd *pack = cast(WindowsEnd *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     (void)pack;
 }
 
@@ -141,7 +141,7 @@ void HandleSkillActivated(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     SkillCancel *pack = cast(SkillCancel *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Skillbar *sb = get_skillbar_safe(client, pack->agent_id);
     if (sb == NULL) {
@@ -168,7 +168,7 @@ void HandleSkillActivate(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     SkillActivate *pack = cast(SkillActivate *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Skillbar *sb = get_skillbar_safe(client, pack->agent_id);
     if (sb == NULL) {
@@ -202,7 +202,7 @@ void HandleSkillRecharge(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     SkillRecharge *pack = cast(SkillRecharge *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Skillbar *sb = get_skillbar_safe(client, pack->agent_id);
     if (sb == NULL) {
@@ -235,7 +235,7 @@ void HandleSkillRecharged(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     SkillRecharged *pack = cast(SkillRecharged *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Skillbar *sb = get_skillbar_safe(client, pack->agent_id);
     if (sb == NULL) {
@@ -264,7 +264,7 @@ void GameSrv_UseSkill(GwClient *client, int skill_id, uint32_t flags, AgentId ta
     } UseSkill;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Agent *caster = get_agent_safe(client, client->player_agent_id);
     if (!caster) {
@@ -300,7 +300,7 @@ void HandleHeroSkillStatus(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     SkillStatus *pack = cast(SkillStatus *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     if (pack->pos < 0 && 7 < pack->pos) {
         LogError("Unvalid skill position %d", pack->pos);
@@ -331,7 +331,7 @@ void HandleHeroSkillStatusBitmap(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     SkillStatus *pack = cast(SkillStatus *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     uint8_t bitmap = pack->bitmap;
     Skillbar *sb = get_skillbar_safe(client, pack->agent_id);
@@ -363,7 +363,7 @@ void HandleTomeShowSkills(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     TomeShowSkills *pack = cast(TomeShowSkills *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     (void)pack;
 }
 
@@ -383,7 +383,7 @@ void HandleAgentUpdateAttribute(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     UpdateAttribute *pack = cast(UpdateAttribute *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArraySkillbar *skillbars = &client->world.skillbars;
     Skillbar *sb;

@@ -12,6 +12,8 @@ void begin_travel(GwClient *client)
 void start_loading_new_zone(GwClient *client, struct sockaddr *host,
     uint32_t map_id, uint32_t world_hash, uint32_t player_hash, bool record_packets)
 {
+    LogDebug("start_loading_new_zone {map_id: %lu, player_hash: %lu}", map_id, player_hash);
+
     client->ingame = false;
     client->screen = SCREEN_LOADING_MAP;
 
@@ -28,30 +30,12 @@ void start_loading_new_zone(GwClient *client, struct sockaddr *host,
         reset_world(&client->world, &client->object_mgr);
     }
 
-    init_connection(&client->game_srv);
     client->game_srv.host = *host;
 
     // NEW WORLD -- START
     World *world = &client->world;
     init_world(world, world_hash);
     world->map_id = map_id;
-
-    if (record_packets) {
-        char file_path[255];
-        snprintf(file_path, sizeof(file_path), "replays/replay-%d-%llu.gwr", map_id, time_get_ms());
-        if (replay_open_record_file(&client->game_srv.replay_ctx, file_path)) {
-            client->game_srv.flags |= NETCONN_RECORD;
-        }
-
-        Connection *conn = &client->game_srv;
-        conn->broadcast = ConnectionAlloc(conn);
-        if (!ObsvSrv_Connect(conn->broadcast)) {
-            LogError("Couldn't connect to broadcast server");
-            NetConn_Reset(conn->broadcast);
-            free(conn->broadcast);
-            conn->broadcast = NULL;
-        }
-    }
 
     Character *cc = client->current_character;
     GameSrv_RegisterCallbacks(&client->game_srv);
@@ -111,7 +95,7 @@ void HandleGameTransferInfo(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     ServerInfo *pack = cast(ServerInfo *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     struct sockaddr host;
     memcpy(&host, pack->host, sizeof(host));
@@ -125,7 +109,7 @@ void HandleInstanceCountdownStop(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(Packet) == psize);
     
     GwClient *client = cast(GwClient *)conn->data;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->world.pvp_timer_start = 0;
     client->world.pvp_timer_duration = 0;
@@ -148,7 +132,7 @@ void HandleInstanceCountdown(Connection *conn, size_t psize, Packet *packet)
     
     GwClient *client = cast(GwClient *)conn->data;
     Countdown *pack = cast(Countdown *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     World *world = &client->world;
 
@@ -166,7 +150,7 @@ void GameSrv_TravelGH(GwClient *client, const uuid_t guild_uuid)
     } TravelHall;
 #pragma pack(pop)
     
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     begin_travel(client);
 
     TravelHall packet = NewPacket(GAME_CMSG_PARTY_ENTER_GUILD_HALL);
@@ -184,7 +168,7 @@ void GameSrv_LeaveGH(GwClient *client)
     } LeaveHall;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     LeaveHall packet = NewPacket(GAME_CMSG_PARTY_LEAVE_GUILD_HALL);
     packet.unk1 = 1;
 
@@ -264,7 +248,7 @@ void GameSrv_Travel(GwClient *client, int map_id, District district, int distric
     } TravelInfo;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     begin_travel(client);
 
     TravelInfo packet = NewPacket(GAME_CMSG_PARTY_TRAVEL);
@@ -298,7 +282,7 @@ void HandleInstanceTravelTimer(Connection *conn, size_t psize, Packet *packet)
     
     GwClient *client = cast(GwClient *)conn->data;
     PartyTravel *pack = cast(PartyTravel *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandleInstanceLoaded(Connection *conn, size_t psize, Packet *packet)
@@ -315,7 +299,7 @@ void HandleInstanceLoaded(Connection *conn, size_t psize, Packet *packet)
     
     GwClient *client = cast(GwClient *)conn->data;
     InstanceLoaded *pack = cast(InstanceLoaded *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     client->ingame = true;
     client->screen = SCREEN_INGAME;
@@ -327,14 +311,14 @@ void HandleInstanceLoadFinish(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(Packet) == psize);
     
     GwClient *client = cast(GwClient *)conn->data;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     broadcast_event(&client->event_mgr, WORLD_MAP_ENTER, NULL);
 }
 
 void GameSrv_ReturnToOutpost(GwClient *client)
 {
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     begin_travel(client);
     
     Packet packet = NewPacket(GAME_CMSG_PARTY_RETURN_TO_OUTPOST);

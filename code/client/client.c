@@ -5,7 +5,7 @@
 
 static inline void init_client(GwClient *client)
 {
-    memzero(client, sizeof(GwClient));
+    memzero(client, sizeof(*client));
     client->screen = SCREEN_HANDSHAKE;
 
     thread_mutex_init(&client->mutex);
@@ -21,13 +21,16 @@ static inline void init_client(GwClient *client)
 
     init_chat(&client->chat);
 
-    client->next_transaction_id_to_issue = 0;
+    client->next_transaction_id_to_issue = 1;
     array_init2(client->transactions, 256);
     for (size_t i = 0; i < client->transactions.size; i++)
         array_at(client->transactions, i).id = i;
 
     init_object_manager(&client->object_mgr);
     init_event_manager(&client->event_mgr);
+
+    init_connection(&client->auth_srv, client);
+    init_connection(&client->game_srv, client);
 }
 
 static inline void retire_transaction(Transaction *trans)
@@ -196,6 +199,7 @@ void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, s
     utf8_to_unicode16(packet.charname1, 20, charname.bytes, charname.count); // playing character
     utf8_to_unicode16(packet.charname2, 20, charname.bytes, charname.count);
 
+    LogDebug("PortalAccountConnect: {trans_id: %lu}", trans->id);
     SendPacket(&client->auth_srv, sizeof(packet), &packet);
 
     if (thread_event_wait(&trans->event) != 0) {
@@ -278,7 +282,7 @@ void GameSrv_PlayCharacter(GwClient *client, string name, PlayerStatus status)
 
 void GameSrv_Disconnect(GwClient *client)
 {
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     client->ingame = false;
     Packet packet = NewPacket(GAME_CMSG_DISCONNECT);
     SendPacket(&client->game_srv, sizeof(packet), &packet);
@@ -316,7 +320,7 @@ void GameSrv_ChangeGold(GwClient *client, int gold_character, int gold_storage)
     } ChangeGold;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ChangeGold packet = NewPacket(GAME_CMSG_ITEM_CHANGE_GOLD);
     packet.gold_character = gold_character;
@@ -348,27 +352,4 @@ void client_frame_update(GwClient *client, msec_t diff)
     if (client->world.hash)
         world_update(&client->world, diff);
     thread_mutex_unlock(&client->mutex);
-}
-
-// @Cleanup: This should move else where, but we have to handle unexpected connection lost
-static void release_connections(void)
-{
-    struct list *conns = &conns_to_release;
-    Connection  *conn;
-    while (!list_empty(conns)) {
-        conn = list_first_entry(conns, Connection, node);
-        list_remove(&conn->node);
-        
-        GwClient *client = cast(GwClient *)conn->data;
-        if (conn == &client->auth_srv) {
-            client->connected = false;
-        } else if (conn == &client->game_srv) {
-            // @Cleanup:
-            // Adapt following line
-            // client->game_srv = NULL;
-            client->ingame = false;
-        }
-
-        NetConn_Reset(conn);
-    }
 }

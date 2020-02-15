@@ -49,7 +49,7 @@ void HandleItemStreamCreate(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     StreamCreate *pack = cast(StreamCreate *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandleItemStreamDestroy(Connection *conn, size_t psize, Packet *packet)
@@ -66,7 +66,7 @@ void HandleItemStreamDestroy(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     StreamDestroy *pack = cast(StreamDestroy *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
@@ -96,7 +96,7 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     ItemInfo *pack = cast(ItemInfo *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     // LogInfo("ItemGeneralInfo {id: %d, modele: %d}", pack->item_id, pack->model);
 
     ArrayItem *items = &client->world.items;
@@ -130,7 +130,7 @@ void HandleItemRemove(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     ItemRemove *pack = cast(ItemRemove *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayItem *items = &client->world.items;
     Item *item = get_item_safe(client, pack->item_id);
@@ -158,7 +158,7 @@ void HandleItemWeaponSet(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     WeaponSet *pack = cast(WeaponSet *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     // LogInfo("New Weapon set !");
 }
@@ -178,7 +178,7 @@ void HandleInventoryItemQuantity(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     ItemQuantity *pack = cast(ItemQuantity *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Item *item = get_item_safe(client, pack->item_id);
     if (!item) {
@@ -206,7 +206,7 @@ void HandleInventoryItemLocation(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     ItemLocation *pack = cast(ItemLocation *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
 #if 0
     Item *item = get_item_safe(client, pack->item_id);
@@ -297,7 +297,7 @@ void HandleWindowOwner(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     WindowOwner *pack = cast(WindowOwner *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     array_clear(client->merchant_items);
     client->merchant_agent_id = pack->agent_id;
@@ -319,7 +319,7 @@ void HandleWindowAddItems(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     AddItems *pack = cast(AddItems *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayItem *items = &client->world.items;
     ArrayItem *merchant_items = &client->merchant_items;
@@ -355,7 +355,7 @@ void HandleItemPriceQuote(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     PriceQuote *pack = cast(PriceQuote *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayItem *items = &client->world.items;
     assert(array_inside(*items, pack->item_id));
@@ -382,7 +382,7 @@ void HandleItemChangeLocation(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     ChangeLocation *pack = cast(ChangeLocation *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Item *item = get_item_safe(client, pack->item_id);
     if (!item) {
@@ -419,7 +419,7 @@ void GameSrv_UseItem(GwClient *client, Item *item)
     } ItemUse;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     ItemUse packet = NewPacket(GAME_CMSG_ITEM_USE);
     packet.item_id = item->item_id;
 
@@ -436,7 +436,7 @@ void GameSrv_InteractItem(GwClient *client, uint32_t agent_id)
     } ItemUse;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     ItemUse packet = NewPacket(GAME_CMSG_INTERACT_ITEM);
     packet.agent_id = agent_id;
     packet.unk0 = 0;
@@ -455,7 +455,7 @@ void GameSrv_MoveItem(GwClient *client, Item *item, Bag *bag, int slot)
     } ItemMove;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     ItemMove packet = NewPacket(GAME_CMSG_ITEM_MOVE);
     packet.item_id = item->item_id;
     packet.bag_id = bag->bag_id;
@@ -475,7 +475,7 @@ void GameSrv_StartSalvage(GwClient *client, Item *kit, Item *item)
     } SalvagePacket;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     SalvageSession *session = &client->salvage_session;
 
     SalvagePacket packet = NewPacket(GAME_CMSG_ITEM_SALVAGE_SESSION_OPEN);
@@ -488,7 +488,7 @@ void GameSrv_StartSalvage(GwClient *client, Item *kit, Item *item)
 
 void GameSrv_CancelSalvage(GwClient *client)
 {
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     SalvageSession *session = &client->salvage_session;
     if (!session->is_open) return;
 
@@ -498,14 +498,14 @@ void GameSrv_CancelSalvage(GwClient *client)
 
 void GameSrv_SalvageDone(GwClient *client)
 {
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     Packet packet = NewPacket(GAME_CMSG_ITEM_SALVAGE_SESSION_DONE);
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
 
 void GameSrv_SalvageMaterials(GwClient *client)
 {
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     Packet packet = NewPacket(GAME_CMSG_ITEM_SALVAGE_MATERIALS);
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
@@ -519,7 +519,7 @@ void GameSrv_SalvageUpgrade(GwClient *client, int index)
     } SalvagePacket;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     SalvageSession *session = &client->salvage_session;
     if (index >= session->n_upgrades) {
         LogError("The maximum upgrade index is %u, but you entered %u", session->n_upgrades, index);
@@ -548,7 +548,7 @@ void HandleSalvageSessionStart(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     SalvagePacket *pack = cast(SalvagePacket *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     SalvageSession *session = &client->salvage_session;
 
     if (pack->salvage_session_id != session->salvage_session_id) {
@@ -571,7 +571,7 @@ void HandleSalvageSessionCancel(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(Packet) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     SalvageSession *session = &client->salvage_session;
     session->is_open = false;
@@ -584,7 +584,7 @@ void HandleSalvageSessionDone(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(Packet) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     SalvageSession *session = &client->salvage_session;
 
     session->is_open = false;
@@ -605,7 +605,7 @@ void HandleSalvageSessionItemKept(Connection *conn, size_t psize, Packet *packet
 
     GwClient *client = cast(GwClient *)conn->data;
     SalvagePacket *pack = cast(SalvagePacket *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     SalvageSession *session = &client->salvage_session;
 }
 
@@ -620,7 +620,7 @@ void GameSrv_UnequipItem(GwClient *client, EquipedItemSlot equip_slot, Bag *bag,
     } UnequipItemPacket;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     UnequipItemPacket packet = NewPacket(GAME_CMSG_UNEQUIP_ITEM);
     packet.equip_slot = equip_slot;

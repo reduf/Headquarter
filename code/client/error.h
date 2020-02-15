@@ -3,7 +3,7 @@
 #endif
 #define ERROR_H_INC
 
-#if defined(OS_WINDOWS)
+#if defined(_WIN32)
 static void win32_perror(const char *str);
 # define os_errno (int)GetLastError()
 # define os_perror(s) win32_perror(s)

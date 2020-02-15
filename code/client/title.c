@@ -20,7 +20,7 @@ void HandleTitleRankData(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     RankData *pack = cast(RankData *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     (void)pack;
 }
 
@@ -39,7 +39,7 @@ void HandleTitleRankDisplay(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     RankDisplay *pack = cast(RankDisplay *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     (void)pack;
 }
 
@@ -67,5 +67,5 @@ void HandleTitleTrackInfo(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     TrackInfo *pack = cast(TrackInfo *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }

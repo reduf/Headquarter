@@ -17,7 +17,7 @@ void HandleTradeRequest(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     TradeRequest *pack = cast(TradeRequest *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     // Player *player = GetPlayer(pack->player);
     // LogInfo("%S request a trade.", player->name);
@@ -39,7 +39,7 @@ void HandleTradeTerminate(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     TradeTerminate *pack = cast(TradeTerminate *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     (void)pack;
 
     client->trade_session.state = TradeState_Closed;
@@ -61,7 +61,7 @@ void HandleTradeOfferedCount(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     OfferedCount *pack = cast(OfferedCount *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     (void)pack;
 }
 
@@ -79,7 +79,7 @@ void HandleTradeReceiveOffer(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     TradeOffer *pack = cast(TradeOffer *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     TradeSession *session = &client->trade_session;
     session->state |= TradeState_Received;
@@ -102,7 +102,7 @@ void HandleTradeAddItem(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     ItemInfo *pack = cast(ItemInfo *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     TradeSession *session = &client->trade_session;
     assert(array_size(session->trader_items) <= 6);
@@ -127,7 +127,7 @@ void HandleTradeAcknowledge(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     TradeAcknowledge *pack = cast(TradeAcknowledge *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     TradeSession *session = &client->trade_session;
     assert(session->request_pending);
@@ -147,7 +147,7 @@ void HandleTradeAccept(Connection *conn, size_t psize, Packet *packet)
     assert(psize == sizeof(Packet));
 
     GwClient *client = cast(GwClient *)conn->data;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     TradeSession *session = &client->trade_session;
     session->state |= TradeState_Accepted;
@@ -168,7 +168,7 @@ void HandleTradeChangeOffer(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     TradeChangeOffer *pack = cast(TradeChangeOffer *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     (void)pack;
 
     TradeSession *session = &client->trade_session;
@@ -185,7 +185,7 @@ void GameSrv_TradeAcknowledge(GwClient *client, int32_t player_id)
     } TradeAcknowledge;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     TradeAcknowledge packet = NewPacket(GAME_CMSG_TRADE_ACKNOWLEDGE);
     packet.player_id = player_id;
 
@@ -201,7 +201,7 @@ void GameSrv_TradeAcknowledge(GwClient *client, int32_t player_id)
 
 void GameSrv_TradeCancel(GwClient *client)
 {
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     Packet packet = NewPacket(GAME_CMSG_TRADE_CANCEL);
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 
@@ -219,7 +219,7 @@ void GameSrv_TradeAddItem(GwClient *client, uint32_t item_id, uint8_t quantity)
     } AddItem;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     assert(quantity <= 250);
 
     AddItem packet = NewPacket(GAME_CMSG_TRADE_ADD_ITEM);
@@ -244,7 +244,7 @@ void GameSrv_TradeSendOffer(GwClient *client, int gold)
     } TradeOffer;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     TradeOffer packet = NewPacket(GAME_CMSG_TRADE_SEND_OFFER);
     packet.gold = gold;
 
@@ -261,7 +261,7 @@ void GameSrv_TradeRemoveItem(GwClient *client, int32_t item_id, int quantity)
     } RemoveItem;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     RemoveItem packet = NewPacket(GAME_CMSG_TRADE_REMOVE_ITEM);
     packet.item_id = item_id;
     packet.quantity = quantity % 250;
@@ -271,14 +271,14 @@ void GameSrv_TradeRemoveItem(GwClient *client, int32_t item_id, int quantity)
 
 void GameSrv_TradeCancelOffer(GwClient *client)
 {
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     Packet packet = NewPacket(GAME_CMSG_TRADE_CANCEL_OFFER);
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
 
 void GameSrv_TradeAccept(GwClient *client)
 {
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     Packet packet = NewPacket(GAME_CMSG_TRADE_ACCEPT);
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
@@ -292,7 +292,7 @@ void GameSrv_TradeInitiate(GwClient *client, AgentId partner)
     } TradeTarget;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     TradeTarget packet = NewPacket(GAME_CMSG_TRADE_INITIATE);
     packet.agent_id = partner;
 

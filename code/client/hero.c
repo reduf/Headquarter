@@ -16,7 +16,7 @@ void GameSrv_HeroUseSkill(GwClient *client, AgentId hero_id,
     } UseSkill;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayAgent *agents = &client->world.agents;
     Agent *caster = get_agent_safe(client, hero_id);
@@ -48,7 +48,7 @@ void GameSrv_HeroSetBehavior(GwClient *client, AgentId agent_id, HeroBehavior be
     } SetBehavior;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     SetBehavior packet = NewPacket(GAME_CMSG_HERO_BEHAVIOR);
     packet.agent_id = agent_id;
     packet.behavior = behavior;
@@ -66,7 +66,7 @@ void GameSrv_HeroSkillToggle(GwClient *client, AgentId agent_id, int skill_slot)
     } SkillToggle;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     SkillToggle packet = NewPacket(GAME_CMSG_HERO_SKILL_TOGGLE);
     packet.agent_id    = agent_id;
     packet.skill_slot  = skill_slot;
@@ -89,5 +89,5 @@ void HandleHeroBehavior(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     HeroBehavior *pack = cast(HeroBehavior *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }

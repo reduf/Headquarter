@@ -20,6 +20,7 @@ void HandleAccountSettings(Connection *conn, size_t psize, Packet *packet);
 void HandleFriendUpdateInfo(Connection *conn, size_t psize, Packet *packet);
 void HandleFriendUpdateStatus(Connection *conn, size_t psize, Packet *packet);
 void HandleFriendUpdateLocation(Connection *conn, size_t psize, Packet *packet);
+void HandleFriendStreamEnd(Connection *conn, size_t psize, Packet *packet);
 
 void AuthSrv_HeartBeat(Connection *conn, msec_t tick);
 void AuthSrv_AskServerResponse(Connection *conn, uint32_t trans_id);

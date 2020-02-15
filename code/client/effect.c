@@ -39,7 +39,7 @@ void HandleEffectUpkeepAdded(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     EffectAdded *pack = cast(EffectAdded *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandleEffectUpkeepRemoved(Connection *conn, size_t psize, Packet *packet)
@@ -57,7 +57,7 @@ void HandleEffectUpkeepRemoved(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     EffectRemoved *pack = cast(EffectRemoved *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandleEffectUpkeepApplied(Connection *conn, size_t psize, Packet *packet)
@@ -78,7 +78,7 @@ void HandleEffectUpkeepApplied(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     EffectApplied *pack = cast(EffectApplied *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandleEffectApplied(Connection *conn, size_t psize, Packet *packet)
@@ -99,7 +99,7 @@ void HandleEffectApplied(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     EffectApplied *pack = cast(EffectApplied *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayEffect *effects = &client->world.effects;
     Effect *effect = array_push(*effects, 1);
@@ -131,7 +131,7 @@ void HandleEffectRenewed(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     EffectRenewed *pack = cast(EffectRenewed *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Effect *effect = array_find_effect(&client->world.effects, pack->effect_id);
     effect->timestamp = client->world.world_time;
@@ -157,7 +157,7 @@ void HandleEffectRemoved(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     EffectRemoved *pack = cast(EffectRemoved *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayEffect *effects = &client->world.effects;
     size_t index = array_find_effect_index(effects, pack->effect_id);

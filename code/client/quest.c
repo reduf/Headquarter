@@ -28,7 +28,7 @@ void HandleQuestDescription(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     QuestDescription *pack = cast(QuestDescription *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Quest *quest = find_quest_by_id(&client->world.quests, pack->quest_id);
     if (quest == NULL) {
@@ -60,7 +60,7 @@ void HandleQuestAdd(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     QuestAdd *pack = cast(QuestAdd *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayQuest *quests = &client->world.quests;
     Quest quest = {0};
@@ -90,7 +90,7 @@ void HandleQuestUpdateMarker(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     QuestMarker *pack = cast(QuestMarker *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayQuest *quests = &client->world.quests;
     Quest *quest = find_quest_by_id(quests, pack->quest_id);
@@ -111,7 +111,7 @@ void HandleQuestRemove(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     QuestRemove *pack = cast(QuestRemove *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayQuest *quests = &client->world.quests;
     Quest *quest = find_quest_by_id(quests, pack->quest_id);

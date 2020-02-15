@@ -40,6 +40,8 @@ void HandleErrorMessage(Connection *conn, size_t psize, Packet *packet)
     ErrorMessage *pack = cast(ErrorMessage *)packet;
     assert(client);
 
+    LogDebug("HandleErrorMessage: {trans_id: %lu, code: %lu}", pack->trans_id, pack->code);
+
     // @Cleanup: We should handle error code like code 13
     const char *error_s = get_error_s(pack->code);
     if (pack->code != 0) {
@@ -371,6 +373,7 @@ void AuthSrv_RegisterCallbacks(Connection *conn)
 
     handlers[AUTH_SMSG_FRIEND_UPDATE_INFO]      = HandleFriendUpdateInfo;
     handlers[AUTH_SMSG_FRIEND_UPDATE_STATUS]    = HandleFriendUpdateStatus;
+    handlers[AUTH_SMSG_FRIEND_STREAM_END]       = HandleFriendStreamEnd;
     handlers[AUTH_SMSG_FRIEND_UPDATE_LOCATION]  = HandleFriendUpdateLocation;
 
     handlers[AUTH_SMSG_WHISPER_RECEIVED]        = HandleWhisperReceived;
@@ -381,7 +384,6 @@ void AuthSrv_RegisterCallbacks(Connection *conn)
 bool init_auth_connection(GwClient *client, const char *host)
 {
     Connection *conn = &client->auth_srv;
-    init_connection(conn);
     AuthSrv_RegisterCallbacks(conn);
 
     conn->data = client;

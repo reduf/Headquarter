@@ -60,7 +60,7 @@ void HandlePartySetDifficulty(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     SetMode *pack = cast(SetMode *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     if (!(client->player && client->player->party)) {
         LogError("The player is not int a party yet.");
@@ -89,7 +89,7 @@ void HandlePartyHeroAdd(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     HeroAdd *pack = cast(HeroAdd *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     assert(array_inside(client->world.parties, pack->party_id));
     Party *party = &array_at(client->world.parties, pack->party_id);
@@ -122,7 +122,7 @@ void HandlePartyHeroRemove(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     HeroRemove *pack = cast(HeroRemove *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Party *party = get_party_safe(client, pack->party_id);
     if (!party) {
@@ -158,7 +158,7 @@ void HandlePartyInviteAdd(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     InviteAdd *pack = cast(InviteAdd *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandlePartyJoinRequest(Connection *conn, size_t psize, Packet *packet)
@@ -176,7 +176,7 @@ void HandlePartyJoinRequest(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     JoinRequest *pack = cast(JoinRequest *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Party *party = get_party_safe(client, pack->party_id);
     if (party == NULL) {
@@ -203,7 +203,7 @@ void HandlePartyInviteCancel(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     InviteCancel *pack = cast(InviteCancel *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandlePartyRequestCancel(Connection *conn, size_t psize, Packet *packet)
@@ -222,7 +222,7 @@ void HandlePartyRequestCancel(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     RequestCancel *pack = cast(RequestCancel *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandlePartyYouAreLeader(Connection *conn, size_t psize, Packet *packet)
@@ -239,7 +239,7 @@ void HandlePartyYouAreLeader(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     YouAreLeader *pack = cast(YouAreLeader *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     // This is bad
     broadcast_event(&client->event_mgr, PARTY_LEADER_CHANGED, NULL);
@@ -261,7 +261,7 @@ void HandlePartyPlayerAdd(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     PlayerAdd *pack = cast(PlayerAdd *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Party *party = get_party_safe(client, pack->party_id);
     Player *player = get_player_safe(client, pack->player_id);
@@ -299,7 +299,7 @@ void HandlePartyPlayerRemove(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     PlayerRemove *pack = cast(PlayerRemove *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Party *party = get_party_safe(client, pack->party_id);
     Player *player = get_player_safe(client, pack->player_id);
@@ -337,7 +337,7 @@ void HandlePartyPlayerReady(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     PlayerReady *pack = cast(PlayerReady *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     Player *player = get_player_safe(client, pack->player_id);
     assert(player && player->party);
@@ -361,7 +361,7 @@ void HandlePartyCreate(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     PartyInfo *pack = cast(PartyInfo *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     ArrayParty *parties = &client->world.parties;
     if (!array_inside(*parties, pack->party_id)) {
@@ -392,7 +392,7 @@ void HandlePartyMemberStreamEnd(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     MemberStreamEnd *pack = cast(MemberStreamEnd *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandlePartyDefeated(Connection *conn, size_t psize, Packet *packet)
@@ -401,7 +401,7 @@ void HandlePartyDefeated(Connection *conn, size_t psize, Packet *packet)
     assert(psize == sizeof(Packet));
 
     GwClient *client = cast(GwClient *)conn->data;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 
     if (!(client->player && client->player->party)) {
         LogError("Player party got defeated before it was created.");
@@ -422,7 +422,7 @@ void GameSrv_FlagHero(GwClient *client, Vec2f pos, AgentId hero_agent_id)
     } FlagHero;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     FlagHero packet = NewPacket(GAME_CMSG_HERO_FLAG_SINGLE);
     packet.agent_id = hero_agent_id;
     packet.pos = pos;
@@ -441,7 +441,7 @@ void GameSrv_FlagAllHero(GwClient *client, Vec2f pos)
     } FlagHero;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     FlagHero packet = NewPacket(GAME_CMSG_HERO_FLAG_ALL);
     packet.pos = pos;
     packet.plane = 0;
@@ -458,7 +458,7 @@ void GameSrv_AcceptInvite(GwClient *client, int party_id)
     } AcceptInvite;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     AcceptInvite packet = NewPacket(GAME_CMSG_PARTY_ACCEPT_INVITE);
     packet.party_id = (int16_t)party_id;
 
@@ -467,7 +467,7 @@ void GameSrv_AcceptInvite(GwClient *client, int party_id)
 
 void GameSrv_LeaveParty(GwClient *client)
 {
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     Packet packet = NewPacket(GAME_CMSG_PARTY_LEAVE_GROUP);
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
@@ -481,7 +481,7 @@ void GameSrv_RefuseInvite(GwClient *client, int party_id)
     } RefuseInvite;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     RefuseInvite packet = NewPacket(GAME_CMSG_PARTY_ACCEPT_REFUSE);
     packet.party_id = (int16_t)party_id;
 
@@ -497,7 +497,7 @@ void GameSrv_PartySetTick(GwClient *client, bool ticked)
     } SetTick;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     SetTick packet = NewPacket(GAME_CMSG_PARTY_READY_STATUS);
     packet.ticked  = ticked;
 
@@ -513,7 +513,7 @@ void GameSrv_SetDifficulty(GwClient *client, Difficulty mode)
     } SetDifficulty;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     SetDifficulty packet = NewPacket(GAME_CMSG_PARTY_SET_DIFFICULTY);
     packet.mode = mode;
 
@@ -529,7 +529,7 @@ void GameSrv_AddHero(GwClient *client, HeroID hero_id)
     } HeroPacket;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     HeroPacket packet = NewPacket(GAME_CMSG_HERO_ADD);
     packet.hero_id = hero_id;
 
@@ -545,7 +545,7 @@ void GameSrv_KickHero(GwClient *client, HeroID hero_id)
     } HeroPacket;
 #pragma pack(pop)
 
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     HeroPacket packet = NewPacket(GAME_CMSG_HERO_ADD);
     packet.hero_id = hero_id;
 
@@ -571,7 +571,7 @@ void HandlePartySearchRequestJoin(Connection *conn, size_t psize, Packet *packet
 
     GwClient *client = cast(GwClient *)conn->data;
     RequestJoin *pack = cast(RequestJoin *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandlePartySearchRequestDone(Connection *conn, size_t psize, Packet *packet)
@@ -589,7 +589,7 @@ void HandlePartySearchRequestDone(Connection *conn, size_t psize, Packet *packet
 
     GwClient *client = cast(GwClient *)conn->data;
     RequestDone *pack = cast(RequestDone *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandlePartySearchAdvertisement(Connection *conn, size_t psize, Packet *packet)
@@ -618,7 +618,7 @@ void HandlePartySearchAdvertisement(Connection *conn, size_t psize, Packet *pack
 
     GwClient *client = cast(GwClient *)conn->data;
     PacketType *pack = cast(PacketType *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandlePartySearchSeek(Connection *conn, size_t psize, Packet *packet)
@@ -635,7 +635,7 @@ void HandlePartySearchSeek(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     SeekParty *pack = cast(SeekParty *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandlePartySearchRemove(Connection *conn, size_t psize, Packet *packet)
@@ -652,7 +652,7 @@ void HandlePartySearchRemove(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     PacketType *pack = cast(PacketType *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandlePartySearchSize(Connection *conn, size_t psize, Packet *packet)
@@ -671,7 +671,7 @@ void HandlePartySearchSize(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     PacketType *pack = cast(PacketType *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void HandlePartySearchType(Connection *conn, size_t psize, Packet *packet)
@@ -690,7 +690,7 @@ void HandlePartySearchType(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     PacketType *pack = cast(PacketType *)packet;
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
 }
 
 void GameSrv_PS_SeekParty(GwClient *client, PartySearchType type, const char *msg)
@@ -704,7 +704,7 @@ void GameSrv_PS_SeekParty(GwClient *client, PartySearchType type, const char *ms
     } PacketSeekParty;
 #pragma pack(pop)
     
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     PacketSeekParty packet = NewPacket(GAME_CMSG_PARTY_SEARCH_SEEK);
     packet.type = type;
     utf8_to_unicode16(packet.msg, 32, msg, -1);
@@ -714,7 +714,7 @@ void GameSrv_PS_SeekParty(GwClient *client, PartySearchType type, const char *ms
 
 void GameSrv_PS_CancelSeek(GwClient *client)
 {
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     Packet packet = NewPacket(GAME_CMSG_PARTY_SEARCH_CANCEL);
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
@@ -728,7 +728,7 @@ void GameSrv_PS_RequestJoin(GwClient *client, int party_search_id)
     } PacketType;
 #pragma pack(pop)
     
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     PacketType packet = NewPacket(GAME_CMSG_PARTY_SEARCH_REQUEST_JOIN);
     packet.ps_id = party_search_id;
 
@@ -744,7 +744,7 @@ void GameSrv_PS_RequestReply(GwClient *client, int party_search_id)
     } PacketType;
 #pragma pack(pop)
     
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     PacketType packet = NewPacket(GAME_CMSG_PARTY_SEARCH_REQUEST_REPLY);
     packet.ps_id = party_search_id;
 
@@ -760,7 +760,7 @@ void GameSrv_PS_ChangeType(GwClient *client, PartySearchType type)
     } PacketType;
 #pragma pack(pop)
     
-    assert(client && client->ingame);
+    assert(client && client->game_srv.secured);
     PacketType packet = NewPacket(GAME_CMSG_PARTY_SEARCH_TYPE);
     packet.type = type;
 

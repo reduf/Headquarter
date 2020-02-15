@@ -50,11 +50,11 @@ def main(args):
         # if the hex_val is not the same as the dec_val we notice it, but base our result on the hex
         hex_val = int(words[2][3:-1], 16)
         dec_val = int(words[4], 10)
-        if hex_val != dec_val:
+        if (hex_val & 0x7FFF) != (dec_val & 0x7FFF):
             print('// @@@@@@@ Error: hex val != dec val')
 
         val = hex_val + offset
-        print('#define', '%-43s' % words[1], '(0x%04X) // %d' % (val, val))
+        print('#define', '%-43s' % words[1], '(0x%04X) // %d' % (val, val & 0x7FFF))
 
 if __name__ == '__main__':
     main(sys.argv[1:])
