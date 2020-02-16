@@ -386,7 +386,6 @@ void AuthSrv_RegisterCallbacks(Connection *conn)
 bool init_auth_connection(GwClient *client, const char *host)
 {
     Connection *conn = &client->auth_srv;
-    AuthSrv_RegisterCallbacks(conn);
 
     conn->data = client;
     if (host != NULL) {

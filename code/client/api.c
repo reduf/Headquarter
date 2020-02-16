@@ -3,8 +3,6 @@
 #endif
 #define CORE_API_C
 
-extern GwClient *__client;
-
 HQAPI void __cdecl LogError(const char *fmt, ...)
 {
     va_list args;
@@ -47,7 +45,6 @@ HQAPI void __cdecl LogWarn(const char *fmt, ...)
 
 HQAPI void FreePluginAndExitThread(void *module, int exit_code)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     Plugin *it;
@@ -63,7 +60,6 @@ HQAPI void FreePluginAndExitThread(void *module, int exit_code)
 
 HQAPI size_t GetPlugins(ApiPlugin *buffer, size_t length)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     Plugin *it;
     ApiPlugin *plugin;
@@ -84,7 +80,6 @@ leave:
 
 HQAPI bool RegisterEvent(EventType event, CallbackEntry *entry)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     if (event < 0 || N_EVENT <= event)
         return false;
@@ -98,7 +93,6 @@ HQAPI bool RegisterEvent(EventType event, CallbackEntry *entry)
 
 HQAPI bool UnRegisterEvent(CallbackEntry *entry)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     if (!entry)
         return false;
@@ -118,7 +112,6 @@ HQAPI void LogoutToCharselect()
 
 HQAPI msec_t GetPing(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     msec_t ping = 0;
     thread_mutex_lock(&client->mutex);
@@ -132,7 +125,6 @@ leave:
 
 HQAPI msec_t GetPvPTimer(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     msec_t pvp_timer = 0;
     thread_mutex_lock(&client->mutex);
@@ -150,7 +142,6 @@ leave:
 
 HQAPI msec_t GetWorldTime(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     msec_t world_time = 0;
     thread_mutex_lock(&client->mutex);
@@ -164,21 +155,18 @@ leave:
 
 HQAPI bool GetIsIngame(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     return client->state.ingame;
 }
 
 HQAPI bool GetIsConnected(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     return client->state.connected;
 }
 
 HQAPI int GetMapId(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
 
     int map_id = 0;
@@ -193,7 +181,6 @@ leave:
 
 HQAPI District GetDistrict(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
 
     District         district;
@@ -258,7 +245,6 @@ HQAPI District GetDistrict(void)
 
 HQAPI int GetDistrictNumber(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     int district_number = 0;
     thread_mutex_lock(&client->mutex);
@@ -272,7 +258,6 @@ leave:
 
 HQAPI void Travel(uint32_t map_id, District district, int district_number)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!(client->state.ingame && client->world.hash))
@@ -288,7 +273,6 @@ leave:
 
 HQAPI void TravelHall(uint32_t guild_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     Guild *guild = get_guild_safe(client, guild_id);
@@ -300,7 +284,6 @@ leave:
 
 HQAPI void LeaveHall(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
@@ -313,7 +296,6 @@ leave:
 
 HQAPI void RedirectMap(uint32_t map_id, uint32_t type, District district, int district_number)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.connected)
@@ -332,7 +314,6 @@ leave:
 
 HQAPI bool GetInCinematic(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     bool in_cinematic = false;
     thread_mutex_lock(&client->mutex);
@@ -346,7 +327,6 @@ leave:
 
 HQAPI void SkipCinematic(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!(client->world.hash && client->world.in_cinematic))
@@ -358,7 +338,6 @@ leave:
 
 HQAPI size_t GetCharacterName(char *buffer, size_t length)
 {
-    GwClient *client = __client;
     assert(client != NULL);
 
     size_t written = 0;
@@ -380,7 +359,6 @@ leave:
 
 HQAPI size_t GetPlayers(ApiPlayer *buffer, size_t length)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     size_t count = 0;
     thread_mutex_lock(&client->mutex);
@@ -403,7 +381,6 @@ leave:
 
 HQAPI size_t GetPlayerName(uint32_t player_id, char *buffer, size_t length)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     if (!length && buffer)
         return 0;
@@ -433,7 +410,6 @@ leave:
 
 HQAPI bool GetPlayerIsPartyLeader(uint32_t player_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     bool is_leader = false;
     thread_mutex_lock(&client->mutex);
@@ -451,7 +427,6 @@ leave:
 
 HQAPI size_t GetPlayersOfParty(uint32_t party_id, uint32_t *buffer, size_t length)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     size_t count = 0;
     thread_mutex_lock(&client->mutex);
@@ -471,7 +446,6 @@ leave:
 
 HQAPI AgentId GetMyAgentId(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     if (!client->state.ingame)
         return 0;
@@ -480,7 +454,6 @@ HQAPI AgentId GetMyAgentId(void)
 
 HQAPI uint32_t GetMyGuildId(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     uint32_t guild_id = 0;
     thread_mutex_lock(&client->mutex);
@@ -494,7 +467,6 @@ leave:
 
 HQAPI uint32_t GetMyPlayerId(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     uint32_t player_id = 0;
     thread_mutex_lock(&client->mutex);
@@ -508,7 +480,6 @@ leave:
 
 HQAPI uint32_t GetGuildOfAgent(uint32_t agent_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     uint32_t guild_id = 0;
     thread_mutex_lock(&client->mutex);
@@ -525,7 +496,6 @@ leave:
 
 HQAPI uint32_t GetGuildFaction(uint32_t guild_id, FactionType *allegiance)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     int32_t points = 0;
     thread_mutex_lock(&client->mutex);
@@ -542,7 +512,6 @@ leave:
 
 HQAPI bool GetAgent(ApiAgent *api_agent, AgentId agent_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     bool success = false;
     thread_mutex_lock(&client->mutex);
@@ -557,7 +526,6 @@ leave:
 
 HQAPI Vec2f GetAgentPos(AgentId agent_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
 
     Vec2f pos = {INFINITY, INFINITY};
@@ -572,7 +540,6 @@ leave:
 
 HQAPI bool GetAgentOfItem(ApiAgent *api_agent, uint32_t item_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     bool success = false;
     thread_mutex_lock(&client->mutex);
@@ -590,7 +557,6 @@ leave:
 
 HQAPI bool GetAgentOfPlayer(ApiAgent *api_agent, uint32_t player_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     bool success = false;
     thread_mutex_lock(&client->mutex);
@@ -610,7 +576,6 @@ leave:
 
 HQAPI bool GetAgentIsMoving(AgentId agent_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     bool moving = false;
     thread_mutex_lock(&client->mutex);
@@ -624,7 +589,6 @@ leave:
 
 HQAPI AgentEffect GetAgentEffects(AgentId agent_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     AgentEffect effect = 0;
     thread_mutex_lock(&client->mutex);
@@ -638,7 +602,6 @@ leave:
 
 HQAPI size_t GetAgents(ApiAgent *buffer, size_t length)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     size_t count = 0;
     thread_mutex_lock(&client->mutex);
@@ -661,7 +624,6 @@ leave:
 
 HQAPI uint32_t GetNpcIdOfAgent(AgentId agent_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     uint32_t npc_id = 0;
     thread_mutex_lock(&client->mutex);
@@ -678,7 +640,6 @@ leave:
 
 HQAPI bool GetItem(ApiItem *api_item, uint32_t item_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     bool success = false;
     thread_mutex_lock(&client->mutex);
@@ -697,7 +658,6 @@ leave:
 
 HQAPI bool GetItemOfAgent(ApiItem *api_item, AgentId agent_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     bool success = false;
     thread_mutex_lock(&client->mutex);
@@ -717,7 +677,6 @@ leave:
 
 HQAPI BagEnum GetItemLocation(uint32_t item_id, unsigned int *slot)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     BagEnum bag = BagEnum_Invalid;
     thread_mutex_lock(&client->mutex);
@@ -735,7 +694,6 @@ leave:
 
 HQAPI size_t GetBagCapacity(BagEnum bag)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     size_t capacity = 0;
     thread_mutex_lock(&client->mutex);
@@ -751,7 +709,6 @@ leave:
 
 HQAPI size_t GetBagItems(BagEnum bag, ApiItem *buffer, size_t length)
 {
-    GwClient *client = __client;
     assert(client != NULL);
 
     size_t count = 0;
@@ -778,7 +735,6 @@ leave:
 
 HQAPI size_t GetMerchantItems(ApiItem *buffer, size_t length)
 {
-    GwClient *client = __client;
     assert(client != NULL);
 
     size_t count = 0;
@@ -802,7 +758,6 @@ leave:
 
 HQAPI bool GetQuest(ApiQuest *quest, uint32_t quest_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     bool found = false;
     thread_mutex_lock(&client->mutex);
@@ -820,7 +775,6 @@ leave:
 
 HQAPI size_t GetQuests(ApiQuest *buffer, size_t length)
 {
-    GwClient *client = __client;
     assert(client != NULL);
 
     size_t count = 0;
@@ -843,7 +797,6 @@ leave:
 
 HQAPI FactionPoint GetLuxonPoints(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
 
     FactionPoint point = {0};
@@ -858,7 +811,6 @@ leave:
 
 HQAPI FactionPoint GetKurzickPoints(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
 
     FactionPoint point = {0};
@@ -873,7 +825,6 @@ leave:
 
 HQAPI FactionPoint GetImperialPoints(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
 
     FactionPoint point = {0};
@@ -888,7 +839,6 @@ leave:
 
 HQAPI FactionPoint GetBalthazarPoints(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
 
     FactionPoint point = {0};
@@ -903,7 +853,6 @@ leave:
 
 HQAPI void DonateFaction(FactionType faction)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     const uint32_t max_guild_faction = 214748364; // (2^31 / 10)
 
@@ -927,7 +876,6 @@ HQAPI void MoveToPoint(Vec2f pos)
 
 HQAPI void MoveToCoord(float x, float y)
 {
-    GwClient *client = __client;
     assert(client != NULL);
 
     thread_mutex_lock(&client->mutex);
@@ -940,7 +888,6 @@ leave:
 
 HQAPI void RotateToAngle(float angle)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
@@ -952,7 +899,6 @@ leave:
 
 HQAPI void ReturnToOutpost(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
 
     thread_mutex_lock(&client->mutex);
@@ -965,7 +911,6 @@ leave:
 
 HQAPI Difficulty GetDifficulty(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     Difficulty mode = Difficulty_Normal;
     thread_mutex_lock(&client->mutex);
@@ -981,7 +926,6 @@ leave:
 
 HQAPI void SetDifficulty(Difficulty mode)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
@@ -994,7 +938,6 @@ leave:
 
 HQAPI void SendChat(Channel channel, const char *msg)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
@@ -1006,7 +949,6 @@ leave:
 
 HQAPI void SendWhisper(const char *target, const char *msg)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
@@ -1018,7 +960,6 @@ leave:
 
 HQAPI void SendDialog(uint32_t dialog_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
@@ -1030,7 +971,6 @@ leave:
 
 void MoveItem(uint32_t item_id, BagEnum bag, int slot)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     Bag *bag_ptr = get_bag_safe(client, bag);
@@ -1048,7 +988,6 @@ leave:
 
 HQAPI void UnequipItem(EquipedItemSlot equip_slot, BagEnum bag, int slot)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     Bag *bag_ptr = get_bag_safe(client, bag);
@@ -1066,7 +1005,6 @@ leave:
 
 HQAPI void UseInventoryItem(uint32_t item_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     Item *item = get_item_safe(client, item_id);
@@ -1079,7 +1017,6 @@ leave:
 
 HQAPI void PickupItem(uint32_t item_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     Item *item = get_item_safe(client, item_id);
@@ -1092,7 +1029,6 @@ leave:
 
 HQAPI void InteractAgent(AgentId agent_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     Agent *agent = get_agent_safe(client, agent_id);
@@ -1129,7 +1065,6 @@ static bool compute_gold_character(GwClient *client, int diff, int *gold_charact
 
 HQAPI void DepositGold(int quant)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     int gold_character, gold_storage;
@@ -1142,7 +1077,6 @@ leave:
 
 HQAPI void WithdrawGold(int quant)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     int gold_character, gold_storage;
@@ -1155,7 +1089,6 @@ leave:
 
 HQAPI int GetGoldStorage(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     int gold = 0;
     thread_mutex_lock(&client->mutex);
@@ -1169,7 +1102,6 @@ leave:
 
 HQAPI int GetGoldCharacter(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     int gold = 0;
     thread_mutex_lock(&client->mutex);
@@ -1184,14 +1116,12 @@ leave:
 HQAPI const SkillInfo *GetSkillInfo(uint32_t skill_id)
 {
     (void)skill_id;
-    GwClient *client = __client;
     assert(client != NULL);
     return NULL;
 }
 
 HQAPI void GetSkillbar(uint32_t *skills, AgentId agent_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!(client->state.ingame && client->world.hash))
@@ -1208,7 +1138,6 @@ leave:
 
 HQAPI bool GetSkillCasting(int pos, AgentId *target_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     assert(1 <= pos && pos <= 8);
     bool is_casting = false;
@@ -1230,7 +1159,6 @@ leave:
 
 HQAPI msec_t GetSkillRecharge(int pos)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     assert(1 <= pos && pos <= 8);
     msec_t remaining = 0;
@@ -1249,7 +1177,6 @@ leave:
 
 HQAPI void UseSkill(uint32_t skill_id, AgentId target_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
@@ -1261,7 +1188,6 @@ leave:
 
 HQAPI void HeroFlag(Vec2f pos, uint32_t hero_index)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
@@ -1283,7 +1209,6 @@ leave:
 
 HQAPI void HeroUseSkill(uint32_t hero_index, uint32_t skill_id, AgentId target_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!(client->state.ingame && client->player && client->player->party))
@@ -1299,7 +1224,6 @@ leave:
 
 HQAPI void HeroEnableSkill(uint32_t hero_index, uint32_t skill_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!(client->state.ingame && client->player && client->player->party))
@@ -1321,7 +1245,6 @@ leave:
 
 HQAPI void HeroDisableSkill(uint32_t hero_index, uint32_t skill_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!(client->state.ingame && client->player && client->player->party))
@@ -1343,7 +1266,6 @@ leave:
 
 HQAPI void HeroSetBehavior(AgentId hero_index, HeroBehavior behavior)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!(client->state.ingame && client->player && client->player->party))
@@ -1359,7 +1281,6 @@ leave:
 
 HQAPI size_t GetPartySize(uint32_t party_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     size_t party_size = 0;
     thread_mutex_lock(&client->mutex);
@@ -1375,7 +1296,6 @@ leave:
 
 HQAPI uint32_t GetPartyLeader(uint32_t party_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     uint32_t player_id = 0;
     thread_mutex_lock(&client->mutex);
@@ -1397,7 +1317,6 @@ leave:
 uint32_t GetPartyOfPlayer(uint32_t player_id)
 {
     (void)player_id;
-    GwClient *client = __client;
     assert(client != NULL);
     uint32_t party_id = 0;
     thread_mutex_lock(&client->mutex);
@@ -1411,7 +1330,6 @@ leave:
 
 HQAPI bool GetPartyIsDefeated(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     bool defeated = false;
     thread_mutex_lock(&client->mutex);
@@ -1425,7 +1343,6 @@ leave:
 
 HQAPI void LeaveParty(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!(client->state.ingame && client->world.hash))
@@ -1437,7 +1354,6 @@ leave:
 
 HQAPI void AcceptInvite(uint32_t party_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!(client->state.ingame && client->world.hash))
@@ -1449,7 +1365,6 @@ leave:
 
 HQAPI void RefuseInvite(uint32_t party_id)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!(client->state.ingame && client->world.hash))
@@ -1464,7 +1379,6 @@ HQAPI void GetPartySentInvites(uint32_t *buffer, size_t length);
 
 HQAPI void SeekParty(PartySearchType type, const char *msg)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
@@ -1476,7 +1390,6 @@ leave:
 
 HQAPI uint32_t GetTraderId(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     uint32_t player_id = 0;
     thread_mutex_lock(&client->mutex);
@@ -1493,7 +1406,6 @@ leave:
 
 HQAPI int GetTradeGold(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     int gold = 0;
     thread_mutex_lock(&client->mutex);
@@ -1510,7 +1422,6 @@ leave:
 
 HQAPI TradeState GetTradeState(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     TradeState state = TradeState_Closed;
     thread_mutex_lock(&client->mutex);
@@ -1524,7 +1435,6 @@ leave:
 
 HQAPI size_t GetTradeItems(TradeItem *buffer, size_t length)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     size_t count = 0;
     thread_mutex_lock(&client->mutex);
@@ -1548,7 +1458,6 @@ leave:
 
 HQAPI void TradeInitiate(AgentId partner)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
@@ -1560,7 +1469,6 @@ leave:
 
 HQAPI void TradeAddItem(uint32_t item_id, uint32_t quantity)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
@@ -1576,7 +1484,6 @@ leave:
 
 HQAPI void TradeRemoveItem(uint32_t item_id, uint32_t quantity)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
@@ -1588,7 +1495,6 @@ leave:
 
 HQAPI void TradeSendOffer(int gold)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
@@ -1600,7 +1506,6 @@ leave:
 
 HQAPI void TradeAccept(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
@@ -1612,7 +1517,6 @@ leave:
 
 HQAPI void TradeCancel(void)
 {
-    GwClient *client = __client;
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)

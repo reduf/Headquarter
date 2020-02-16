@@ -134,10 +134,9 @@ _Static_assert(sizeof(int32_t) == 4, "int32_t must be exactly 32 bits");
 _Static_assert(sizeof(int16_t) == 2, "int16_t must be exactly 16 bits");
 _Static_assert(sizeof(int8_t)  == 1, "int8_t  must be exactly 8 bits");
 
-static bool     quit;
+static bool quit;
 static uint32_t fps;
-
-GwClient *__client;
+GwClient *client;
 
 static void sighandler(int signum)
 {
@@ -145,46 +144,8 @@ static void sighandler(int signum)
     quit = true;
 }
 
-#if 0
-static int script_loader_thread(void *lpParam)
-{
-    GwClient *client = cast(GwClient *)lpParam;
-
-    while (client->screen != SCREEN_LOGIN_SCREEN)
-        time_sleep_ms(1);
-
-    if (options.portal) {
-        while (!portal_received_key)
-            time_sleep_ms(1);
-        PortalAccountConnect(client, portal_user_id, portal_session_id, client->character);
-    } else {
-        AccountConnect(client, client->email, strzero, client->character);
-        if (!client->state.connected) {
-            LogError("'AccountConnect' failed");
-            exit(1);
-        }
-    }
-
-    assert(client->state.ingame == false);
-    PlayCharacter(client, strzero, PlayerStatus_Online);
-
-    // @Cleanup: 'try_changing_zone' is not really meant to do that kind of check
-    if (!client->try_changing_zone) {
-        LogError("'PlayCharacter' failed");
-        exit(1);
-    }
-
-    while (client->try_changing_zone || !client->state.ingame)
-        time_sleep_ms(16);
-    plugin_load(options.script);
-    return 0;
-}
-#endif
-
 static void main_loop(void)
 {
-    GwClient *client = __client;
-
     uint32_t frame_count = 0;
     struct timespec t0, t1;
     struct timespec last_frame_time;
@@ -288,12 +249,11 @@ int main(int argc, const char *argv[])
         }
     }
 
-    GwClient app;
-    GwClient *client = &app;
+    client = malloc(sizeof(*client));
     init_client(client);
-    GameSrv_RegisterCallbacks(&client->game_srv);
 
-    __client = client;
+    AuthSrv_RegisterCallbacks(&client->auth_srv);
+    GameSrv_RegisterCallbacks(&client->game_srv);
 
     if (!init_auth_connection(client, options.auth_srv)) {
         LogInfo("Auth connection try failed.");

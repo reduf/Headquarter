@@ -122,6 +122,7 @@ typedef struct GwClient {
     //
     AsyncServerTransfer server_transfer;
 } GwClient;
+extern GwClient *client;
 
 void init_client(GwClient *client);
 uint32_t issue_next_transaction(GwClient *client, AsyncType type);
