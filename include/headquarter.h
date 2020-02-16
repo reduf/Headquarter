@@ -13,6 +13,7 @@
 
 #include "str.h"
 #include <common/array.h>
+#include <common/noreturn.h>
 
 typedef uint32_t uint;
 typedef uint64_t msec_t;

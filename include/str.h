@@ -36,6 +36,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdint.h>
 
 typedef struct string {
     uint8_t *bytes;
@@ -55,8 +56,8 @@ typedef struct string {
 static void *
 memrcpy(void *dest, const void *src, size_t num)
 {
-    char *s = cast(char *)src;
-    char *d = cast(char *)dest;
+    char *s = (char *)src;
+    char *d = (char *)dest;
     for (size_t i = num; i < num; i--)
         d[i] = s[i];
     return dest;
@@ -67,7 +68,7 @@ vmprintf(const char *fmt, va_list args)
 {
     size_t count = vsnprintf(NULL, 0, fmt, args) + 1;
     size_t size = sizeof(char) * count;
-    char *buffer = cast(char *)malloc(size);
+    char *buffer = (char *)malloc(size);
     vsnprintf(buffer, size, fmt, args);
     return buffer;
 }
@@ -87,7 +88,7 @@ vmwprintf(const wchar_t *fmt, va_list args)
 {
     size_t count = vswprintf(NULL, 0, fmt, args);
     size_t size = count * sizeof(wchar_t) + 2;
-    wchar_t *str = cast(wchar_t *)malloc(size);
+    wchar_t *str = (wchar_t *)malloc(size);
     vswprintf(str, size, fmt, args);
     return str;
 }
@@ -105,7 +106,7 @@ mwprintf(const wchar_t *fmt, ...)
 static char *
 strlwc(char *str, size_t len)
 {
-    unsigned char *s = cast(unsigned char *)str;
+    unsigned char *s = (unsigned char *)str;
     for (size_t i = 0; i < len; i++) {
         if (s[i] == 0) break;
         s[i] = (unsigned char)tolower(s[i]);
@@ -116,7 +117,7 @@ strlwc(char *str, size_t len)
 static wchar_t *
 wcslwc(wchar_t *str, size_t len)
 {
-    wchar_t *s = cast(wchar_t *)str;
+    wchar_t *s = (wchar_t *)str;
     for (size_t i = 0; i < len; i++) {
         if (s[i] == 0) break;
         s[i] = (wchar_t)tolower(s[i]);
@@ -127,7 +128,7 @@ wcslwc(wchar_t *str, size_t len)
 static char *
 strupc(char *str, size_t len)
 {
-    unsigned char *s = cast(unsigned char *)str;
+    unsigned char *s = (unsigned char *)str;
     for (size_t i = 0; i < len; i++) {
         if (s[i] == 0) break;
         s[i] = (unsigned char)toupper(s[i]);
@@ -138,7 +139,7 @@ strupc(char *str, size_t len)
 static wchar_t *
 wcsupc(wchar_t *str, size_t len)
 {
-    wchar_t *s = cast(wchar_t *)str;
+    wchar_t *s = (wchar_t *)str;
     for (size_t i = 0; i < len; i++) {
         if (s[i] == 0) break;
         s[i] = (wchar_t)toupper(s[i]);
@@ -150,7 +151,7 @@ static size_t
 strtowcs(wchar_t *dest, const char *src, size_t n)
 {
     size_t i;
-    unsigned char *s = cast(unsigned char *)src;
+    unsigned char *s = (unsigned char *)src;
     for (i = 0; i < n-1; i++) {
         if (s[i] & ~0x7f)
             return 0;
@@ -165,7 +166,7 @@ static size_t
 wcstostr(char *dest, const wchar_t *src, size_t n)
 {
     size_t i;
-    unsigned char *d = cast(unsigned char *)dest;
+    unsigned char *d = (unsigned char *)dest;
     for (i = 0; i < n-1; i++) {
         if (src[i] & ~0x7f)
             return 0;
@@ -179,8 +180,8 @@ wcstostr(char *dest, const wchar_t *src, size_t n)
 static int
 stricmp(const char *str1, const char *str2)
 {
-    unsigned char *s1 = cast(unsigned char *)str1;
-    unsigned char *s2 = cast(unsigned char *)str2;
+    unsigned char *s1 = (unsigned char *)str1;
+    unsigned char *s2 = (unsigned char *)str2;
 
     if (s1 == s2) return 0;
     if (s1 == NULL) return -*s2;
@@ -212,8 +213,8 @@ wcsicmp(const wchar_t *s1, const wchar_t *s2)
 static int
 strnicmp(const char *str1, const char *str2, size_t count)
 {
-    unsigned char *s1 = cast(unsigned char *)str1;
-    unsigned char *s2 = cast(unsigned char *)str2;
+    unsigned char *s1 = (unsigned char *)str1;
+    unsigned char *s2 = (unsigned char *)str2;
 
     if ((s1 == s2) || (count == 0)) return 0;
     if (s1 == NULL) return -*s2;
@@ -246,7 +247,7 @@ static int str_cmp(string s1, string s2)
 {
     if (s1.count != s2.count) return s1.count - s2.count;
     if (s1.bytes == s2.bytes) return 0;
-    return strncmp(cast(char *)s1.bytes, cast(char *)s2.bytes, s1.count);
+    return strncmp((char *)s1.bytes, (char *)s2.bytes, s1.count);
 }
 
 static int str_isascii(string s)
@@ -261,7 +262,7 @@ static int str_isascii(string s)
 static string tostr(char *s)
 {
     string res;
-    res.bytes = cast(uint8_t *)s;
+    res.bytes = (uint8_t *)s;
     res.count = strlen(s);
     return res;
 }
