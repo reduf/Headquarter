@@ -19,7 +19,7 @@ void remove_item_from_bag(Item *item)
 
 Item *get_item_safe(GwClient *client, int32_t id)
 {
-    if (!(client->ingame && client->world.hash))
+    if (!(client->state.ingame && client->world.hash))
         return NULL;
     ArrayItem items = client->world.items;
     if (!array_inside(items, id))
@@ -29,7 +29,7 @@ Item *get_item_safe(GwClient *client, int32_t id)
 
 Bag *get_bag_safe(GwClient *client, BagEnum bag_id)
 {
-    if (!client->ingame)
+    if (!client->state.ingame)
         return NULL;
     return client->inventory.bags[bag_id];
 }
@@ -510,12 +510,12 @@ void GameSrv_SalvageMaterials(GwClient *client)
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
 
-void GameSrv_SalvageUpgrade(GwClient *client, int index)
+void GameSrv_SalvageUpgrade(GwClient *client, size_t index)
 {
 #pragma pack(push, 1)
     typedef struct {
         Header header;
-        int8_t upgrade_index;
+        uint8_t upgrade_index;
     } SalvagePacket;
 #pragma pack(pop)
 
@@ -527,7 +527,7 @@ void GameSrv_SalvageUpgrade(GwClient *client, int index)
     }
 
     SalvagePacket packet = NewPacket(GAME_CMSG_ITEM_SALVAGE_UPGRADE);
-    packet.upgrade_index = index;
+    packet.upgrade_index = cast(uint8_t)index;
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
 
@@ -558,8 +558,8 @@ void HandleSalvageSessionStart(Connection *conn, size_t psize, Packet *packet)
     }
 
     session->n_upgrades = pack->n_upgrades;
-    for (int i = 0; i < session->n_upgrades; i++) {
-        int32_t item_id = pack->upgrades[i];
+    for (size_t i = 0; i < session->n_upgrades; i++) {
+        uint32_t item_id = pack->upgrades[i];
         session->upgrades[i] = get_item_safe(client, item_id);
     }
     session->is_open = true;

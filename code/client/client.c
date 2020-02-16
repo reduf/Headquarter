@@ -3,10 +3,9 @@
 #endif
 #define CORE_CLIENT_C
 
-static inline void init_client(GwClient *client)
+static void init_client(GwClient *client)
 {
     memzero(client, sizeof(*client));
-    client->screen = SCREEN_HANDSHAKE;
 
     thread_mutex_init(&client->mutex);
 
@@ -21,10 +20,7 @@ static inline void init_client(GwClient *client)
 
     init_chat(&client->chat);
 
-    client->next_transaction_id_to_issue = 1;
-    array_init2(client->transactions, 256);
-    for (size_t i = 0; i < client->transactions.size; i++)
-        array_at(client->transactions, i).id = i;
+    client->next_transaction_id = 1;
 
     init_object_manager(&client->object_mgr);
     init_event_manager(&client->event_mgr);
@@ -33,34 +29,12 @@ static inline void init_client(GwClient *client)
     init_connection(&client->game_srv, client);
 }
 
-static inline void retire_transaction(Transaction *trans)
+static uint32_t issue_next_transaction(GwClient *client, AsyncType type)
 {
-    assert(trans != NULL);
-    if (!trans->enable) return;
-
-    trans->client = NULL;
-    trans->error_code = 0;
-    thread_event_destroy(&trans->event);
-
-    trans->enable = false;
-}
-
-static inline Transaction *issue_next_transaction(GwClient *client)
-{
-    TransactionArray *transactions = &client->transactions;
-
-    int trans_id = client->next_transaction_id_to_issue;
-    client->next_transaction_id_to_issue = (trans_id + 1) % client->transactions.size;
-
-    assert(array_inside(*transactions, trans_id));
-    Transaction *trans = &array_at(*transactions, trans_id);
-    assert(trans_id == trans->id);
-
-    trans->client = client;
-    thread_event_init(&trans->event);
-
-    trans->enable = true;
-    return trans;
+    AsyncRequest *request = array_push(client->requests, 1);
+    request->trans_id = ++client->next_transaction_id;
+    request->type = type;
+    return request->trans_id;
 }
 
 void compute_pswd_hash(string _email, string _pswd, char digest[20])
@@ -84,23 +58,31 @@ void compute_pswd_hash(string _email, string _pswd, char digest[20])
     Sha1(buffer, i * 2, digest);
 }
 
-static void do_post_connection(GwClient *client)
+void ContinueAccountLogin(GwClient *client, uint32_t error_code)
 {
-    Transaction *trans = issue_next_transaction(client);
-    AuthSrv_HardwareInfo(&client->auth_srv);
-    AuthSrv_AskServerResponse(&client->auth_srv, trans->id);
+    assert(!client->state.connected);
+    assert(client->state.connection_pending);
 
-    if (thread_event_wait(&trans->event) != 0) {
-        LogError("'thread_event_wait' failed in 'AccountConnect' waiting for Hardware response");
-        retire_transaction(trans);
+    if (error_code != 0) {
+        LogError("AccountLogin failed");
+        client->state.connection_pending = false;
         return;
     }
 
-    client->connected = true;
-    client->screen = SCREEN_CHARACTER_SELECT;
+    uint32_t trans_id = issue_next_transaction(client, AsyncType_SendHardwareInfo);
+    AuthSrv_HardwareInfo(&client->auth_srv);
+    AuthSrv_AskServerResponse(&client->auth_srv, trans_id);
 }
 
-void AccountConnect(GwClient *client, string email, string pswd, string charname)
+void ContinueSendHardwareInfo(GwClient *client, uint32_t error_code)
+{
+    assert(!client->state.connected);
+    assert(client->state.connection_pending);
+
+    client->state.connected = true;
+}
+
+void OldAccountConnect(GwClient *client, string email, string pswd, string charname)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -119,12 +101,8 @@ void AccountConnect(GwClient *client, string email, string pswd, string charname
 
     Connection *auth = &client->auth_srv;
 
-    // @Cleanup:
-    // This check is a little bit weird, we would want to do something like
-    // `if (client->screen == SCREEN_LOGIN_SCREEN)`, but when we are ingame it
-    // we should be ingame rather than at the handshake.
-    if (client->screen == SCREEN_HANDSHAKE) {
-        LogError("You must connect & send computer infos before calling AccountConnect.");
+    if (!client->state.session_ready) {
+        LogError("You must connect & send computer infos before calling OldAccountConnect");
         return;
     }
 
@@ -138,34 +116,18 @@ void AccountConnect(GwClient *client, string email, string pswd, string charname
     memcpy(buffer + 8, client->password, 20);
     Sha1(buffer, 28, digest);
 
-    Transaction *trans = issue_next_transaction(client);
+    uint32_t trans_id = issue_next_transaction(client, AsyncType_AccountLogin);
 
     AccountLogin packet = NewPacket(AUTH_CMSG_ACCOUNT_LOGIN);
-    packet.transaction_id = trans->id;
+    packet.transaction_id = trans_id;
     packet.client_salt = client_salt;
     memcpy(packet.password, digest, 20);
     utf8_to_unicode16(packet.email,   64, email.bytes,  email.count);
     utf8_to_unicode16(packet.charname1, 20, charname.bytes, charname.count); // playing character
     utf8_to_unicode16(packet.charname2, 20, charname.bytes, charname.count);
 
+    LogDebug("OldAccountConnect: {trans_id: %lu}", trans_id);
     SendPacket(auth, sizeof(packet), &packet);
-
-    if (thread_event_wait(&trans->event) != 0) {
-        LogError("'thread_event_wait' failed in 'AccountConnect' waiting for connect response");
-        retire_transaction(trans);
-        return;
-    }
-
-    if (trans->error_code != 0) {
-        if (trans->error_code == 11) {
-            // @Enhancement: How do we quite cleanly ?
-            exit(1);
-        }
-        retire_transaction(trans);
-        return;
-    }
-
-    do_post_connection(client);
 }
 
 void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, string charname)
@@ -185,39 +147,36 @@ void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, s
     // This check is a little bit weird, we would want to do something like
     // `if (client->screen == SCREEN_LOGIN_SCREEN)`, but when we are ingame it
     // we should be ingame rather than at the handshake.
-    if (client->screen == SCREEN_HANDSHAKE) {
-        LogError("You must connect & send computer infos before calling AccountConnect.");
+    if (!client->state.session_ready) {
+        LogError("You must connect & send computer infos before calling PortalAccountConnect");
         return;
     }
 
-    Transaction *trans = issue_next_transaction(client);
+    uint32_t trans_id = issue_next_transaction(client, AsyncType_AccountLogin);
 
     PortalAccountLogin packet = NewPacket(AUTH_CMSG_PORTAL_ACCOUNT_LOGIN);
-    packet.transaction_id = trans->id;
+    packet.transaction_id = trans_id;
     uuid_enc_le(packet.user_id, user_id);
     uuid_enc_le(packet.session_id, session_id);
     utf8_to_unicode16(packet.charname1, 20, charname.bytes, charname.count); // playing character
     utf8_to_unicode16(packet.charname2, 20, charname.bytes, charname.count);
 
-    LogDebug("PortalAccountConnect: {trans_id: %lu}", trans->id);
+    LogDebug("PortalAccountConnect: {trans_id: %lu}", trans_id);
     SendPacket(&client->auth_srv, sizeof(packet), &packet);
+}
 
-    if (thread_event_wait(&trans->event) != 0) {
-        LogError("'thread_event_wait' failed in 'AccountConnect' waiting for connect response");
-        retire_transaction(trans);
-        return;
-    }
-
-    if (trans->error_code != 0) {
-        if (trans->error_code == 11) {
-            // @Enhancement: How do we quite cleanly ?
-            exit(1);
+void AccountLogin(GwClient *client)
+{
+    if (options.portal) {
+        if (!portal_received_key) {
+            LogError("GwLoginClient didn't replied with the connection key yet");
+            return;
         }
-        retire_transaction(trans);
-        return;
+        PortalAccountConnect(client, portal_user_id, portal_session_id, client->character);
+    } else {
+        OldAccountConnect(client, client->email, strzero, client->character);
     }
-
-    do_post_connection(client);
+    client->state.connection_pending = true;
 }
 
 void AccountLogout(GwClient *client)
@@ -233,41 +192,18 @@ void AccountLogout(GwClient *client)
     packet.unk0 = 0;
 
     // NetConn_FlagRemove(client->auth_srv);
-    // client->connected = false;
+    // client->state.connected = false;
 
     SendPacket(&client->auth_srv, sizeof(packet), &packet);
 }
 
-void GameSrv_PlayCharacter(GwClient *client, string name, PlayerStatus status)
+void ContinuePlayCharacter(GwClient *client, uint32_t error_code)
 {
-    if (client->screen != SCREEN_CHARACTER_SELECT) {
-        LogError("You must connect and be in the character selection before calling 'GameSrv_PlayCharacter'.");
+    assert(client->state.playing_request_pending);
+
+    if (error_code != 0) {
+        LogInfo("ContinuePlayCharacter failed (Code=%03d)", error_code);
         return;
-    }
-
-    if (name.count && str_cmp(client->current_character->name, name)) {
-        Transaction *trans = issue_next_transaction(client);
-
-        AuthSrv_ChangeCharacter(&client->auth_srv, trans->id, name);
-        if (thread_event_wait(&trans->event) != 0) {
-            LogError("Couldn't change character !");
-            retire_transaction(trans);
-            return;
-        }
-
-        if (trans->error_code != 0) {
-            LogInfo("Could not play the character '%.*' (Code=%03d).",
-                name.count, name.bytes, trans->error_code);
-            retire_transaction(trans);
-            return;
-        }
-
-        retire_transaction(trans);
-    }
-
-    if (client->player_status != status) {
-        AuthSrv_SetPlayerStatus(&client->auth_srv, status);
-        client->player_status = status;
     }
 
     // @Cleanup:
@@ -277,35 +213,59 @@ void GameSrv_PlayCharacter(GwClient *client, string name, PlayerStatus status)
     begin_travel(client);
 
     // Character *cc = client->current_character; // can use to find the map
-    AuthSrv_RequestInstance(&client->auth_srv, 0, 248, 3, 0, 0, 0);
+    uint32_t trans_id = issue_next_transaction(client, AsyncType_PlayCharacter);
+    LogDebug("AuthSrv_RequestInstance: {trans_id: %lu}", trans_id);
+    AuthSrv_RequestInstance(&client->auth_srv, trans_id, 248, 3, 0, 0, 0);
+}
+
+void PlayCharacter(GwClient *client, string name, PlayerStatus status)
+{
+    assert(client->state.connected);
+    assert(!client->state.playing_request_pending);
+
+    client->state.playing_request_pending = true;
+
+    if (client->player_status != status) {
+        AuthSrv_SetPlayerStatus(&client->auth_srv, status);
+        client->player_status = status;
+    }
+
+    if (name.count && str_cmp(client->current_character->name, name)) {
+        uint32_t trans_id = issue_next_transaction(client, AsyncType_ChangeCharacter);
+
+        LogDebug("AuthSrv_ChangeCharacter {trans_id: %lu}", trans_id);
+        AuthSrv_ChangeCharacter(&client->auth_srv, trans_id, name);
+    } else {
+        ContinuePlayCharacter(client, 0);
+    }
 }
 
 void GameSrv_Disconnect(GwClient *client)
 {
     assert(client && client->game_srv.secured);
-    client->ingame = false;
+
+    client->state.ingame = false;
+    NetConn_Shutdown(&client->game_srv);
+
     Packet packet = NewPacket(GAME_CMSG_DISCONNECT);
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
 
 void GameSrv_LogoutToCharselect(GwClient *client)
 {
-    GameSrv_Disconnect(client);
     if (client->player_status != PlayerStatus_Offline) {
         AuthSrv_SetPlayerStatus(&client->auth_srv, PlayerStatus_Offline);
         client->player_status = PlayerStatus_Offline;
     }
 
-    // @Cleanup: This is wrong !!
-    void world_reset(ObjectManager *mgr, World *world);
-    reset_world(&client->world, &client->object_mgr);
-    NetConn_Remove(&client->game_srv);
+    // @Cleanup:
+    // We have to ensure that whenever we lose the connection or connect to a game server
+    // we reset all the necessary states.
+    GameSrv_Disconnect(client);
 }
 
 void GameSrv_SkipCinematic(GwClient *client)
 {
-    if (client->screen != SCREEN_CINEMATIC)
-        return;
     Packet packet = NewPacket(GAME_CMSG_SKIP_CINEMATIC);
     SendPacket(&client->auth_srv, sizeof(packet), &packet);
 }
@@ -344,7 +304,7 @@ void client_frame_update(GwClient *client, msec_t diff)
         auth->last_tick_time = frame_time;
     }
 
-    if (client->ingame && ((frame_time - game->last_tick_time) >= 5*1000)) {
+    if (client->state.ingame && ((frame_time - game->last_tick_time) >= 5*1000)) {
         GameSrv_HeartBeat(game);
         game->last_tick_time = frame_time;
     }

@@ -135,7 +135,6 @@ _Static_assert(sizeof(int16_t) == 2, "int16_t must be exactly 16 bits");
 _Static_assert(sizeof(int8_t)  == 1, "int8_t  must be exactly 8 bits");
 
 static bool     quit;
-static thread_t thread_loader;
 static uint32_t fps;
 
 GwClient *__client;
@@ -146,6 +145,7 @@ static void sighandler(int signum)
     quit = true;
 }
 
+#if 0
 static int script_loader_thread(void *lpParam)
 {
     GwClient *client = cast(GwClient *)lpParam;
@@ -159,28 +159,92 @@ static int script_loader_thread(void *lpParam)
         PortalAccountConnect(client, portal_user_id, portal_session_id, client->character);
     } else {
         AccountConnect(client, client->email, strzero, client->character);
-        if (!client->connected) {
+        if (!client->state.connected) {
             LogError("'AccountConnect' failed");
             exit(1);
         }
     }
 
-    assert(client->ingame == false);
-    GameSrv_PlayCharacter(client, strzero, PlayerStatus_Online);
+    assert(client->state.ingame == false);
+    PlayCharacter(client, strzero, PlayerStatus_Online);
 
     // @Cleanup: 'try_changing_zone' is not really meant to do that kind of check
     if (!client->try_changing_zone) {
-        LogError("'GameSrv_PlayCharacter' failed");
+        LogError("'PlayCharacter' failed");
         exit(1);
     }
 
-    while (client->try_changing_zone || !client->ingame)
+    while (client->try_changing_zone || !client->state.ingame)
         time_sleep_ms(16);
     plugin_load(options.script);
     return 0;
 }
+#endif
 
-static void main_loop(void);
+static void main_loop(void)
+{
+    GwClient *client = __client;
+
+    uint32_t frame_count = 0;
+    struct timespec t0, t1;
+    struct timespec last_frame_time;
+
+    while (!quit) {
+        frame_count += 1;
+        get_wall_clock_time(&t0);
+
+        long frame_delta_nsec = time_diff_nsec(&t0, &last_frame_time);
+        msec_t frame_delta = frame_delta_nsec / 1000;
+
+        //
+        // Update the client asynchronous operations such as:
+        // - Connecting to an GuildWars account.
+        // - Connecting to a game server or transferring game server.
+        //
+        if (!(client->state.connected || client->state.connection_pending)) {
+            if (!options.portal || portal_received_key)
+                AccountLogin(client);
+        }
+
+        if (client->state.connected && !client->state.ingame && !client->state.playing_request_pending) {
+            PlayCharacter(client, strzero, PlayerStatus_Online);
+        }
+
+        if (NetConn_IsShutdown(&client->game_srv) && client->server_transfer.pending) {
+            TransferGameServer(client);
+        }
+
+        //
+        // Update the network connection.
+        // It will send the data out and check if new data was received.
+        //
+        NetConn_Update(&client->auth_srv);
+        NetConn_Update(&client->game_srv);
+
+        //
+        // Update worlds
+        // @TODO: Rename to "simulate world"?
+        //
+        client_frame_update(client, frame_delta);
+
+        //
+        // trigger all timers event
+        //
+        process_timers();
+
+        {
+            long frame_target_nsec = 1000000000 / fps;
+
+            get_wall_clock_time(&t1);
+            long diff_nsec = time_diff_nsec(&t1, &t0);
+            long sleep_time_nsec = frame_target_nsec - diff_nsec;
+            if (sleep_time_nsec > 0)
+                time_sleep_ns(sleep_time_nsec);
+        }
+
+        last_frame_time = t0;
+    }
+}
 
 int main(int argc, const char *argv[])
 {
@@ -218,13 +282,17 @@ int main(int argc, const char *argv[])
     Network_Init();
 
     if (options.portal) {
-        if (!portal_init())
+        if (!portal_init()) {
+            LogError("portal_init failed");
             return 1;
+        }
     }
 
     GwClient app;
     GwClient *client = &app;
     init_client(client);
+    GameSrv_RegisterCallbacks(&client->game_srv);
+
     __client = client;
 
     if (!init_auth_connection(client, options.auth_srv)) {
@@ -254,16 +322,6 @@ int main(int argc, const char *argv[])
     #if defined(HEADQUARTER_CONSOLE)
         SetConsoleTitleA(options.character);
     #endif
-
-        // memzero(options.email,     sizeof(options.email));
-        // memzero(options.password,  sizeof(options.password));
-        // memzero(options.character, sizeof(options.character));
-
-        int error = thread_create(&thread_loader, script_loader_thread, client);
-        if (error != 0) {
-            LogError("Couldn't open the thread_plugin loader (error %d)", error);
-            return 1;
-        }
     }
 
     main_loop();
@@ -281,42 +339,4 @@ int main(int argc, const char *argv[])
     printf("Quit cleanly !!\n");
 
     return 0;
-}
-
-static void main_loop(void)
-{
-    GwClient *client = __client;
-
-    uint32_t frame_count = 0;
-    struct timespec t0, t1;
-    struct timespec last_frame_time;
-
-    while (!quit) {
-        frame_count += 1;
-        get_wall_clock_time(&t0);
-
-        long frame_delta_nsec = time_diff_nsec(&t0, &last_frame_time);
-        msec_t frame_delta = frame_delta_nsec / 1000;
-
-        NetConn_Update(&client->auth_srv);
-        NetConn_Update(&client->game_srv);
-
-        // Update worlds
-        client_frame_update(client, frame_delta);
-
-        // trigger all timers event
-        process_timers();
-
-        {
-            long frame_target_nsec = 1000000000 / fps;
-
-            get_wall_clock_time(&t1);
-            long diff_nsec = time_diff_nsec(&t1, &t0);
-            long sleep_time_nsec = frame_target_nsec - diff_nsec;
-            if (sleep_time_nsec > 0)
-                time_sleep_ns(sleep_time_nsec);
-        }
-
-        last_frame_time = t0;
-    }
 }

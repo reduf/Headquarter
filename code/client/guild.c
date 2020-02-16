@@ -5,7 +5,7 @@
 
 Guild *get_guild_safe(GwClient *client, uint32_t guild_id)
 {
-    if (!(client && client->ingame && client->world.hash))
+    if (!(client && client->state.ingame && client->world.hash))
         return NULL;
     ArrayGuild guilds = client->world.guilds;
     if (!array_inside(guilds, guild_id))

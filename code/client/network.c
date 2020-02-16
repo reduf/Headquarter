@@ -39,15 +39,26 @@ void NetConn_Reset(Connection *conn)
     // array_reset(conn->clt_filter);
 
     array_reset(conn->handlers);
-
-    CloseHandle(conn->rovlp.hEvent);
-    conn->rovlp.hEvent = NULL;
 }
 
-void NetConn_Remove(Connection *conn)
+void NetConn_HardShutdown(Connection *conn)
 {
-    conn->flags |= NETCONN_REMOVE;
+    NetConn_Shutdown(conn);
     shutdown(conn->fd.handle, SHUT_RDWR);
+}
+
+void NetConn_Shutdown(Connection *conn)
+{
+    conn->flags |= NETCONN_SHUTDOWN;
+}
+
+bool NetConn_IsShutdown(Connection *conn)
+{
+    if ((conn->fd.handle == 0) || (conn->fd.handle == INVALID_SOCKET)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void init_connection(Connection *conn, void *data)
@@ -56,7 +67,6 @@ void init_connection(Connection *conn, void *data)
     memzero(conn, sizeof(*conn));
 
     conn->data = data;
-    conn->rovlp.hEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
 
     thread_mutex_init(&conn->mutex);
 
@@ -649,7 +659,7 @@ void NetConn_Send(Connection *conn)
     int result = send(conn->fd.handle, out->data, out->size, 0);
     if (result == SOCKET_ERROR) {
         LogError("send failed: %d", os_errno);
-        NetConn_Remove(conn);
+        NetConn_HardShutdown(conn);
         goto leave;
     }
 
@@ -674,7 +684,7 @@ void NetConn_Recv(Connection *conn)
     if (iresult == SOCKET_ERROR) {
         if (err != WSAEWOULDBLOCK) {
             LogError("WSARecv failed. (%d)", err);
-            NetConn_Remove(conn);
+            NetConn_HardShutdown(conn);
         }
         thread_mutex_unlock(&conn->mutex);
         return;
@@ -685,11 +695,6 @@ void NetConn_Recv(Connection *conn)
     conn->in.size += cast(size_t)iresult;
 
     NetConn_DispatchPackets(conn);
-
-    if (conn->flags & NETCONN_REMOVE) {
-        NetConn_Remove(conn);
-        return;
-    }
 }
 
 void NetConn_DispatchPackets(Connection *conn)
@@ -719,7 +724,7 @@ void NetConn_DispatchPackets(Connection *conn)
 
         if (!array_inside(conn->handlers, header)) {
             LogError("Received a unvalid header '%u' max is '%zu'", header, conn->handlers.size);
-            NetConn_Remove(conn);
+            NetConn_HardShutdown(conn);
             return;
         }
 
@@ -747,6 +752,23 @@ void NetConn_Update(Connection *conn)
 
     NetConn_Send(conn);
     NetConn_Recv(conn);
+
+    if (conn->flags & NETCONN_SHUTDOWN) {
+        LogDebug("Shutdown connection '%s'", conn->name);
+
+        closesocket(conn->fd.handle);
+        conn->fd.handle = INVALID_SOCKET;
+
+        conn->flags = 0;
+        conn->ping = 0;
+        conn->pong = 0;
+        conn->latency = 0;
+        conn->last_tick_time = 0;
+
+        array_clear(conn->in);
+        array_clear(conn->out);
+        conn->secured = false;
+    }
 }
 
 // @Cleanup:

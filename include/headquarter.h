@@ -60,7 +60,6 @@ HQAPI msec_t            GetWorldTime(void);
 
 HQAPI bool              GetIsIngame(void);
 HQAPI bool              GetIsConnected(void);
-HQAPI bool              PlayCharacter(const char *name, size_t length);
 HQAPI void              LogoutToCharselect(void);
 
 HQAPI int               GetMapId(void);

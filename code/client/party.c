@@ -5,7 +5,7 @@
 
 Player *get_player_safe(GwClient *client, int player_id)
 {
-    if (!(client && client->ingame && client->world.hash))
+    if (!(client && client->state.ingame && client->world.hash))
         return NULL;
 
     ArrayPlayer *players = &client->world.players;
@@ -16,7 +16,7 @@ Player *get_player_safe(GwClient *client, int player_id)
 
 Party *get_party_safe(GwClient *client, int party_id)
 {
-    if (!(client && client->ingame && client->world.hash))
+    if (!(client && client->state.ingame && client->world.hash))
         return NULL;
     ArrayParty *parties = &client->world.parties;
     if (!array_inside(*parties, party_id))

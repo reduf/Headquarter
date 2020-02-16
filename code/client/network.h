@@ -21,9 +21,10 @@ typedef enum ConnectionType {
 
 typedef enum ConnectionFlags {
     NETCONN_PAUSE       = 1 << 0,
-    NETCONN_REMOVE      = 1 << 1,
-    NETCONN_RECORD      = 1 << 2,
-    NETCONN_RECONNECT   = 1 << 3,
+    NETCONN_SHUTDOWN    = 1 << 1,
+    NETCONN_REMOVE      = 1 << 2,
+    NETCONN_RECORD      = 1 << 3,
+    NETCONN_RECONNECT   = 1 << 4,
 } ConnectionFlags;
 
 typedef array(uint8_t)          ByteBuffer;
@@ -51,9 +52,6 @@ typedef struct Connection {
     msec_t                  t0; // Time when socket is opened.
     struct socket           fd; // Os file descriptor / handle.
     struct sockaddr         host;
-
-    // struct sockaddr host;
-    WSAOVERLAPPED           rovlp;
 
     msec_t                  ping;
     msec_t                  pong;
@@ -118,7 +116,12 @@ void NetConn_Reset(Connection *conn);
  * Flags the socket so it get removed and shutdown the socket.
  * Note that the data that were already received can be readed.
  */
-void NetConn_Remove(Connection *conn);
+void NetConn_Shutdown(Connection *conn);
+
+/*
+ * Return true if the network is ready to be used for an other connection.
+ */
+bool NetConn_IsShutdown(Connection *conn);
 
 /*
  * Encryot and write the out buffer to the socket.

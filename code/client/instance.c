@@ -10,45 +10,44 @@ void begin_travel(GwClient *client)
 }
 
 void start_loading_new_zone(GwClient *client, struct sockaddr *host,
-    uint32_t map_id, uint32_t world_hash, uint32_t player_hash, bool record_packets)
+    uint32_t map_id, uint32_t world_id, uint32_t player_id, bool record_packets)
 {
-    LogDebug("start_loading_new_zone {map_id: %lu, player_hash: %lu}", map_id, player_hash);
+    LogDebug("start_loading_new_zone {map_id: %lu, player_id: %lu}", map_id, player_id);
 
-    client->ingame = false;
-    client->screen = SCREEN_LOADING_MAP;
+    if (!NetConn_IsShutdown(&client->game_srv))
+        GameSrv_Disconnect(client);
 
-    client->try_changing_zone = false;
-    memzero(&client->inventory, sizeof(client->inventory));
+    client->server_transfer.pending = true;
+    client->server_transfer.map_id = map_id;
+    client->server_transfer.world_id = world_id;
+    client->server_transfer.player_id = player_id;
+    client->server_transfer.host = *host;
+}
 
-    if (client->ingame) {
-        // @Cleanup: Fix remove here
-        // NetConn_Remove(client->game_srv);
-
-        client->player_agent_id = 0;
-        client->player = NULL;
-
-        reset_world(&client->world, &client->object_mgr);
-    }
-
-    client->game_srv.host = *host;
-
-    // NEW WORLD -- START
-    World *world = &client->world;
-    init_world(world, world_hash);
-    world->map_id = map_id;
+void TransferGameServer(GwClient *client)
+{
+    assert(NetConn_IsShutdown(&client->game_srv));
+    assert(client->server_transfer.pending);
 
     Character *cc = client->current_character;
-    GameSrv_RegisterCallbacks(&client->game_srv);
+    AsyncServerTransfer *transfer = &client->server_transfer;
 
-    if (!GameSrv_Connect(&client->game_srv, client->uuid, cc->uuid, world_hash, player_hash, map_id)) {
-        LogInfo("Game handshake failed !");
+    // @Cleanup:
+    // We might need to reset all the world state here.
+    init_world(&client->world, transfer->world_id);
+    client->game_srv.host = transfer->host;
 
-        reset_world(world, &client->object_mgr);
+    transfer->pending = false;
+    if (!GameSrv_Connect(&client->game_srv, client->uuid, cc->uuid,
+        transfer->world_id, transfer->player_id, transfer->map_id)) {
+
+        LogError("Game handshake failed !");
+        reset_world(&client->world, &client->object_mgr);
         NetConn_Reset(&client->game_srv);
-        client->screen = SCREEN_CHARACTER_SELECT;
-        client->ingame = false;
+        client->state.ingame = false;
         return;
     }
+
 }
 
 void HandleGameServerInfo(Connection *conn, size_t psize, Packet *packet)
@@ -57,10 +56,10 @@ void HandleGameServerInfo(Connection *conn, size_t psize, Packet *packet)
     typedef struct {
         Header header;
         int32_t request;
-        uint32_t world_hash;
+        uint32_t world_id;
         uint32_t map_id;
         uint8_t host[24];
-        uint32_t player_hash;
+        uint32_t player_id;
     } GameServerInfo;
 #pragma pack(pop)
 
@@ -73,7 +72,7 @@ void HandleGameServerInfo(Connection *conn, size_t psize, Packet *packet)
 
     struct sockaddr host;
     memcpy(&host, pack->host, sizeof(host));
-    start_loading_new_zone(client, &host, pack->map_id, pack->world_hash, pack->player_hash, true);
+    start_loading_new_zone(client, &host, pack->map_id, pack->world_id, pack->player_id, true);
 }
 
 void HandleGameTransferInfo(Connection *conn, size_t psize, Packet *packet)
@@ -82,11 +81,11 @@ void HandleGameTransferInfo(Connection *conn, size_t psize, Packet *packet)
     typedef struct {
         Header header;
         uint8_t host[24];
-        uint32_t world_hash;
+        uint32_t world_id;
         uint8_t  region;
         uint16_t map_id;
         uint8_t  is_explorable;
-        uint32_t player_hash;
+        uint32_t player_id;
     } ServerInfo;
 #pragma pack(pop)
 
@@ -99,7 +98,7 @@ void HandleGameTransferInfo(Connection *conn, size_t psize, Packet *packet)
 
     struct sockaddr host;
     memcpy(&host, pack->host, sizeof(host));
-    start_loading_new_zone(client, &host, pack->map_id, pack->world_hash, pack->player_hash, true);
+    start_loading_new_zone(client, &host, pack->map_id, pack->world_id, pack->player_id, true);
     broadcast_event(&client->event_mgr, WORLD_MAP_LEAVE, NULL);
 }
 
@@ -301,8 +300,8 @@ void HandleInstanceLoaded(Connection *conn, size_t psize, Packet *packet)
     InstanceLoaded *pack = cast(InstanceLoaded *)packet;
     assert(client && client->game_srv.secured);
 
-    client->ingame = true;
-    client->screen = SCREEN_INGAME;
+    client->state.ingame = true;
+    client->state.playing_request_pending = false;
 }
 
 void HandleInstanceLoadFinish(Connection *conn, size_t psize, Packet *packet)

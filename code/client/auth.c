@@ -40,35 +40,37 @@ void HandleErrorMessage(Connection *conn, size_t psize, Packet *packet)
     ErrorMessage *pack = cast(ErrorMessage *)packet;
     assert(client);
 
-    LogDebug("HandleErrorMessage: {trans_id: %lu, code: %lu}", pack->trans_id, pack->code);
+    AsyncType type = AsyncType_None;
+    for (size_t i = 0; i < array_size(client->requests); i++) {
+        AsyncRequest *request = &array_at(client->requests, i);
+        if (request->trans_id == pack->trans_id) {
+            type = request->type;
+            array_remove(client->requests, i);
+            break;
+        }
+    }
 
-    // @Cleanup: We should handle error code like code 13
+    LogDebug("HandleErrorMessage: {async_type: %d, trans_id: %lu, code: %lu}", type, pack->trans_id, pack->code);
     const char *error_s = get_error_s(pack->code);
     if (pack->code != 0) {
-        LogInfo("(Code=%03d) %s", pack->code, error_s);
+        LogDebug("(Code=%03d) %s", pack->code, error_s);
     }
 
-    uint32_t trans_id = pack->trans_id;
-    if (trans_id < 0) {
-        LogError("'HandleErrorMessage' received bad transaction id %d", trans_id);
-        return;
+    switch (type) {
+        case AsyncType_None:
+            break;
+        case AsyncType_AccountLogin:
+            ContinueAccountLogin(client, pack->code);
+            break;
+        case AsyncType_PlayCharacter:
+            ContinuePlayCharacter(client, pack->code);
+            break;
+        case AsyncType_SendHardwareInfo:
+            ContinueSendHardwareInfo(client, pack->code);
+            break;
+        default:
+            LogError("Unknow AsyncType: %d", type);
     }
-
-    TransactionArray *transactions = &client->transactions;
-    if (!array_inside(*transactions, trans_id)) {
-        LogError("'HandleErrorMessage' received transaction %d, but maximum is %d",
-            trans_id, array_size(*transactions));
-        return;
-    }
-
-    Transaction *trans = &array_at(*transactions, trans_id);
-    if (!trans->enable) {
-        LogError("'HandleErrorMessage' received unexpected transaction '%d'", trans_id);
-        return;
-    }
-
-    trans->error_code = pack->code;
-    thread_event_signal(&trans->event);
 }
 
 void HandleServerReponse(Connection *conn, size_t psize, Packet *packet)
@@ -110,7 +112,7 @@ void HandleSessionInfo(Connection *conn, size_t psize, Packet *packet)
     assert(client);
 
     client->static_salt = pack->server_salt;
-    client->screen = SCREEN_LOGIN_SCREEN;
+    client->state.session_ready = true;
 }
 
 void HandleAccountInfo(Connection *conn, size_t psize, Packet *packet)

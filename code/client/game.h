@@ -32,7 +32,7 @@ void GameSrv_StartSalvage(struct GwClient *client, Item *kit, Item *item);
 void GameSrv_CancelSalvage(struct GwClient *client);
 void GameSrv_SalvageDone(struct GwClient *client);
 void GameSrv_SalvageMaterials(struct GwClient *client);
-void GameSrv_SalvageUpgrade(struct GwClient *client, int index);
+void GameSrv_SalvageUpgrade(struct GwClient *client, size_t index);
 void GameSrv_UnequipItem(struct GwClient *client, EquipedItemSlot equip_slot, Bag *bag, int slot);
 void GameSrv_TransactItems(struct GwClient *client, TransactionType type,
     int gold_send, TransactionInfo *send_info,
