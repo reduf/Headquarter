@@ -284,6 +284,11 @@ int main(int argc, const char *argv[])
     #endif
     }
 
+    if (!plugin_load(options.script)) {
+        LogError("Couldn't load the plugin '%s'", options.script);
+        return 1;
+    }
+
     main_loop();
 
     while (!list_empty(&plugins)) {
