@@ -630,7 +630,6 @@ void SendPacket(Connection *conn, size_t size, void *p)
         goto leave;
     }
 
-    LogDebug("SendPacket: {opcode: %u, size: %zu}", header, size);
     out->size += written;
 leave:
     thread_mutex_unlock(&conn->mutex);
@@ -729,7 +728,6 @@ void NetConn_DispatchPackets(Connection *conn)
         }
 
         MsgHandler handler = array_at(conn->handlers, header);
-        LogDebug("Dispatch packet: {Opcode: %u, Handler: %p}", header, handler);
         if (handler)
             handler(conn, format.unpack_size, &buffer.packet);
 

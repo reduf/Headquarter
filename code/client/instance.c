@@ -14,8 +14,9 @@ void start_loading_new_zone(GwClient *client, struct sockaddr *host,
 {
     LogDebug("start_loading_new_zone {map_id: %lu, player_id: %lu}", map_id, player_id);
 
-    if (!NetConn_IsShutdown(&client->game_srv))
+    if (!NetConn_IsShutdown(&client->game_srv)) {
         GameSrv_Disconnect(client);
+    }
 
     client->server_transfer.pending = true;
     client->server_transfer.map_id = map_id;

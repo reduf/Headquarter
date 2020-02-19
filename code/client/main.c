@@ -167,7 +167,13 @@ static void main_loop(void)
                 AccountLogin(client);
         }
 
-        if (client->state.connected && !client->state.ingame && !client->state.playing_request_pending) {
+        // @Enhancement:
+        // We gotta think a bit more about theses condition
+        if (client->state.connected &&
+            NetConn_IsShutdown(&client->game_srv) &&
+            !client->server_transfer.pending &&
+            !client->state.playing_request_pending) {
+
             PlayCharacter(client, strzero, PlayerStatus_Online);
         }
 

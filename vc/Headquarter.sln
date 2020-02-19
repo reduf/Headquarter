@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fibers", "..\plugins\fibers
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ether", "..\plugins\ether\ether.vcxproj", "{39E46789-C9EB-414E-BB2E-17844A533B4D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kamadan-trade-client", "..\plugins\kamadan-trade-client\kamadan-trade-client.vcxproj", "{BD9F7395-2F57-4C52-A29C-BE2F7A1785AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -61,6 +63,14 @@ Global
 		{39E46789-C9EB-414E-BB2E-17844A533B4D}.Release|x64.Build.0 = Release|x64
 		{39E46789-C9EB-414E-BB2E-17844A533B4D}.Release|x86.ActiveCfg = Release|Win32
 		{39E46789-C9EB-414E-BB2E-17844A533B4D}.Release|x86.Build.0 = Release|Win32
+		{BD9F7395-2F57-4C52-A29C-BE2F7A1785AA}.Debug|x64.ActiveCfg = Debug|x64
+		{BD9F7395-2F57-4C52-A29C-BE2F7A1785AA}.Debug|x64.Build.0 = Debug|x64
+		{BD9F7395-2F57-4C52-A29C-BE2F7A1785AA}.Debug|x86.ActiveCfg = Debug|Win32
+		{BD9F7395-2F57-4C52-A29C-BE2F7A1785AA}.Debug|x86.Build.0 = Debug|Win32
+		{BD9F7395-2F57-4C52-A29C-BE2F7A1785AA}.Release|x64.ActiveCfg = Release|x64
+		{BD9F7395-2F57-4C52-A29C-BE2F7A1785AA}.Release|x64.Build.0 = Release|x64
+		{BD9F7395-2F57-4C52-A29C-BE2F7A1785AA}.Release|x86.ActiveCfg = Release|Win32
+		{BD9F7395-2F57-4C52-A29C-BE2F7A1785AA}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
