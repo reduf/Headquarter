@@ -152,6 +152,25 @@ void HandleChatMessageGlobal(Connection *conn, size_t psize, Packet *packet)
         goto clear_buffer_and_exit;
     }
 
+    array_u16_t* sb = &client->chat.str_builder;
+
+    char buffer[512];
+    string message;
+    message.bytes = buffer;
+    message.count = unicode16_to_utf8(buffer, sizeof(buffer), sb->data, sb->size);
+
+    char sender_buf[64];
+    string sender;
+    sender.bytes = sender_buf;
+    sender.count = unicode16_to_utf8(sender_buf, sizeof(sender_buf), pack->sender, 32);
+
+    Event_ChatMessage params;
+    params.channel = channel;
+    params.sender = sender;
+    params.message = message;
+
+    broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
+
     /*
     string message;
     message.bytes = chat->str_builder.data;
@@ -165,7 +184,48 @@ clear_buffer_and_exit:
 
 void HandleChatMessageServer(Connection *conn, size_t psize, Packet *packet)
 {
+#pragma pack(push, 1)
+    typedef struct MessageServer {
+        Header   header;
+        uint16_t id; // some kind of ID of the affected target
+        uint8_t channel;
+    } MessageServer;
+#pragma pack(pop)
+
     assert(packet->header == GAME_SMSG_CHAT_MESSAGE_SERVER);
+    assert(sizeof(MessageServer) == psize);
+    
+    GwClient* client = cast(GwClient*)conn->data;
+    MessageServer* pack = cast(MessageServer*)packet;
+    assert(client&& client->game_srv.secured);
+
+    Channel channel = (Channel)pack->channel;
+    if (channel >= Channel_Count) {
+        LogError("Channel received is too big, %u when max is %u", channel, Channel_Count);
+        goto clear_buffer_and_exit;
+    }
+
+    array_u16_t* sb = &client->chat.str_builder;
+
+    char buffer[512];
+    string message;
+    message.bytes = buffer;
+    message.count = unicode16_to_utf8(buffer, sizeof(buffer), sb->data, sb->size);
+
+    char sender_buf[1];
+    string sender;
+    sender.bytes = sender_buf;
+    sender.count = 0;
+
+    Event_ChatMessage params;
+    params.channel = channel;
+    params.sender = sender;
+    params.message = message;
+
+    broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
+
+clear_buffer_and_exit:
+    array_clear(client->chat.str_builder);
 }
 
 void HandleWhisperReceived(Connection *conn, size_t psize, Packet *packet)
