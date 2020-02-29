@@ -38,20 +38,12 @@
 #include <stdarg.h>
 #include <stdint.h>
 
-typedef struct string {
-    uint8_t *bytes;
-    size_t   count;
-} string;
-
 #define memzero(b, s) memset(b, 0, s)
 
 #define strnpos    ((size_t)-1)
-#define strzero    ((string){NULL, 0})
 
 #define strnul(s)  ((s == NULL) || (*s == 0))
 #define wcsnul(s)  ((s == NULL) || (*s == 0))
-
-#define strmake(s) ((string){(s), sizeof(s) - 1})
 
 static void *
 memrcpy(void *dest, const void *src, size_t num)
@@ -241,30 +233,6 @@ wcsnicmp(const wchar_t *s1, const wchar_t *s2, size_t count)
     }
 
     return *s1 - *s2;
-}
-
-static int str_cmp(string s1, string s2)
-{
-    if (s1.count != s2.count) return s1.count - s2.count;
-    if (s1.bytes == s2.bytes) return 0;
-    return strncmp((char *)s1.bytes, (char *)s2.bytes, s1.count);
-}
-
-static int str_isascii(string s)
-{
-    for (size_t i = 0; i < s.count; i++) {
-        if (s.bytes[i] & ~0x7f)
-            return 0;
-    }
-    return 1;
-}
-
-static string tostr(char *s)
-{
-    string res;
-    res.bytes = (uint8_t *)s;
-    res.count = strlen(s);
-    return res;
 }
 
 #endif // STR_H_INC

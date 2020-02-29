@@ -239,8 +239,15 @@ void AuthSrv_ComputerInfo(Connection *conn)
 #pragma pack(pop)
 
     ComputerInfo info = NewPacket(AUTH_CMSG_SEND_COMPUTER_INFO);
-    utf8_to_unicode16(info.username, 32, "Wyatt", -1);
-    utf8_to_unicode16(info.pcname,   32, "Wyatt-PC", -1);
+
+    DECLARE_KSTR(pcname, 32);
+    DECLARE_KSTR(username, 32);
+
+    kstr_read_ascii(&pcname, "Wyatt-PC", 8);
+    kstr_read_ascii(&username, "Wyatt", 5);
+
+    kstr_write(&pcname, info.pcname, _countof(info.pcname));
+    kstr_write(&username, info.username, _countof(info.username));
 
     ComputerHash hash = NewPacket(AUTH_CMSG_SEND_COMPUTER_HASH);
     hash.version = GUILD_WARS_VERSION;

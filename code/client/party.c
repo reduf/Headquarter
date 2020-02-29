@@ -693,7 +693,7 @@ void HandlePartySearchType(Connection *conn, size_t psize, Packet *packet)
     assert(client && client->game_srv.secured);
 }
 
-void GameSrv_PS_SeekParty(GwClient *client, PartySearchType type, const char *msg)
+void GameSrv_PS_SeekParty(GwClient *client, PartySearchType type, struct kstr *msg)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -707,7 +707,7 @@ void GameSrv_PS_SeekParty(GwClient *client, PartySearchType type, const char *ms
     assert(client && client->game_srv.secured);
     PacketSeekParty packet = NewPacket(GAME_CMSG_PARTY_SEARCH_SEEK);
     packet.type = type;
-    utf8_to_unicode16(packet.msg, 32, msg, -1);
+    kstr_write(msg, packet.msg, _countof(packet.msg));
 
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }

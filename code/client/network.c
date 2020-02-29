@@ -20,9 +20,6 @@ typedef struct DiffieHellmanCtx {
 static size_t unicode16_len(const uint16_t *s, size_t n);
 static size_t unicode16_cpy(uint16_t *d, const uint16_t *s, size_t n);
 
-static size_t utf8_to_unicode16(uint16_t *buf, size_t buflen, const char *str, int strlen);
-static size_t unicode16_to_utf8(char *buf, size_t buflen, const uint16_t *str, int strlen);
-
 void NetConn_Reset(Connection *conn)
 {
     if ((conn->fd.handle != 0) && (conn->fd.handle != INVALID_SOCKET)) {
@@ -1087,20 +1084,4 @@ static size_t unicode16_cpy(uint16_t *d, const uint16_t *s, size_t n)
             break;
     }
     return i;
-}
-
-static size_t utf8_to_unicode16(uint16_t *buf, size_t buflen, const char *str, int strlen)
-{
-    assert(sizeof(uint16_t) == sizeof(WCHAR));
-    int rv = MultiByteToWideChar(CP_UTF8, 0,
-        str, strlen, cast(WCHAR *)buf, buflen);
-    return rv < 0 ? 0 : rv;
-}
-
-static size_t unicode16_to_utf8(char *buf, size_t buflen, const uint16_t *str, int strlen)
-{
-    assert(sizeof(uint16_t) == sizeof(WCHAR));
-    int rv = WideCharToMultiByte(CP_UTF8, 0,
-        cast(const WCHAR *)str, strlen, buf, buflen, NULL, NULL);
-    return rv < 0 ? 0 : rv;
 }

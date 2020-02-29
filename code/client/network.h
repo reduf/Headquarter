@@ -74,9 +74,6 @@ typedef struct Connection {
 
 void init_connection(Connection *conn, void *data);
 
-static size_t utf8_to_unicode16(uint16_t *buf, size_t buflen, const char *str, int strlen);
-static size_t unicode16_to_utf8(char *buf, size_t buflen, const uint16_t *str, int strlen);
-
 /*
  * Return if a ip address (ipv4) was found and copy it in sockaddr.
  */
@@ -153,9 +150,9 @@ void SendPacket(Connection *conn, size_t size, void *p);
  * Make the handshake and return true if succeed.
  */
 bool AuthSrv_Connect(Connection *conn);
+
 bool GameSrv_Connect(Connection *conn, uuid_t account,
     uuid_t character, uint32_t tok1, uint32_t tok2, uint32_t map);
-bool ObsvSrv_Connect(Connection *conn);
 
 /*
  * Return the number of bytes written.

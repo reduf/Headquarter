@@ -1387,7 +1387,9 @@ HQAPI void SeekParty(PartySearchType type, const char *msg)
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
         goto leave;
-    GameSrv_PS_SeekParty(client, type, msg);
+    DECLARE_KSTR(kmsg, 32);
+    kstr_read_ascii(&kmsg, msg, strlen(msg));
+    GameSrv_PS_SeekParty(client, type, &kmsg);
 leave:
     thread_mutex_unlock(&client->mutex);
 }

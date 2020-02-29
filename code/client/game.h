@@ -51,7 +51,7 @@ void GameSrv_PartySetTick(struct GwClient *client, bool ticked);
 void GameSrv_SetDifficulty(struct GwClient *client, Difficulty mode);
 void GameSrv_AddHero(struct GwClient *client, HeroID hero_id);
 void GameSrv_KickHero(struct GwClient *client, HeroID hero_id);
-void GameSrv_PS_SeekParty(struct GwClient *client, PartySearchType type, const char *msg);
+void GameSrv_PS_SeekParty(struct GwClient *client, PartySearchType type, struct kstr *msg);
 void GameSrv_PS_CancelSeek(struct GwClient *client);
 void GameSrv_PS_RequestJoin(struct GwClient *client, int party_search_id);
 void GameSrv_PS_RequestReply(struct GwClient *client, int party_search_id);
