@@ -22,6 +22,9 @@ void print_help(bool terminate)
             "    -seed                      Specify the seed for pseudo random generation\n"
             "    -v, --verbose              Write verbose\n\n"
 
+            "    -mapid                     Specify the map id you want to start in\n"
+            "    -maptype                   Specify the map type you want to start in\\nn"
+
 #ifdef OS_WINDOWS
             "    Running as service functions:\n"
             "    -s run                     run as service\n"
@@ -42,6 +45,9 @@ void parse_command_args(int argc, const char **argv)
     // @Remark: Currently, if the format is not valid, for instance -email with no
     // arguments following, we will print the help and exit. Maybe we just want
     // to returns with an error flag set.
+
+    options.mapid = 248; // By default with load GtoB first.
+    options.maptype = 3;
 
     for (int i = 0; i < argc; i++) {
         const char *arg = argv[i];
@@ -83,6 +89,11 @@ void parse_command_args(int argc, const char **argv)
                 options.service_option = 'u';
         } else if (!strcmp(arg, "-newauth")) {
             options.newauth = true;
+        } else if (!strcmp(arg, "-mapid")) {
+            if (i + 1 >= argc) print_help(true);
+            options.mapid = atoi(argv[++i]);
+        } else if (!strcmp(arg, "-maptype")) {
+            options.maptype = atoi(argv[++i]);
         } else {
             if (options.script) print_help(true);
             options.script = arg;
