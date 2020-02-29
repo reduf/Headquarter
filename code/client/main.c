@@ -165,7 +165,7 @@ static void main_loop(void)
         // - Connecting to a game server or transferring game server.
         //
         if (!(client->state.connected || client->state.connection_pending)) {
-            if (!options.portal || portal_received_key)
+            if (!options.newauth || portal_received_key)
                 AccountLogin(client);
         }
 
@@ -250,7 +250,7 @@ int main(int argc, const char *argv[])
 
     Network_Init();
 
-    if (options.portal) {
+    if (options.newauth) {
         if (!portal_init()) {
             LogError("portal_init failed");
             return 1;
@@ -275,7 +275,7 @@ int main(int argc, const char *argv[])
         DECLARE_KSTR(password, 100);
         kstr_read_ascii(&password, options.password, _countof(options.password));
 
-        if (options.portal) {
+        if (options.newauth) {
             portal_login(&client->email, &password);
         } else {
             compute_pswd_hash(&client->email, &password, client->password);
@@ -298,7 +298,7 @@ int main(int argc, const char *argv[])
         plugin_unload(it);
     }
 
-    if (options.portal) {
+    if (options.newauth) {
         portal_cleanup();
     }
 

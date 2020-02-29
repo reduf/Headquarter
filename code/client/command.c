@@ -17,7 +17,7 @@ void print_help(bool terminate)
             "    -password  <string>        Enable auto-loging. use with -email and -charname\n"
             "    -character <string>        Sets the client's security question\n"
             "    -authsrv                   Specify authserver IP to connect to\n"
-            "    -portal                    The client will use Portal connection\n\n"
+            "    -newauth                   The client will use Portal connection\n\n"
 
             "    -seed                      Specify the seed for pseudo random generation\n"
             "    -v, --verbose              Write verbose\n\n"
@@ -81,8 +81,8 @@ void parse_command_args(int argc, const char **argv)
                 options.service_option = 'i';
             else if (!strcmp(cmd, "uninstall"))
                 options.service_option = 'u';
-        } else if (!strcmp(arg, "-portal")) {
-            options.portal = true;
+        } else if (!strcmp(arg, "-newauth")) {
+            options.newauth = true;
         } else {
             if (options.script) print_help(true);
             options.script = arg;

@@ -187,7 +187,7 @@ void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, s
 
 void AccountLogin(GwClient *client)
 {
-    if (options.portal) {
+    if (options.newauth) {
         if (!portal_received_key) {
             LogError("GwLoginClient didn't replied with the connection key yet");
             return;

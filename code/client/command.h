@@ -7,7 +7,7 @@ typedef struct CommandOptions {
     bool        print_help;
     bool        print_version;
     bool        verbose;
-    bool        portal;
+    bool        newauth;
 
     const char *script;
     const char *auth_srv;
