@@ -1,10 +1,11 @@
-# Headquester
+# Headquarter
 
 CFLAGS	?= -O2 -pedantic
 LDFLAGS ?= -pthread -ldl -lm -export-dynamic
 WARNING_CFLAGS ?= \
 	-Wno-missing-field-initializers \
-	-Wno-int-to-pointer-cast
+	-Wno-int-to-pointer-cast \
+	-Wno-visibility
 
 DFLAGS ?= -D_POSIX_C_SOURCE=200809L
 
@@ -12,14 +13,14 @@ DFLAGS ?= -D_POSIX_C_SOURCE=200809L
 .PHONY: clean
 
 LOCAL_CFLAGS = $(WARNING_CFLAGS) \
-	-Imbedtls-2.4.0/include -Iinclude -Iinclude/linux
+	-Imbedtls-2.4.0/include -Iinclude -Icode -Iinclude/linux
 
 LOCAL_LDFLAGS =
 
-client: code/client/main.c libmbedcrypto.a
+client: code/client/main.c
 	$(MAKE) -C mbedtls-2.4.0 lib
 	$(CC) $(LOCAL_CFLAGS) code/client/main.c \
-		libmbedcrypto.a -std=c11 $(DFLAGS) $(LDFLAGS)
+		-lmbedtls-2.4.0/library/ibmbedcrypto.a -std=c11 $(DFLAGS) $(LDFLAGS)
 
 .c.o:
 	echo "  CC    $<"
@@ -27,4 +28,3 @@ client: code/client/main.c libmbedcrypto.a
 
 clean:
 	$(MAKE) -C mbedtls-2.4.0 clean
-
