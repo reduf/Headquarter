@@ -409,7 +409,7 @@ bool init_auth_connection(GwClient *client, const char *host)
 
         // @Robustness: It doesn't support IPv6 and it won't give any error
         // if such an address is passed in arguments.
-        strncpy_s(buffer, sizeof(buffer), host, sizeof(buffer) - 1);
+        safe_strcpy(buffer, sizeof(buffer), host);
         char *port = strrchr(buffer, ':');
         if (!port) port = "6112";
 

@@ -13,6 +13,10 @@ struct socket {
 # define SHUT_RD     (0)
 # define SHUT_WR     (1)
 # define SHUT_RDWR   (2)
+#else
+# define closesocket close
+# define SOCKET_ERROR   (-1)
+# define INVALID_SOCKET (-1)
 #endif
 
 #endif // COMMON_SOCKET_H

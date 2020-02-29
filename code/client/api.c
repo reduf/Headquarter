@@ -70,7 +70,7 @@ HQAPI size_t GetPlugins(ApiPlugin *buffer, size_t length)
             goto leave;
         plugin = &buffer[count];
         plugin->handle = it->module;
-        strncpy_s(plugin->name, sizeof(plugin->name), it->path, sizeof(plugin->name) - 1);
+        safe_strcpy(plugin->name, sizeof(plugin->name), it->path);
         count++;
     }
 leave:

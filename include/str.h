@@ -235,4 +235,28 @@ wcsnicmp(const wchar_t *s1, const wchar_t *s2, size_t count)
     return *s1 - *s2;
 }
 
+/*
+ * "size" is the number of character in "dest" buffer.
+ * If "src" is longer than "size - 1", dest is an empty strings.
+ * Otherwise, "src" is copied to "dest" and a nul character is
+ * appended to the end of the string in dest.
+ *
+ * 1 is returned if all the characters where copied successfully.
+ * 0 is returned otherwise.
+ */
+static int
+safe_strcpy(char *dest, size_t size, const char *src)
+{
+    size_t length = strlen(src);
+    if (length >= size) {
+        if (size > 0)
+            dest[0] = 0;
+        return 0;
+    } else {
+        memcpy(dest, src, size);
+        dest[length] = 0;
+        return 1;
+    }
+}
+
 #endif // STR_H_INC

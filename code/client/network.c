@@ -121,7 +121,7 @@ typedef union PacketBuffer {
     Packet  packet;
 } PacketBuffer;
 
-static bool socket_would_block(void);
+static bool socket_would_block(int err);
 static bool key_exchange_helper(Connection *conn, DiffieHellmanCtx *dhm);
 static void arc4_hash(const uint8_t *key, uint8_t *digest);
 static bool read_dhm_key_file(DiffieHellmanCtx *dhm, const char *path);
@@ -291,21 +291,22 @@ static bool read_dhm_key_file(DiffieHellmanCtx *dhm, const char *path)
     return true;
 }
 
-static bool socket_would_block(void)
+static bool socket_would_block(int err)
 {
 #ifdef _WIN32
-    return os_errno == WSAEWOULDBLOCK;
+    return err == WSAEWOULDBLOCK;
 #else
 # ifdef EWOULDBLOCK
-    return os_errno == EWOULDBLOCK;
+    return err == EWOULDBLOCK;
 # else
-    return os_errno == EAGAIN;
+    return err == EAGAIN;
 # endif
 #endif
 }
 
 static bool socket_set_nonblock(struct socket *sock)
 {
+#if _WIN32
     int nonblock = 1;
     int iresult = ioctlsocket(sock->handle, FIONBIO, &nonblock);
     if (iresult == SOCKET_ERROR) {
@@ -313,6 +314,13 @@ static bool socket_set_nonblock(struct socket *sock)
         return false;
     }
     return true;
+#else
+    int flags = fcntl(sock->handle, F_GETFL, 0);
+    if (flags == -1)
+        return false;
+    flags = flags & ~O_NONBLOCK;
+    return (fcntl(sock->handle, F_SETFL, flags) == 0) ? true : false;
+#endif
 }
 
 static bool key_exchange_helper(Connection *conn, DiffieHellmanCtx *dhm)
@@ -389,7 +397,7 @@ static struct socket create_socket(void)
     }
 
     int no_delay = 1;
-    setsockopt(sock.handle, SOL_SOCKET, TCP_NODELAY, cast(char *)&no_delay, sizeof(no_delay));
+    setsockopt(sock.handle, IPPROTO_TCP, TCP_NODELAY, cast(char *)&no_delay, sizeof(no_delay));
     return sock;
 }
 
@@ -672,13 +680,13 @@ void NetConn_Recv(Connection *conn)
 {
     assert(conn && conn->secured);
 
-    char buffer[5840];
+    uint8_t buffer[5840];
     size_t size = conn->in.capacity - conn->in.size;
     int iresult = recv(conn->fd.handle, buffer, size, 0);
 
     int err = os_errno;
     if (iresult == SOCKET_ERROR) {
-        if (err != WSAEWOULDBLOCK) {
+        if (!socket_would_block(err)) {
             LogError("WSARecv failed. (%d)", err);
             NetConn_HardShutdown(conn);
         }
@@ -686,8 +694,8 @@ void NetConn_Recv(Connection *conn)
         return;
     }
 
-    char *dest = conn->in.data + conn->in.size;
-    mbedtls_arc4_crypt(&conn->decrypt, cast(size_t)iresult, cast(uint8_t*)buffer, dest);
+    uint8_t *dest = conn->in.data + conn->in.size;
+    mbedtls_arc4_crypt(&conn->decrypt, cast(size_t)iresult, buffer, dest);
     conn->in.size += cast(size_t)iresult;
 
     NetConn_DispatchPackets(conn);
@@ -962,8 +970,8 @@ static int unpack(const uint8_t *data, size_t data_size, uint8_t *buffer,
     for (size_t i = 0; i < fields_count; i++) {
         MsgField field = fields[i];
 
-        const char *rpos = data + readed;
-        char *wpos = buffer + written;
+        const uint8_t *rpos = data + readed;
+        uint8_t *wpos = buffer + written;
 
         size_t readable = data_size - readed;
         size_t writable = buff_size - written;
@@ -1032,10 +1040,10 @@ static int unpack(const uint8_t *data, size_t data_size, uint8_t *buffer,
             int next_fields_count = fields_count - i - 1;
 
             for (size_t j = 0; j < packed_elem_count; j++) {
-                const char *d = data + readed;
+                const uint8_t *d = data + readed;
                 int d_size = data_size - readed;
 
-                char *b = buffer + written;
+                uint8_t *b = buffer + written;
                 int b_size = buff_size - written;
 
                 int tmp = unpack(d, d_size, b, b_size, next_fields, next_fields_count);

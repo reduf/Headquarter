@@ -46,7 +46,7 @@ bool plugin_load(const char *path)
         return false;
     }
 #else
-    strncpy_s(temp_path, PLUGIN_MAX_PATH, path, PLUGIN_MAX_PATH - 1);
+    safe_strcpy(temp_path, PLUGIN_MAX_PATH, path);
 #endif
 
     plugin->module = dlopen(temp_path);

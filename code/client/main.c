@@ -33,7 +33,9 @@
 #else // _WIN32
 # include <sys/types.h>
 # include <sys/socket.h>
+# include <netinet/tcp.h>
 # include <netdb.h>
+# include <fcntl.h>
 #endif
 
 #include <mbedtls/arc4.h>

@@ -65,14 +65,14 @@ void parse_command_args(int argc, const char **argv)
 
             // @Remark: We need the email to be in lower cases, because
             // it is user to compute the static hash of the password.
-            strncpy_s(options.email, ARRAY_SIZE(options.email), argv[++i], ARRAY_SIZE(options.email) - 1);
+            safe_strcpy(options.email, ARRAY_SIZE(options.email), argv[++i]);
             strlwc(options.email, ARRAY_SIZE(options.email));
         } else if (!strcmp(arg, "-password")) {
             if (i + 1 >= argc) print_help(true);
-            strncpy_s(options.password, ARRAY_SIZE(options.password), argv[++i], ARRAY_SIZE(options.password) - 1);
+            safe_strcpy(options.password, ARRAY_SIZE(options.password), argv[++i]);
         } else if (!strcmp(arg, "-character")) {
             if (i + 1 >= argc) print_help(true);
-            strncpy_s(options.charname, ARRAY_SIZE(options.charname), argv[++i], ARRAY_SIZE(options.charname) - 1);
+            safe_strcpy(options.charname, ARRAY_SIZE(options.charname), argv[++i]);
         } else if (!strcmp(arg, "-s") || !strcmp(arg, "-service")) {
             if (i + 1 >= argc) print_help(true);
 
