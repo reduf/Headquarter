@@ -17,7 +17,7 @@ typedef array(Character) CharacterArray;
 
 static void init_character(Character *character)
 {
-    kstr_init(&character->name, character->name_buffer, 0, _countof(character->name_buffer));
+    kstr_init(&character->name, character->name_buffer, 0, ARRAY_SIZE(character->name_buffer));
 
     character->prof1 = Profession_None;
     character->prof2 = Profession_None;

@@ -53,7 +53,7 @@ typedef struct PartySearch {
 } PartySearch;
 typedef array(PartySearch) ArrayPartySearch;
 
-struct Player *get_player_safe(struct GwClient *client, int player_id);
-Party *get_party_safe(struct GwClient *client, int party_id);
+struct Player *get_player_safe(GwClient *client, int player_id);
+Party *get_party_safe(GwClient *client, int party_id);
 PartyPlayer *get_party_player(Party *party, int player_id);
 PartyHero *get_party_hero_agent(Party *party, AgentId agent_id);

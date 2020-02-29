@@ -9,8 +9,8 @@ static void init_client(GwClient *client)
 
     thread_mutex_init(&client->mutex);
 
-    kstr_init(&client->email, client->email_buffer, 0, _countof(client->email_buffer));
-    kstr_init(&client->charname, client->charname_buffer, 0, _countof(client->charname_buffer));
+    kstr_init(&client->email, client->email_buffer, 0, ARRAY_SIZE(client->email_buffer));
+    kstr_init(&client->charname, client->charname_buffer, 0, ARRAY_SIZE(client->charname_buffer));
 
     array_init(client->characters, 8);
     array_init(client->merchant_items, 32);
@@ -118,7 +118,7 @@ void OldAccountConnect(GwClient *client, struct kstr *email, struct kstr *pswd, 
     packet.client_salt = client_salt;
     memcpy(packet.password, digest, 20);
 
-    size_t max_email = _countof(packet.email) - 1;
+    size_t max_email = ARRAY_SIZE(packet.email) - 1;
     if (max_email < email->length) {
         LogError("Email is too long. Length: %zu, Max: %zu", email->length, max_email);
         return;
@@ -126,9 +126,9 @@ void OldAccountConnect(GwClient *client, struct kstr *email, struct kstr *pswd, 
     memcpy(packet.email, email->buffer, email->length * 2);
     packet.email[email->length] = 0;
 
-    assert(_countof(packet.charname1) == _countof(packet.charname2));
-    if (_countof(packet.charname1) < charname->length) {
-        LogError("Charname is too long. Length: %zu, Max: %zu", charname->length, _countof(packet.charname1));
+    assert(ARRAY_SIZE(packet.charname1) == ARRAY_SIZE(packet.charname2));
+    if (ARRAY_SIZE(packet.charname1) < charname->length) {
+        LogError("Charname is too long. Length: %zu, Max: %zu", charname->length, ARRAY_SIZE(packet.charname1));
         return;
     }
 
@@ -170,9 +170,9 @@ void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, s
     uuid_enc_le(packet.user_id, user_id);
     uuid_enc_le(packet.session_id, session_id);
     
-    assert(_countof(packet.charname1) == _countof(packet.charname2));
-    if (_countof(packet.charname1) < charname->length) {
-        LogError("Charname is too long. Length: %zu, Max: %zu", charname->length, _countof(packet.charname1));
+    assert(ARRAY_SIZE(packet.charname1) == ARRAY_SIZE(packet.charname2));
+    if (ARRAY_SIZE(packet.charname1) < charname->length) {
+        LogError("Charname is too long. Length: %zu, Max: %zu", charname->length, ARRAY_SIZE(packet.charname1));
         return;
     }
 

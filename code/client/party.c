@@ -707,7 +707,7 @@ void GameSrv_PS_SeekParty(GwClient *client, PartySearchType type, struct kstr *m
     assert(client && client->game_srv.secured);
     PacketSeekParty packet = NewPacket(GAME_CMSG_PARTY_SEARCH_SEEK);
     packet.type = type;
-    kstr_write(msg, packet.msg, _countof(packet.msg));
+    kstr_write(msg, packet.msg, ARRAY_SIZE(packet.msg));
 
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }

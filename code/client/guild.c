@@ -23,8 +23,8 @@ static void init_guild(Guild *guild)
     guild->allegiance = FactionType_Unknow;
     guild->faction_pts = 0;
 
-    kstr_init(&guild->tag, guild->tag_buffer, 0, _countof(guild->tag_buffer));
-    kstr_init(&guild->name, guild->name_buffer, 0, _countof(guild->name_buffer));
+    kstr_init(&guild->tag, guild->tag_buffer, 0, ARRAY_SIZE(guild->tag_buffer));
+    kstr_init(&guild->name, guild->name_buffer, 0, ARRAY_SIZE(guild->name_buffer));
 }
 
 void HandleGuildPlayerRole(Connection *conn, size_t psize, Packet *packet)
@@ -111,8 +111,8 @@ void HandleGuildGeneralInfo(Connection *conn, size_t psize, Packet *packet)
 
     guild->faction_pts = pack->guild_faction;
 
-    kstr_read(&guild->tag, pack->tag, _countof(pack->tag));
-    kstr_read(&guild->name, pack->name, _countof(pack->name));
+    kstr_read(&guild->tag, pack->tag, ARRAY_SIZE(pack->tag));
+    kstr_read(&guild->name, pack->name, ARRAY_SIZE(pack->name));
 }
 
 void HandleGuildChangeFaction(Connection *conn, size_t psize, Packet *packet)

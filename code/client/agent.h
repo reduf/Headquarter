@@ -101,4 +101,4 @@ static void api_make_agent(ApiAgent *dest, Agent *src)
     dest->rotation  = src->rotation;
 }
 
-static Agent *get_agent_safe(struct GwClient *client, AgentId id);
+static Agent *get_agent_safe(GwClient *client, AgentId id);

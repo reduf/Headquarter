@@ -43,5 +43,5 @@ static void api_make_player(ApiPlayer *dest, Player *src)
 
 static void init_player(Player *player)
 {
-    kstr_init(&player->name, player->name_buffer, 0, _countof(player->name_buffer));
+    kstr_init(&player->name, player->name_buffer, 0, ARRAY_SIZE(player->name_buffer));
 }

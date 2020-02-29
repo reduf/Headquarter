@@ -4,7 +4,7 @@
 #define CORE_AUTH_H
 
 void AuthSrv_RegisterCallbacks(Connection *conn);
-bool init_auth_connection(struct GwClient *client, const char *host);
+bool init_auth_connection(GwClient *client, const char *host);
 
 void HandleErrorMessage(Connection *conn, size_t psize, Packet *packet);
 void HandleServerReponse(Connection *conn, size_t psize, Packet *packet);

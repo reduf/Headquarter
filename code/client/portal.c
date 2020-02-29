@@ -92,15 +92,15 @@ void portal_login(struct kstr *email, struct kstr *password)
     wchar_t wemail[64];
     wchar_t wpassword[100];
 
-    if (email->length >= _countof(wemail)) {
+    if (email->length >= ARRAY_SIZE(wemail)) {
         LogError("wemail buffer is too small %zu, but need %zu",
-            _countof(email), email->length + 1);
+            ARRAY_SIZE(email), email->length + 1);
         return;
     }
 
-    if (password->length >= _countof(wpassword)) {
+    if (password->length >= ARRAY_SIZE(wpassword)) {
         LogError("wpassword buffer is too small %zu, but need %zu",
-            _countof(password), password->length + 1);
+            ARRAY_SIZE(password), password->length + 1);
         return;
     }
 

@@ -65,6 +65,9 @@
 #include "packets.h"
 #include "network.h"
 
+// @Cleanup: Temporary
+typedef struct GwClient GwClient;
+
 #include "object.h"
 #include "bag.h"
 #include "chat.h"
@@ -269,11 +272,11 @@ int main(int argc, const char *argv[])
     }
 
     {
-        kstr_read_ascii(&client->email, options.email, _countof(options.email));
-        kstr_read_ascii(&client->charname, options.charname, _countof(options.charname));
+        kstr_read_ascii(&client->email, options.email, ARRAY_SIZE(options.email));
+        kstr_read_ascii(&client->charname, options.charname, ARRAY_SIZE(options.charname));
 
         DECLARE_KSTR(password, 100);
-        kstr_read_ascii(&password, options.password, _countof(options.password));
+        kstr_read_ascii(&password, options.password, ARRAY_SIZE(options.password));
 
         if (options.newauth) {
             portal_login(&client->email, &password);

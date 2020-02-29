@@ -17,4 +17,4 @@ typedef struct Guild {
 } Guild;
 typedef array(Guild) ArrayGuild;
 
-Guild *get_guild_safe(struct GwClient *client, uint32_t guild_id);
+Guild *get_guild_safe(GwClient *client, uint32_t guild_id);

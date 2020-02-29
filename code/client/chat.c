@@ -246,8 +246,8 @@ void HandleWhisperReceived(Connection *conn, size_t psize, Packet *packet)
     struct kstr sender;
     struct kstr message;
 
-    kstr_read(&sender, pack->sender, _countof(pack->sender));
-    kstr_read(&message, pack->message, _countof(pack->message));
+    kstr_read(&sender, pack->sender, ARRAY_SIZE(pack->sender));
+    kstr_read(&message, pack->message, ARRAY_SIZE(pack->message));
 
     Event_ChatMessage params;
     params.channel = Channel_Whisper;
@@ -274,7 +274,7 @@ void GameSrv_SendChat(GwClient *client, Channel channel, struct kstr *msg)
     if (chan_char == 0)
         return;
 
-    if (!kstr_write(msg, packet.buffer, _countof(packet.buffer))) {
+    if (!kstr_write(msg, packet.buffer, ARRAY_SIZE(packet.buffer))) {
         LogError("Couldn't send a string, it was too big");
         return;
     }
@@ -282,7 +282,7 @@ void GameSrv_SendChat(GwClient *client, Channel channel, struct kstr *msg)
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
 
-void GameSrv_SendWhisper(struct GwClient *client, struct kstr *target, struct kstr *msg)
+void GameSrv_SendWhisper(GwClient *client, struct kstr *target, struct kstr *msg)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -301,9 +301,9 @@ void GameSrv_SendWhisper(struct GwClient *client, struct kstr *target, struct ks
      */
 
     size_t final_length = 2 + target->length + msg->length;
-    if (final_length >= _countof(packet.buffer))
+    if (final_length >= ARRAY_SIZE(packet.buffer))
     {
-        LogError("Maximum size in packet is %zu, but we need %zu", _countof(packet.buffer), final_length + 1);
+        LogError("Maximum size in packet is %zu, but we need %zu", ARRAY_SIZE(packet.buffer), final_length + 1);
         return;
     }
 
@@ -319,6 +319,6 @@ void GameSrv_SendWhisper(struct GwClient *client, struct kstr *target, struct ks
         buffer[wpos++] = msg->buffer[i];
 
     buffer[wpos++] = 0;
-    assert(wpos <= _countof(packet.buffer));
+    assert(wpos <= ARRAY_SIZE(packet.buffer));
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }

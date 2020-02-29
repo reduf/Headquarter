@@ -5,69 +5,69 @@
 
 void GameSrv_RegisterCallbacks(Connection *conn);
 
-void GameSrv_MoveToCoord(struct GwClient *client, float x, float y);
-void GameSrv_InteractLiving(struct GwClient *client, AgentId agent_id);
-void GameSrv_InteractGadget(struct GwClient *client, AgentId agent_id);
-void GameSrv_RotateToAngle(struct GwClient *client, float rotation);
+void GameSrv_MoveToCoord(GwClient *client, float x, float y);
+void GameSrv_InteractLiving(GwClient *client, AgentId agent_id);
+void GameSrv_InteractGadget(GwClient *client, AgentId agent_id);
+void GameSrv_RotateToAngle(GwClient *client, float rotation);
 void GameSrv_SendChat(GwClient *client, Channel channel, struct kstr *msg);
-void GameSrv_SendWhisper(struct GwClient *client, struct kstr *target, struct kstr *msg);
-void GameSrv_Disconnect(struct GwClient *client);
-void GameSrv_SkipCinematic(struct GwClient *client);
-void GameSrv_ChangeGold(struct GwClient *client, int gold_character, int gold_storage);
-void GameSrv_SendDialog(struct GwClient *client, int dialog_id);
+void GameSrv_SendWhisper(GwClient *client, struct kstr *target, struct kstr *msg);
+void GameSrv_Disconnect(GwClient *client);
+void GameSrv_SkipCinematic(GwClient *client);
+void GameSrv_ChangeGold(GwClient *client, int gold_character, int gold_storage);
+void GameSrv_SendDialog(GwClient *client, int dialog_id);
 void GameSrv_HeartBeat(Connection *conn);
 void GameSrv_PingRequest(Connection *conn);
-void GameSrv_HeroUseSkill(struct GwClient *client, AgentId hero_id,
+void GameSrv_HeroUseSkill(GwClient *client, AgentId hero_id,
     int skill_id, uint32_t flags, AgentId target_id);
-void GameSrv_HeroSetBehavior(struct GwClient *client, AgentId agent_id, HeroBehavior behavior);
-void GameSrv_HeroSkillToggle(struct GwClient *client, AgentId agent_id, int skill_slot);
-void GameSrv_TravelGH(struct GwClient *client, const uuid_t guild_uuid);
-void GameSrv_LeaveGH(struct GwClient *client);
-void GameSrv_Travel(struct GwClient *client, int map_id, District district, int district_number);
-void GameSrv_ReturnToOutpost(struct GwClient *client);
-void GameSrv_UseItem(struct GwClient *client, Item *item);
-void GameSrv_InteractItem(struct GwClient *client, uint32_t agent_id);
-void GameSrv_MoveItem(struct GwClient *client, Item *item, Bag *bag, int slot);
-void GameSrv_StartSalvage(struct GwClient *client, Item *kit, Item *item);
-void GameSrv_CancelSalvage(struct GwClient *client);
-void GameSrv_SalvageDone(struct GwClient *client);
-void GameSrv_SalvageMaterials(struct GwClient *client);
-void GameSrv_SalvageUpgrade(struct GwClient *client, size_t index);
-void GameSrv_UnequipItem(struct GwClient *client, EquipedItemSlot equip_slot, Bag *bag, int slot);
-void GameSrv_TransactItems(struct GwClient *client, TransactionType type,
+void GameSrv_HeroSetBehavior(GwClient *client, AgentId agent_id, HeroBehavior behavior);
+void GameSrv_HeroSkillToggle(GwClient *client, AgentId agent_id, int skill_slot);
+void GameSrv_TravelGH(GwClient *client, const uuid_t guild_uuid);
+void GameSrv_LeaveGH(GwClient *client);
+void GameSrv_Travel(GwClient *client, int map_id, District district, int district_number);
+void GameSrv_ReturnToOutpost(GwClient *client);
+void GameSrv_UseItem(GwClient *client, Item *item);
+void GameSrv_InteractItem(GwClient *client, uint32_t agent_id);
+void GameSrv_MoveItem(GwClient *client, Item *item, Bag *bag, int slot);
+void GameSrv_StartSalvage(GwClient *client, Item *kit, Item *item);
+void GameSrv_CancelSalvage(GwClient *client);
+void GameSrv_SalvageDone(GwClient *client);
+void GameSrv_SalvageMaterials(GwClient *client);
+void GameSrv_SalvageUpgrade(GwClient *client, size_t index);
+void GameSrv_UnequipItem(GwClient *client, EquipedItemSlot equip_slot, Bag *bag, int slot);
+void GameSrv_TransactItems(GwClient *client, TransactionType type,
     int gold_send, TransactionInfo *send_info,
     int gold_recv, TransactionInfo *recv_info);
-void GameSrv_BuyMaterials(struct GwClient *client, TransactionType type,
+void GameSrv_BuyMaterials(GwClient *client, TransactionType type,
     int gold_send, TransactionInfo *send_info,
     int gold_recv, TransactionInfo *recv_info);
-void GameSrv_RequestQuote(struct GwClient *client, TransactionType type,
+void GameSrv_RequestQuote(GwClient *client, TransactionType type,
     QuoteInfo *send_info, QuoteInfo *recv_info);
-void GameSrv_FlagHero(struct GwClient *client, Vec2f pos, AgentId hero_agent_id);
-void GameSrv_FlagAllHero(struct GwClient *client, Vec2f pos);
-void GameSrv_AcceptInvite(struct GwClient *client, int party_id);
-void GameSrv_LeaveParty(struct GwClient *client);
-void GameSrv_RefuseInvite(struct GwClient *client, int party_id);
-void GameSrv_PartySetTick(struct GwClient *client, bool ticked);
-void GameSrv_SetDifficulty(struct GwClient *client, Difficulty mode);
-void GameSrv_AddHero(struct GwClient *client, HeroID hero_id);
-void GameSrv_KickHero(struct GwClient *client, HeroID hero_id);
-void GameSrv_PS_SeekParty(struct GwClient *client, PartySearchType type, struct kstr *msg);
-void GameSrv_PS_CancelSeek(struct GwClient *client);
-void GameSrv_PS_RequestJoin(struct GwClient *client, int party_search_id);
-void GameSrv_PS_RequestReply(struct GwClient *client, int party_search_id);
-void GameSrv_PS_ChangeType(struct GwClient *client, PartySearchType type);
-void GameSrv_DonateFaction(struct GwClient *client, FactionType faction, int amount);
-void GameSrv_AbandonQuest(struct GwClient *client, int quest_id);
-void GameSrv_RequestQuestInfos(struct GwClient *client, int quest_id);
-void GameSrv_UseSkill(struct GwClient *client, int skill_id, uint32_t flags, AgentId target_id);
-void GameSrv_TradeAcknowledge(struct GwClient *client, int32_t player_id);
-void GameSrv_TradeCancel(struct GwClient *client);
-void GameSrv_TradeAddItem(struct GwClient *client, uint32_t item_id, uint8_t quantity);
-void GameSrv_TradeSendOffer(struct GwClient *client, int gold);
-void GameSrv_TradeRemoveItem(struct GwClient *client, int32_t item_id, int quantity);
-void GameSrv_TradeCancelOffer(struct GwClient *client);
-void GameSrv_TradeAccept(struct GwClient *client);
-void GameSrv_TradeInitiate(struct GwClient *client, AgentId partner);
+void GameSrv_FlagHero(GwClient *client, Vec2f pos, AgentId hero_agent_id);
+void GameSrv_FlagAllHero(GwClient *client, Vec2f pos);
+void GameSrv_AcceptInvite(GwClient *client, int party_id);
+void GameSrv_LeaveParty(GwClient *client);
+void GameSrv_RefuseInvite(GwClient *client, int party_id);
+void GameSrv_PartySetTick(GwClient *client, bool ticked);
+void GameSrv_SetDifficulty(GwClient *client, Difficulty mode);
+void GameSrv_AddHero(GwClient *client, HeroID hero_id);
+void GameSrv_KickHero(GwClient *client, HeroID hero_id);
+void GameSrv_PS_SeekParty(GwClient *client, PartySearchType type, struct kstr *msg);
+void GameSrv_PS_CancelSeek(GwClient *client);
+void GameSrv_PS_RequestJoin(GwClient *client, int party_search_id);
+void GameSrv_PS_RequestReply(GwClient *client, int party_search_id);
+void GameSrv_PS_ChangeType(GwClient *client, PartySearchType type);
+void GameSrv_DonateFaction(GwClient *client, FactionType faction, int amount);
+void GameSrv_AbandonQuest(GwClient *client, int quest_id);
+void GameSrv_RequestQuestInfos(GwClient *client, int quest_id);
+void GameSrv_UseSkill(GwClient *client, int skill_id, uint32_t flags, AgentId target_id);
+void GameSrv_TradeAcknowledge(GwClient *client, int32_t player_id);
+void GameSrv_TradeCancel(GwClient *client);
+void GameSrv_TradeAddItem(GwClient *client, uint32_t item_id, uint8_t quantity);
+void GameSrv_TradeSendOffer(GwClient *client, int gold);
+void GameSrv_TradeRemoveItem(GwClient *client, int32_t item_id, int quantity);
+void GameSrv_TradeCancelOffer(GwClient *client);
+void GameSrv_TradeAccept(GwClient *client);
+void GameSrv_TradeInitiate(GwClient *client, AgentId partner);
 
 
 void HandleInstanceShowWin(Connection *conn, size_t psize, Packet *packet);

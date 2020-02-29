@@ -188,7 +188,7 @@ void HandleCharacterInfo(Connection *conn, size_t psize, Packet *packet)
 
     init_character(character);
 
-    kstr_read(&character->name, pack->name, _countof(pack->name));
+    kstr_read(&character->name, pack->name, ARRAY_SIZE(pack->name));
     uuid_dec_le(pack->uuid, character->uuid);
 }
 
@@ -246,8 +246,8 @@ void AuthSrv_ComputerInfo(Connection *conn)
     kstr_read_ascii(&pcname, "Wyatt-PC", 8);
     kstr_read_ascii(&username, "Wyatt", 5);
 
-    kstr_write(&pcname, info.pcname, _countof(info.pcname));
-    kstr_write(&username, info.username, _countof(info.username));
+    kstr_write(&pcname, info.pcname, ARRAY_SIZE(info.pcname));
+    kstr_write(&username, info.username, ARRAY_SIZE(info.username));
 
     ComputerHash hash = NewPacket(AUTH_CMSG_SEND_COMPUTER_HASH);
     hash.version = GUILD_WARS_VERSION;
@@ -334,7 +334,7 @@ void AuthSrv_ChangeCharacter(Connection *conn, uint32_t trans_id, struct kstr *n
     // @Remark: @Cleanup:
     // I'm not sure Guild Wars expect the nul-terminating character.
     // Probably not, but to be confirmed.
-    size_t max_length = _countof(packet.name) - 1;
+    size_t max_length = ARRAY_SIZE(packet.name) - 1;
     if (name->length > max_length) {
         LogError("Trying to write %zu characters in a buffer of %u",
             name->length, max_length);

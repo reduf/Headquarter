@@ -121,7 +121,7 @@ static void skillbar_done_cast(Skillbar *sb, uint32_t skill_id)
     skill->target = NULL;
 }
 
-static Skillbar *get_skillbar_safe(struct GwClient *client, AgentId agent_id);
+static Skillbar *get_skillbar_safe(GwClient *client, AgentId agent_id);
 
 static void skillbar_done_cast(Skillbar *sb,  uint32_t skill_id);
 static void skillbar_start_cast(Skillbar *sb, uint32_t skill_id,
