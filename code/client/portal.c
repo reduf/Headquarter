@@ -3,6 +3,7 @@
 #endif
 #define PORTAL_C
 
+#ifdef _WIN32
 typedef void (*OnPortalNotify_t)(uint32_t msgid, uint32_t unk1, void *data, void *param);
 
 typedef void     (*PortalInitialize_t)(uint32_t port);
@@ -116,3 +117,22 @@ void portal_login(struct kstr *email, struct kstr *password)
 
     PortalLogin(wemail, wpassword, L"en");
 }
+#else // _WIN32
+bool   portal_received_key;
+uuid_t portal_user_id;
+uuid_t portal_session_id;
+
+bool portal_init(void)
+{
+    return false;
+}
+
+void portal_cleanup(void)
+{
+}
+
+void portal_login(struct kstr *email, struct kstr *password)
+{
+    assert(!"Portal not supported on linux");
+}
+#endif
