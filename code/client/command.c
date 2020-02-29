@@ -14,7 +14,7 @@ void print_help(bool terminate)
             "    -h, --help                 print this help\n\n"
 
             "    -email     <string>        Sets the client's email\n"
-            "    -password  <string>        Enable auto-loging. use with -email and -character\n"
+            "    -password  <string>        Enable auto-loging. use with -email and -charname\n"
             "    -character <string>        Sets the client's security question\n"
             "    -authsrv                   Specify authserver IP to connect to\n"
             "    -portal                    The client will use Portal connection\n\n"
@@ -66,7 +66,7 @@ void parse_command_args(int argc, const char **argv)
             strncpy_s(options.password, ARRAY_SIZE(options.password), argv[++i], ARRAY_SIZE(options.password) - 1);
         } else if (!strcmp(arg, "-character")) {
             if (i + 1 >= argc) print_help(true);
-            strncpy_s(options.character, ARRAY_SIZE(options.character), argv[++i], ARRAY_SIZE(options.character) - 1);
+            strncpy_s(options.charname, ARRAY_SIZE(options.charname), argv[++i], ARRAY_SIZE(options.charname) - 1);
         } else if (!strcmp(arg, "-s") || !strcmp(arg, "-service")) {
             if (i + 1 >= argc) print_help(true);
 

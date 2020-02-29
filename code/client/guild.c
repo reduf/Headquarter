@@ -16,6 +16,17 @@ Guild *get_guild_safe(GwClient *client, uint32_t guild_id)
     return guild;
 }
 
+static void init_guild(Guild *guild)
+{
+    guild->guild_id = 0;
+    memset(guild->guild_uuid, 0, sizeof(guild->guild_uuid));
+    guild->allegiance = FactionType_Unknow;
+    guild->faction_pts = 0;
+
+    kstr_init(&guild->tag, guild->tag_buffer, 0, _countof(guild->tag_buffer));
+    kstr_init(&guild->name, guild->name_buffer, 0, _countof(guild->name_buffer));
+}
+
 void HandleGuildPlayerRole(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
@@ -86,6 +97,8 @@ void HandleGuildGeneralInfo(Connection *conn, size_t psize, Packet *packet)
     }
 
     Guild *guild = &array_at(*guilds, pack->guild_id);
+    init_guild(guild);
+
     uuid_copy(guild->guild_uuid, pack->uuid);
     guild->guild_id = pack->guild_id;
 
@@ -97,20 +110,9 @@ void HandleGuildGeneralInfo(Connection *conn, size_t psize, Packet *packet)
     }
 
     guild->faction_pts = pack->guild_faction;
-    // @Cleanup: Need utf8-support
-    size_t written = unicode16_to_utf8(guild->name_buffer, sizeof(guild->name_buffer), pack->name, 32);
-    guild->name.bytes = guild->name_buffer;
-    guild->name.count = written - 1;
-    if (!guild->name.count) {
-        LogError("'HandleGuildGeneralInfo' missing utf-8 support");
-    }
 
-    written = unicode16_to_utf8(guild->tag_buffer, sizeof(guild->tag_buffer), pack->tag, 6);
-    guild->tag.bytes = guild->tag_buffer;
-    guild->tag.count = written;
-    if (!guild->tag.count) {
-        LogError("'HandleGuildGeneralInfo' missing utf-8 support");
-    }
+    kstr_read(&guild->tag, pack->tag, _countof(pack->tag));
+    kstr_read(&guild->name, pack->name, _countof(pack->name));
 }
 
 void HandleGuildChangeFaction(Connection *conn, size_t psize, Packet *packet)

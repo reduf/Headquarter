@@ -67,9 +67,17 @@ CallbackEntry_Init(CallbackEntry *entry, Callback cb, void *param)
 }
 
 typedef struct Event_ChatMessage {
-    Channel channel;
-    string  message;
-    string  sender;
+    Channel             channel;
+
+    struct {
+        size_t          length;
+        const uint16_t *buffer;
+    } message;
+
+    struct {
+        size_t          length;
+        const uint16_t *buffer;
+    } sender;
 } Event_ChatMessage;
 
 typedef struct Event_AgentFocus {

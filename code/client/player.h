@@ -21,8 +21,9 @@ typedef struct Player {
 
     int32_t     player_id;
     AgentId     agent_id;
-    string      name;
-    char        name_buffer[64];
+
+    struct kstr name;
+    uint16_t    name_buffer[64];
 
     Guild      *guild;
     Party      *party;
@@ -38,4 +39,9 @@ static void api_make_player(ApiPlayer *dest, Player *src)
     dest->player_id = src->player_id;
     dest->agent_id  = src->agent_id;
     dest->guild_id  = src->guild ? src->guild->guild_id : 0;
+}
+
+static void init_player(Player *player)
+{
+    kstr_init(&player->name, player->name_buffer, 0, _countof(player->name_buffer));
 }

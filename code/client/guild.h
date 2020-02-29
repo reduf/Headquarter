@@ -4,16 +4,16 @@
 #define CORE_GUILD_H
 
 typedef struct Guild {
-    size_t      guild_id;
-    uuid_t      guild_uuid;
+    size_t          guild_id;
+    uuid_t          guild_uuid;
 
-    FactionType allegiance;
-    uint32_t    faction_pts;
-    string      name;
-    string      tag;
+    FactionType     allegiance;
+    uint32_t        faction_pts;
 
-    char        name_buffer[64];
-    char        tag_buffer[32];
+    struct kstr     tag;
+    struct kstr     name;
+    uint16_t        tag_buffer[32];
+    uint16_t        name_buffer[64];
 } Guild;
 typedef array(Guild) ArrayGuild;
 

@@ -346,12 +346,11 @@ HQAPI size_t GetCharacterName(char *buffer, size_t length)
         goto leave;
     Character *cc = client->current_character;
     if (!cc) goto leave;
-    if (cc->name.count >= length) {
-        written = length;
+    if (kstr_write_ascii(&cc->name, buffer, length)) {
+        written = cc->name.length;
     } else {
-        written = cc->name.count;
+        written = length;
     }
-    memcpy(buffer, cc->name.bytes, written);
 leave:
     thread_mutex_unlock(&client->mutex);
     return written;
@@ -394,15 +393,14 @@ HQAPI size_t GetPlayerName(uint32_t player_id, char *buffer, size_t length)
     Player *player = array_at(players, player_id);
     if (!player) goto leave;
     if (!buffer) {
-        written = player->name.count;
+        written = player->name.length;
         goto leave;
     }
-    if (player->name.count >= length) {
-        written = length;
+    if (kstr_write_ascii(&player->name, buffer, length)) {
+        written = player->name.length;
     } else {
-        written = player->name.count;
+        written = 0;
     }
-    memcpy(buffer, player->name.bytes, written);
 leave:
     thread_mutex_unlock(&client->mutex);
     return written;
@@ -942,7 +940,9 @@ HQAPI void SendChat(Channel channel, const char *msg)
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
         goto leave;
-    GameSrv_SendChat(client, channel, msg);
+    DECLARE_KSTR(kmsg, 256);
+    kstr_read_ascii(&kmsg, msg, strlen(msg));
+    GameSrv_SendChat(client, channel, &kmsg);
 leave:
     thread_mutex_unlock(&client->mutex);
 }
@@ -953,7 +953,11 @@ HQAPI void SendWhisper(const char *target, const char *msg)
     thread_mutex_lock(&client->mutex);
     if (!client->state.ingame)
         goto leave;
-    GameSrv_SendWhisper(client, target, msg);
+    DECLARE_KSTR(kmsg, 32);
+    DECLARE_KSTR(ktarget, 32);
+    kstr_read_ascii(&kmsg, msg, strlen(msg));
+    kstr_read_ascii(&ktarget, target, strlen(target));
+    GameSrv_SendWhisper(client, &ktarget, &kmsg);
 leave:
     thread_mutex_unlock(&client->mutex);
 }

@@ -6,9 +6,9 @@
 typedef array(uint16_t) array_u16_t;
 
 typedef struct ChatMessage {
-    Channel channel;
-    string  str;
-    size_t  allocated;
+    Channel     channel;
+    struct kstr str;
+    size_t      allocated;
 } ChatMessage;
 typedef array(ChatMessage) ChatMessageArray;
 

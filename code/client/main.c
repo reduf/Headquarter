@@ -58,6 +58,7 @@
 #include "headquarter.h"
 #include "command.h"
 #include "error.h"
+#include "kstr.h"
 
 #include "portal.h"
 #include "opcodes.h"
@@ -123,6 +124,7 @@
 #include "packets.c"
 #include "network.c"
 
+#include "kstr.c"
 #include "vars.c"
 #include "error.c"
 #include "command.c"
@@ -174,7 +176,7 @@ static void main_loop(void)
             !client->server_transfer.pending &&
             !client->state.playing_request_pending) {
 
-            PlayCharacter(client, strzero, PlayerStatus_Online);
+            PlayCharacter(client, NULL, PlayerStatus_Online);
         }
 
         if (NetConn_IsShutdown(&client->game_srv) && client->server_transfer.pending) {
@@ -226,7 +228,7 @@ int main(int argc, const char *argv[])
         print_help(true);
     }
 
-    if (wcsnul(options.character) || wcsnul(options.password)
+    if (wcsnul(options.charname) || wcsnul(options.password)
         || wcsnul(options.email) || !options.script)
     {
         print_help(true);
@@ -267,26 +269,20 @@ int main(int argc, const char *argv[])
     }
 
     {
-        strncpy_s(client->email_buffer, sizeof(client->email_buffer), options.email, sizeof(client->email_buffer) - 1);
-        client->email.bytes = cast(uint8_t *)client->email_buffer;
-        client->email.count = strlen(client->email_buffer);
+        kstr_read_ascii(&client->email, options.email, _countof(options.email));
+        kstr_read_ascii(&client->charname, options.charname, _countof(options.charname));
 
-        strncpy_s(client->charac_buffer, sizeof(client->charac_buffer), options.character, sizeof(client->charac_buffer) - 1);
-        client->character.bytes = cast(uint8_t *)client->charac_buffer;
-        client->character.count = strlen(client->charac_buffer);
-
-        string password;
-        password.bytes = cast(uint8_t *)options.password;
-        password.count = strlen(options.password);
+        DECLARE_KSTR(password, 100);
+        kstr_read_ascii(&password, options.password, _countof(options.password));
 
         if (options.portal) {
-            portal_login(client->email, password);
+            portal_login(&client->email, &password);
         } else {
-            compute_pswd_hash(client->email, password, client->password);
+            compute_pswd_hash(&client->email, &password, client->password);
         }
 
     #if defined(HEADQUARTER_CONSOLE)
-        SetConsoleTitleA(options.character);
+        SetConsoleTitleA(options.charname);
     #endif
     }
 

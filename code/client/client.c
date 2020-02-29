@@ -9,6 +9,9 @@ static void init_client(GwClient *client)
 
     thread_mutex_init(&client->mutex);
 
+    kstr_init(&client->email, client->email_buffer, 0, _countof(client->email_buffer));
+    kstr_init(&client->charname, client->charname_buffer, 0, _countof(client->charname_buffer));
+
     array_init(client->characters, 8);
     array_init(client->merchant_items, 32);
     array_init(client->trade_session.trader_items, 7);
@@ -37,24 +40,14 @@ static uint32_t issue_next_transaction(GwClient *client, AsyncType type)
     return request->trans_id;
 }
 
-void compute_pswd_hash(string _email, string _pswd, char digest[20])
+void compute_pswd_hash(struct kstr *email, struct kstr *pswd, char digest[20])
 {
-    // @Cleanup: Support utf-8
-    wchar_t email[64], pswd[100];
-    if (!strtowcs(email, _email.bytes, MIN(_email.count+1, 64))) {
-        LogError("Couldn't decode utf-8 string of email");
-        return;
-    }
-    if (!strtowcs(pswd, _pswd.bytes, MIN(_pswd.count+1, 64))) {
-        LogError("Couldn't decode utf-8 string of password");
-        return;
-    }
-    uint16_t buffer[512];
+    uint16_t buffer[256];
     size_t i = 0;
-    for (size_t j = 0; pswd[j]; j++, i++)
-        buffer[i] = htole16(pswd[j] & 0xffff);
-    for (size_t j = 0; email[j]; j++, i++)
-        buffer[i] = htole16(email[j] & 0xffff);
+    for (size_t j = 0; j < pswd->length; j++, i++)
+        buffer[i] = htole16(pswd->buffer[j] & 0xffff);
+    for (size_t j = 0; j < email->length; j++, i++)
+        buffer[i] = htole16(email->buffer[j] & 0xffff);
     Sha1(buffer, i * 2, digest);
 }
 
@@ -82,7 +75,7 @@ void ContinueSendHardwareInfo(GwClient *client, uint32_t error_code)
     client->state.connected = true;
 }
 
-void OldAccountConnect(GwClient *client, string email, string pswd, string charname)
+void OldAccountConnect(GwClient *client, struct kstr *email, struct kstr *pswd, struct kstr *charname)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -108,7 +101,9 @@ void OldAccountConnect(GwClient *client, string email, string pswd, string charn
 
     // @Remark: If pswd isn't set, it will use the static hash of the password.
     // It must be computed before. (compute_pswd_hash can help)
-    if (pswd.count) compute_pswd_hash(email, pswd, client->password);
+    if (pswd->length) {
+        compute_pswd_hash(email, pswd, client->password);
+    }
 
     uint32_t client_salt = (uint32_t)time(NULL);
     ((uint32_t *)buffer)[0] = client_salt;
@@ -122,15 +117,31 @@ void OldAccountConnect(GwClient *client, string email, string pswd, string charn
     packet.transaction_id = trans_id;
     packet.client_salt = client_salt;
     memcpy(packet.password, digest, 20);
-    utf8_to_unicode16(packet.email,   64, email.bytes,  email.count);
-    utf8_to_unicode16(packet.charname1, 20, charname.bytes, charname.count); // playing character
-    utf8_to_unicode16(packet.charname2, 20, charname.bytes, charname.count);
+
+    size_t max_email = _countof(packet.email) - 1;
+    if (max_email < email->length) {
+        LogError("Email is too long. Length: %zu, Max: %zu", email->length, max_email);
+        return;
+    }
+    memcpy(packet.email, email->buffer, email->length * 2);
+    packet.email[email->length] = 0;
+
+    assert(_countof(packet.charname1) == _countof(packet.charname2));
+    if (_countof(packet.charname1) < charname->length) {
+        LogError("Charname is too long. Length: %zu, Max: %zu", charname->length, _countof(packet.charname1));
+        return;
+    }
+
+    memcpy(packet.charname1, charname->buffer, charname->length * 2); // playing character
+    memcpy(packet.charname2, charname->buffer, charname->length * 2);
+    packet.charname1[charname->length] = 0;
+    packet.charname2[charname->length] = 0;
 
     LogDebug("OldAccountConnect: {trans_id: %lu}", trans_id);
     SendPacket(auth, sizeof(packet), &packet);
 }
 
-void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, string charname)
+void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, struct kstr *charname)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -158,8 +169,17 @@ void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, s
     packet.transaction_id = trans_id;
     uuid_enc_le(packet.user_id, user_id);
     uuid_enc_le(packet.session_id, session_id);
-    utf8_to_unicode16(packet.charname1, 20, charname.bytes, charname.count); // playing character
-    utf8_to_unicode16(packet.charname2, 20, charname.bytes, charname.count);
+    
+    assert(_countof(packet.charname1) == _countof(packet.charname2));
+    if (_countof(packet.charname1) < charname->length) {
+        LogError("Charname is too long. Length: %zu, Max: %zu", charname->length, _countof(packet.charname1));
+        return;
+    }
+
+    memcpy(packet.charname1, charname->buffer, charname->length * 2); // playing character
+    memcpy(packet.charname2, charname->buffer, charname->length * 2);
+    packet.charname1[charname->length] = 0;
+    packet.charname2[charname->length] = 0;
 
     LogDebug("PortalAccountConnect: {trans_id: %lu}", trans_id);
     SendPacket(&client->auth_srv, sizeof(packet), &packet);
@@ -172,9 +192,9 @@ void AccountLogin(GwClient *client)
             LogError("GwLoginClient didn't replied with the connection key yet");
             return;
         }
-        PortalAccountConnect(client, portal_user_id, portal_session_id, client->character);
+        PortalAccountConnect(client, portal_user_id, portal_session_id, &client->charname);
     } else {
-        OldAccountConnect(client, client->email, strzero, client->character);
+        OldAccountConnect(client, &client->email, NULL, &client->charname);
     }
     client->state.connection_pending = true;
 }
@@ -218,7 +238,7 @@ void ContinuePlayCharacter(GwClient *client, uint32_t error_code)
     AuthSrv_RequestInstance(&client->auth_srv, trans_id, 248, 0, 0, 0, 0);
 }
 
-void PlayCharacter(GwClient *client, string name, PlayerStatus status)
+void PlayCharacter(GwClient *client, struct kstr *name, PlayerStatus status)
 {
     assert(client->state.connected);
     assert(!client->state.playing_request_pending);
@@ -230,7 +250,8 @@ void PlayCharacter(GwClient *client, string name, PlayerStatus status)
         client->player_status = status;
     }
 
-    if (name.count && str_cmp(client->current_character->name, name)) {
+    Character *cc = client->current_character;
+    if (name && kstr_compare(&cc->name, name)) {
         uint32_t trans_id = issue_next_transaction(client, AsyncType_ChangeCharacter);
 
         LogDebug("AuthSrv_ChangeCharacter {trans_id: %lu}", trans_id);

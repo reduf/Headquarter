@@ -112,15 +112,12 @@ void HandleChatMessageLocal(Connection *conn, size_t psize, Packet *packet)
 
     array_u16_t *sb = &client->chat.str_builder;
 
-    char buffer[512];
-    string message;
-    message.bytes = buffer;
-    message.count = unicode16_to_utf8(buffer, sizeof(buffer), sb->data, sb->size);
-
     Event_ChatMessage params;
     params.channel = channel;
-    params.sender  = player->name;
-    params.message = message;
+    params.sender.length = player->name.length;
+    params.sender.buffer = player->name.buffer;
+    params.message.length = sb->size;
+    params.message.buffer = sb->data;
 
     broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
 
@@ -185,19 +182,19 @@ clear_buffer_and_exit:
 void HandleChatMessageServer(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
-    typedef struct MessageServer {
-        Header   header;
+    typedef struct {
+        Header header;
         uint16_t id; // some kind of ID of the affected target
-        uint8_t channel;
+        uint8_t  channel; // enum ChatChannel above.
     } MessageServer;
 #pragma pack(pop)
 
     assert(packet->header == GAME_SMSG_CHAT_MESSAGE_SERVER);
     assert(sizeof(MessageServer) == psize);
-    
-    GwClient* client = cast(GwClient*)conn->data;
-    MessageServer* pack = cast(MessageServer*)packet;
-    assert(client&& client->game_srv.secured);
+
+    GwClient *client = cast(GwClient *)conn->data;
+    MessageServer *pack = cast(MessageServer *)packet;
+    assert(client && client->game_srv.secured);
 
     Channel channel = (Channel)pack->channel;
     if (channel >= Channel_Count) {
@@ -246,24 +243,23 @@ void HandleWhisperReceived(Connection *conn, size_t psize, Packet *packet)
     WhisperReceived *pack = cast(WhisperReceived *)packet;
     assert(client && client->game_srv.secured);
 
-    string sender, message;
-    char sender_buffer[40];
-    char msg_buffer[512];
+    struct kstr sender;
+    struct kstr message;
 
-    sender.bytes = sender_buffer;
-    message.bytes = msg_buffer;
-    sender.count = unicode16_to_utf8(sender_buffer, sizeof(sender_buffer), pack->sender, -1) - 1;
-    message.count = unicode16_to_utf8(msg_buffer, sizeof(msg_buffer), pack->message, -1) - 1;
+    kstr_read(&sender, pack->sender, _countof(pack->sender));
+    kstr_read(&message, pack->message, _countof(pack->message));
 
     Event_ChatMessage params;
     params.channel = Channel_Whisper;
-    params.sender  = sender;
-    params.message = message;
+    params.sender.length = sender.length;
+    params.sender.buffer = sender.buffer;
+    params.message.length = message.length;
+    params.message.buffer = message.buffer;
 
     broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
 }
 
-void GameSrv_SendChat(GwClient *client, Channel channel, const char *msg)
+void GameSrv_SendChat(GwClient *client, Channel channel, struct kstr *msg)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -277,15 +273,16 @@ void GameSrv_SendChat(GwClient *client, Channel channel, const char *msg)
     char chan_char = get_channel_character(channel);
     if (chan_char == 0)
         return;
-    packet.buffer[0] = chan_char;
-    if (!utf8_to_unicode16(packet.buffer + 1, 139, msg, -1)) {
-        LogError("Couldn't 'strtoc16' in 'GameSrv_SendChat'");
+
+    if (!kstr_write(msg, packet.buffer, _countof(packet.buffer))) {
+        LogError("Couldn't send a string, it was too big");
         return;
     }
+
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
 
-void GameSrv_SendWhisper(GwClient *client, const char *target, const char *msg)
+void GameSrv_SendWhisper(struct GwClient *client, struct kstr *target, struct kstr *msg)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -296,20 +293,32 @@ void GameSrv_SendWhisper(GwClient *client, const char *target, const char *msg)
 
     ChatMessage packet = NewPacket(GAME_CMSG_SEND_CHAT_MESSAGE);
 
-    size_t n, k = 0;
+    /*
+     * The format of packet.buffer is:
+     * "target,message
+     *
+     * So, the final message length is 2 (for " & ,) + target->length + msg->length
+     */
+
+    size_t final_length = 2 + target->length + msg->length;
+    if (final_length >= _countof(packet.buffer))
+    {
+        LogError("Maximum size in packet is %zu, but we need %zu", _countof(packet.buffer), final_length + 1);
+        return;
+    }
+
     uint16_t *buffer = packet.buffer;
+    size_t wpos = 0;
 
-    buffer[k++] = '"';
-    if (!(n = utf8_to_unicode16(buffer + k, 20, target, -1))) {
-        LogError("Couldn't 'strtoc16' for target in 'GameSrv_SendWhisper'");
-        return;
-    }
-    k += n - 1;
-    buffer[k++] = ',';
-    if (!utf8_to_unicode16(buffer + k, 140 - k, msg, -1)) {
-        LogError("Couldn't 'strtoc16' for msg in 'GameSrv_SendWhisper'");
-        return;
-    }
+    buffer[wpos++] = '"';
+    for (size_t i = 0; i < target->length; i++)
+        buffer[wpos++] = target->buffer[i];
 
+    buffer[wpos++] = ',';
+    for (size_t i = 0; i < msg->length; i++)
+        buffer[wpos++] = msg->buffer[i];
+
+    buffer[wpos++] = 0;
+    assert(wpos <= _countof(packet.buffer));
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }

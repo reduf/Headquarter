@@ -15,7 +15,7 @@ typedef struct CommandOptions {
 
     char        email[64];
     char        password[100];
-    char        character[20];
+    char        charname[20];
 
     bool        launch_service;
     int         service_option; // windows => {'r', 'i', 'u'} or linux => {'r', 's'}

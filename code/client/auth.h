@@ -28,6 +28,6 @@ void AuthSrv_ComputerInfo(Connection *conn);
 void AuthSrv_HardwareInfo(Connection *conn);
 void AuthSrv_RequestInstance(Connection *conn, uint32_t trans_id,
     uint32_t map_id, uint32_t type, uint32_t region, uint32_t district, uint32_t language);
-void AuthSrv_ChangeCharacter(Connection *conn, uint32_t trans_id, string name);
+void AuthSrv_ChangeCharacter(Connection *conn, uint32_t trans_id, struct kstr *name);
 void AuthSrv_SetPlayerStatus(Connection *conn, PlayerStatus status);
 void AuthSrv_SendPacket35(Connection *conn);

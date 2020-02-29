@@ -154,8 +154,8 @@ void HandleAccountInfo(Connection *conn, size_t psize, Packet *packet)
         }
     }
 
-    string name = client->current_character->name;
-    LogInfo("Current character: %.*s", name.count, name.bytes);
+    struct kstr name = client->current_character->name;
+    LogInfo("Current character: %.*ls", name.length, name.buffer);
 }
 
 void HandleCharacterInfo(Connection *conn, size_t psize, Packet *packet)
@@ -180,19 +180,16 @@ void HandleCharacterInfo(Connection *conn, size_t psize, Packet *packet)
     assert(client);
 
     // PrintBytes(p->name, pack->extended.data, 64);
-    Character *new_character = array_push(client->characters, 1);
-    if (!new_character) {
+    Character *character = array_push(client->characters, 1);
+    if (!character) {
         LogError("Couldn't create a new character");
         return;
     }
 
-    // @Cleanup: Support utf-8
-    // new_character.map = *cast(u16 *)(pack->extended.data + 2);
-    size_t written = unicode16_to_utf8(new_character->name_buffer,
-        sizeof(new_character->name_buffer), pack->name, -1);
-    new_character->name.bytes = cast(uint8_t *)new_character->name_buffer;
-    new_character->name.count = written - 1;
-    uuid_dec_le(pack->uuid, new_character->uuid);
+    init_character(character);
+
+    kstr_read(&character->name, pack->name, _countof(pack->name));
+    uuid_dec_le(pack->uuid, character->uuid);
 }
 
 void AuthSrv_HeartBeat(Connection *conn, msec_t tick)
@@ -311,7 +308,7 @@ void AuthSrv_RequestInstance(Connection *conn, uint32_t trans_id,
     SendPacket(conn, sizeof(packet), &packet);
 }
 
-void AuthSrv_ChangeCharacter(Connection *conn, uint32_t trans_id, string name)
+void AuthSrv_ChangeCharacter(Connection *conn, uint32_t trans_id, struct kstr *name)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -321,13 +318,25 @@ void AuthSrv_ChangeCharacter(Connection *conn, uint32_t trans_id, string name)
     } ChangeCharacter;
 #pragma pack(pop)
 
-    // @Cleanup: Support utf-8
+    assert(name != NULL);
+    assert(name->length != 0);
+
     ChangeCharacter packet = NewPacket(AUTH_CMSG_CHANGE_PLAY_CHARACTER);
     packet.trans_id = trans_id;
-    if (!utf8_to_unicode16(packet.name, 20, name.bytes, name.count)) {
-        LogError("Lacking of utf-8 support in AuthSrv_ChangeCharacter");
+
+    // @Remark: @Cleanup:
+    // I'm not sure Guild Wars expect the nul-terminating character.
+    // Probably not, but to be confirmed.
+    size_t max_length = _countof(packet.name) - 1;
+    if (name->length > max_length) {
+        LogError("Trying to write %zu characters in a buffer of %u",
+            name->length, max_length);
         return;
     }
+
+    memcpy(packet.name, name->buffer, name->length * 2);
+    packet.name[name->length] = 0;
+
     SendPacket(conn, sizeof(packet), &packet);
 }
 

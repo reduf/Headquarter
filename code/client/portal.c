@@ -87,19 +87,32 @@ void portal_cleanup(void)
     FreeLibrary(hPortal);
 }
 
-static size_t utf8_to_unicode16(uint16_t *buf, size_t buflen, const char *str, int strlen);
-void portal_login(string email, string password)
+void portal_login(struct kstr *email, struct kstr *password)
 {
-    size_t written;
-    wchar_t w_email[64];
-    wchar_t w_password[100];
+    wchar_t wemail[64];
+    wchar_t wpassword[100];
 
-    // @Cleanup: Won't be portable, but Portal.dll isn't portable anyway
-    written = utf8_to_unicode16(cast(uint16_t *)w_email, 64, email.bytes, email.count);
-    w_email[written] = 0;
+    if (email->length >= _countof(wemail)) {
+        LogError("wemail buffer is too small %zu, but need %zu",
+            _countof(email), email->length + 1);
+        return;
+    }
 
-    written = utf8_to_unicode16(cast(uint16_t *)w_password, 100, password.bytes, password.count);
-    w_password[written] = 0;
+    if (password->length >= _countof(wpassword)) {
+        LogError("wpassword buffer is too small %zu, but need %zu",
+            _countof(password), password->length + 1);
+        return;
+    }
 
-    PortalLogin(w_email, w_password, L"en");
+    for (size_t i = 0; i < email->length; i++) {
+        wemail[i] = email->buffer[i];
+    }
+    wemail[email->length] = 0;
+
+    for (size_t i = 0; i < password->length; i++) {
+        wpassword[i] = password->buffer[i];
+    }
+    wpassword[password->length] = 0;
+
+    PortalLogin(wemail, wpassword, L"en");
 }

@@ -5,7 +5,7 @@
 
 bool portal_init(void);
 void portal_cleanup(void);
-void portal_login(string email, string password);
+void portal_login(struct kstr *email, struct kstr *password);
 
 extern bool   portal_received_key;
 extern uuid_t portal_user_id;

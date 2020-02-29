@@ -4,12 +4,21 @@
 #define CORE_CHARACTER_H
 
 typedef struct Character {
-    string name;
-    char   name_buffer[40];
-    uuid_t uuid;
+    struct kstr name;
+    uint16_t    name_buffer[40];
 
-    Profession prof1;
-    Profession prof2;
+    uuid_t      uuid;
+
+    Profession  prof1;
+    Profession  prof2;
     // int map;
 } Character;
 typedef array(Character) CharacterArray;
+
+static void init_character(Character *character)
+{
+    kstr_init(&character->name, character->name_buffer, 0, _countof(character->name_buffer));
+
+    character->prof1 = Profession_None;
+    character->prof2 = Profession_None;
+}

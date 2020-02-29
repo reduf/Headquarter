@@ -44,13 +44,11 @@ typedef struct Party {
 typedef array(Party) ArrayParty;
 
 typedef struct PartySearch {
-    uint32_t ps_id;
-    uint16_t district;
-    uint8_t  party_size;
-    string   player_name;
-    string   message;
-    char     message_buffer[64];
-    char     player_buffer[40];
+    uint32_t        ps_id;
+    uint16_t        district;
+    uint8_t         party_size;
+    uint16_t        message[64];
+    uint16_t        player_name[40];
     PartySearchType type;
 } PartySearch;
 typedef array(PartySearch) ArrayPartySearch;

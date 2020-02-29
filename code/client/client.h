@@ -69,11 +69,12 @@ typedef struct GwClient {
     thread_mutex_t      mutex;
 
     uuid_t              uuid;
-    string              email;
-    string              character;
+
+    struct kstr         email;
+    struct kstr         charname;
     char                password[20]; // sha1(pswd:mail)
-    char                email_buffer[100];
-    char                charac_buffer[64];
+    uint16_t            email_buffer[100];
+    uint16_t            charname_buffer[64];
 
     ClientState         state;
     bool                try_changing_zone;
@@ -129,18 +130,18 @@ uint32_t issue_next_transaction(GwClient *client, AsyncType type);
 
 void client_frame_update(GwClient *client, msec_t diff);
 
-void compute_pswd_hash(string _email, string _pswd, char digest[20]);
+void compute_pswd_hash(struct kstr *email, struct kstr *pswd, char digest[20]);
 
 // If `pswd` is NULL, it will use the hash in `client->password`
 void AccountLogin(GwClient *client);
 void AccountLogout(GwClient *client);
-void OldAccountConnect(GwClient *client, string email, string pswd, string pseudo);
-void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, string charname);
+void OldAccountConnect(GwClient *client, struct kstr *email, struct kstr *pswd, struct kstr *pseudo);
+void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, struct kstr *charname);
 
 void ContinueAccountLogin(GwClient *client, uint32_t error_code);
 void ContinueSendHardwareInfo(GwClient *client, uint32_t error_code);
 void ContinuePlayCharacter(GwClient *client, uint32_t error_code);
 
 // Id `name` is NULL, it will uses the last played character
-void GameSrv_PlayCharacter(GwClient *client, string name, PlayerStatus status);
+void GameSrv_PlayCharacter(GwClient *client, struct kstr *name, PlayerStatus status);
 void GameSrv_LogoutToCharselect(GwClient *cient);

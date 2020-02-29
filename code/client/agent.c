@@ -602,14 +602,7 @@ void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
     player->player_id = pack->player_id;
     player->agent_id = pack->agent_id;
 
-    // @Cleanup: Support utf-8
-    size_t written     = unicode16_to_utf8(player->name_buffer, sizeof(player->name_buffer), pack->name, -1);
-    player->name.bytes = player->name_buffer;
-    player->name.count = written - 1;
-    if (!written) {
-        LogError("Player %d have a non ascii name (utf-8 support)", pack->player_id);
-    }
-
+    kstr_read(&player->name, pack->name, _countof(pack->name));
     agent->player_id = pack->player_id;
 }
 
