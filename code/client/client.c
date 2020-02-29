@@ -3,7 +3,7 @@
 #endif
 #define CORE_CLIENT_C
 
-static void init_client(GwClient *client)
+void init_client(GwClient *client)
 {
     memzero(client, sizeof(*client));
 
@@ -32,7 +32,7 @@ static void init_client(GwClient *client)
     init_connection(&client->game_srv, client);
 }
 
-static uint32_t issue_next_transaction(GwClient *client, AsyncType type)
+uint32_t issue_next_transaction(GwClient *client, AsyncType type)
 {
     AsyncRequest *request = array_push(client->requests, 1);
     request->trans_id = ++client->next_transaction_id;

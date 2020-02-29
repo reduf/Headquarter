@@ -55,7 +55,8 @@ void HandleDialogBody(Connection *conn, size_t psize, Packet *packet)
     assert(client && client->game_srv.secured);
 
     DialogInfo *dialog = &client->dialog;
-    unicode16_cpy(dialog->body, pack->body, ARRAY_SIZE(dialog->body));
+    assert(sizeof(pack->body) == sizeof(dialog->body));
+    memcpy(dialog->body, pack->body, sizeof(dialog->body));
 }
 
 void HandleDialogSender(Connection *conn, size_t psize, Packet *packet)

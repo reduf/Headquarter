@@ -36,9 +36,8 @@ void HandleQuestDescription(Connection *conn, size_t psize, Packet *packet)
         return;
     }
 
-    // @Cleanup: Remove this
-    static size_t unicode16_cpy(uint16_t *d, const uint16_t *s, size_t n);
-    unicode16_cpy(quest->objective, pack->objective, 128);
+    assert(sizeof(pack->objective) == sizeof(quest->objective));
+    memcpy(quest->objective, pack->objective, sizeof(pack->objective));
 }
 
 void HandleQuestAdd(Connection *conn, size_t psize, Packet *packet)

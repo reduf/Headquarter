@@ -687,7 +687,7 @@ void NetConn_Recv(Connection *conn)
     }
 
     char *dest = conn->in.data + conn->in.size;
-    mbedtls_arc4_crypt(&conn->decrypt, cast(size_t)iresult, buffer, dest);
+    mbedtls_arc4_crypt(&conn->decrypt, cast(size_t)iresult, cast(uint8_t*)buffer, dest);
     conn->in.size += cast(size_t)iresult;
 
     NetConn_DispatchPackets(conn);

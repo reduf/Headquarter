@@ -9,8 +9,10 @@ struct socket {
 #endif
 };
 
-#define SHUT_RD     (0)
-#define SHUT_WR     (1)
-#define SHUT_RDWR   (2)
+#ifdef _WIN32
+# define SHUT_RD     (0)
+# define SHUT_WR     (1)
+# define SHUT_RDWR   (2)
+#endif
 
 #endif // COMMON_SOCKET_H

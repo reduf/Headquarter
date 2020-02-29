@@ -30,6 +30,10 @@
 # include <Shellapi.h> // CommandLineToArgvA
 # include <Winsock2.h>
 # include <Ws2tcpip.h>
+#else // _WIN32
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <netdb.h>
 #endif
 
 #include <mbedtls/arc4.h>

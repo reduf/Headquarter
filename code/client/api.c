@@ -128,7 +128,7 @@ HQAPI msec_t GetPvPTimer(void)
     assert(client != NULL);
     msec_t pvp_timer = 0;
     thread_mutex_lock(&client->mutex);
-    if (!(client->state.ingame && &client->world))
+    if (!client->state.ingame)
         goto leave;
     World *world = &client->world;
     if (!world->pvp_timer_start)
@@ -1046,6 +1046,9 @@ HQAPI void InteractAgent(AgentId agent_id)
         break;
     case AgentType_Item:
         GameSrv_InteractItem(client, agent->agent_id);
+        break;
+    default:
+        LogError("Unsupported agent type %d", agent->type);
         break;
     }
 leave:
