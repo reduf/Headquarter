@@ -53,7 +53,6 @@ static void reset_world(World *world, ObjectManager *mgr)
     world->hash = 0;
 }
 
-void update_agents_position(ArrayAgent *agents, msec_t diff);
 void world_update(World *world, msec_t diff)
 {
     float diff_sec = diff / 1000.f;

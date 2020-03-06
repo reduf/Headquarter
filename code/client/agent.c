@@ -600,6 +600,7 @@ void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
         array_set(*players, pack->player_id, player);
     }
 
+    init_player(player);
     player->player_id = pack->player_id;
     player->agent_id = pack->agent_id;
 
