@@ -151,20 +151,13 @@ void HandleChatMessageGlobal(Connection *conn, size_t psize, Packet *packet)
 
     array_u16_t* sb = &client->chat.str_builder;
 
-    char buffer[512];
-    string message;
-    message.bytes = buffer;
-    message.count = unicode16_to_utf8(buffer, sizeof(buffer), sb->data, sb->size);
-
-    char sender_buf[64];
-    string sender;
-    sender.bytes = sender_buf;
-    sender.count = unicode16_to_utf8(sender_buf, sizeof(sender_buf), pack->sender, 32);
-
     Event_ChatMessage params;
     params.channel = channel;
-    params.sender = sender;
-    params.message = message;
+    params.sender.length = 0;
+    for (params.sender.length = 0; params.sender.length < ARRAY_SIZE(pack->sender) && pack->sender[params.sender.length] != 0; params.sender.length++) {}
+    params.sender.buffer = pack->sender;
+    params.message.length = sb->size;
+    params.message.buffer = sb->data;
 
     broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
 
@@ -204,20 +197,12 @@ void HandleChatMessageServer(Connection *conn, size_t psize, Packet *packet)
 
     array_u16_t* sb = &client->chat.str_builder;
 
-    char buffer[512];
-    string message;
-    message.bytes = buffer;
-    message.count = unicode16_to_utf8(buffer, sizeof(buffer), sb->data, sb->size);
-
-    char sender_buf[1];
-    string sender;
-    sender.bytes = sender_buf;
-    sender.count = 0;
-
     Event_ChatMessage params;
     params.channel = channel;
-    params.sender = sender;
-    params.message = message;
+    params.sender.length = 0;
+    params.sender.buffer = NULL;
+    params.message.length = sb->size;
+    params.message.buffer = sb->data;
 
     broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
 
@@ -243,19 +228,13 @@ void HandleWhisperReceived(Connection *conn, size_t psize, Packet *packet)
     WhisperReceived *pack = cast(WhisperReceived *)packet;
     assert(client && client->game_srv.secured);
 
-    struct kstr sender;
-    struct kstr message;
-
-    kstr_read(&sender, pack->sender, ARRAY_SIZE(pack->sender));
-    kstr_read(&message, pack->message, ARRAY_SIZE(pack->message));
-
+    
     Event_ChatMessage params;
     params.channel = Channel_Whisper;
-    params.sender.length = sender.length;
-    params.sender.buffer = sender.buffer;
-    params.message.length = message.length;
-    params.message.buffer = message.buffer;
-
+    params.sender.buffer = pack->sender;
+    for (params.sender.length = 0; params.sender.length < ARRAY_SIZE(pack->sender) && pack->sender[params.sender.length] != 0; params.sender.length++) {}
+    params.message.buffer = pack->message;
+    for (params.message.length = 0; params.message.length < ARRAY_SIZE(pack->message) && pack->message[params.message.length] != 0; params.message.length++) {}
     broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
 }
 

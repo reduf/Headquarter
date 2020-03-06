@@ -596,6 +596,7 @@ void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
     if (player == NULL) {
         player = cast(Player *)game_object_alloc(&client->object_mgr, ObjectType_Player);
         assert(player != NULL);
+        init_player(player);
         array_set(*players, pack->player_id, player);
     }
 
