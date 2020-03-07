@@ -48,7 +48,7 @@ HQAPI void __cdecl      LogFatal(const char *fmt, ...);
 HQAPI void __cdecl      LogInfo(const char *fmt, ...);
 HQAPI void __cdecl      LogWarn(const char *fmt, ...);
 
-HQAPI _Noreturn void    FreePluginAndExitThread(void *module);
+HQAPI _Noreturn void    FreePluginAndExitThread(void *module, int retval);
 HQAPI size_t            GetPlugins(ApiPlugin *buffer, size_t length);
 HQAPI bool              LoadPlugin(const char *path);
 

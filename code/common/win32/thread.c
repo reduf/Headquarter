@@ -6,10 +6,41 @@
 // #include "win32.h"
 #include "../thread.h"
 
+struct start_info {
+    void *param;
+    thread_start_t start;
+};
+
+static bool create_start_info(struct start_info **outinfo, thread_start_t start, void *param)
+{
+    struct start_info *info = malloc(sizeof(*info));
+    if (!info)
+        return false;
+    info->param = param;
+    info->start = start;
+    *outinfo = info;
+    return true;
+}
+
+static DWORD WINAPI thread_entry(LPVOID lpParam)
+{
+    struct start_info *info = lpParam;
+    void *param = info->param;
+    thread_start_t start = info->start;
+    free(info);
+    int retval = start(param);
+    return (DWORD)retval;
+}
+
 int thread_create(thread_t *thread, thread_start_t start, void *arg)
 {
-    LPTHREAD_START_ROUTINE _start = (LPTHREAD_START_ROUTINE)start;
-    thread->handle = CreateThread(NULL, 0, _start, arg, 0, 0);
+    struct start_info *info;
+    if (!create_start_info(&info, start, arg)) {
+        // @Enhancement:
+        // We should probably return STATUS_NO_MEMORY or whatever equivalent there is.
+        return 1;
+    }
+    thread->handle = CreateThread(NULL, 0, thread_entry, info, 0, 0);
     int error = 0;
     if (!thread->handle)
         error = GetLastError();
@@ -47,7 +78,7 @@ int thread_join(thread_t thread, int *retval)
     return 0;
 }
 
-int thread_sleep(thread_t thread, struct timespec *ts)
+int thread_sleep(thread_t thread, const struct timespec *ts)
 {
     DWORD sleep_time_ms;
     sleep_time_ms =  (DWORD)ts->tv_sec * 1000;

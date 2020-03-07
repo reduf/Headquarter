@@ -43,7 +43,7 @@ HQAPI void __cdecl LogWarn(const char *fmt, ...)
     va_end(args);
 }
 
-HQAPI void FreePluginAndExitThread(void *module)
+HQAPI void FreePluginAndExitThread(void *module, int retval)
 {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
@@ -55,7 +55,7 @@ HQAPI void FreePluginAndExitThread(void *module)
         }
     }
     thread_mutex_unlock(&client->mutex);
-    thread_exit();
+    thread_exit(retval);
 }
 
 HQAPI size_t GetPlugins(ApiPlugin *buffer, size_t length)

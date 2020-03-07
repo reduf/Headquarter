@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\mbedtls-2.4.0\visualc\VS2010\mbedTLS.vcxproj">
+    <ProjectReference Include="..\deps\mbedtls-2.16.5\visualc\VS2015\mbedTLS.vcxproj">
       <Project>{46cf2d25-6a36-4189-b59c-e4815388e554}</Project>
     </ProjectReference>
     <ProjectReference Include="common.vcxproj">
@@ -321,7 +321,7 @@
       <PreprocessorDefinitions>HEADQUARTER_BUILD_CORE;HEADQUARTER_BUILD_EXPORT;HEADQUARTER_CONSOLE;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsC</CompileAs>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\code\;$(SolutionDir)..\include\;$(SolutionDir)..\mbedtls-2.4.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\code\;$(SolutionDir)..\include\;$(SolutionDir)..\deps\mbedtls-2.16.5\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
@@ -333,7 +333,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\code\;$(SolutionDir)..\include\;$(SolutionDir)..\mbedtls-2.4.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\code\;$(SolutionDir)..\include\;$(SolutionDir)..\deps\mbedtls-2.16.5\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -345,7 +345,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;HEADQUARTER_BUILD_CORE;HEADQUARTER_BUILD_EXPORT;HEADQUARTER_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsC</CompileAs>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\code\;$(SolutionDir)..\include\;$(SolutionDir)..\mbedtls-2.4.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\code\;$(SolutionDir)..\include\;$(SolutionDir)..\deps\mbedtls-2.16.5\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -360,7 +360,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\code\;$(SolutionDir)..\include\;$(SolutionDir)..\mbedtls-2.4.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\code\;$(SolutionDir)..\include\;$(SolutionDir)..\deps\mbedtls-2.16.5\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>

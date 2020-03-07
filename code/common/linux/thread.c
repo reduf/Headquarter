@@ -5,34 +5,48 @@
 
 #include "../thread.h"
 
-static void *start_routine(void *param)
+struct start_info {
+    void *param;
+    thread_start_t start;
+};
+
+static bool create_start_info(struct start_info **outinfo, thread_start_t start, void *param)
 {
-    struct thread *thread = param;
-    int retval = thread->start(thread, thread->param);
-    thread->retval = retval;
-    return thread;
+    struct start_info *info = malloc(sizeof(*info));
+    if (!info)
+        return false;
+    info->param = param;
+    info->start = start;
+    *outinfo = info;
+    return true;
 }
 
-int thread_create(struct thread *thread, thread_start_t start, void *param)
+static void *thread_entry(void *param)
 {
-    int error;
+    struct start_info *info = param;
+    param = info->param;
+    thread_start_t start = info->start;
+    free(info);
+    int retval = start(param);
+    return (void *)((intptr_t)thread);
+}
+
+int thread_create(thread_t *thread, thread_start_t start, void *param)
+{
     pthread_t handle;
     pthread_attr_t attr;
 
-    thread->start = start;
-    thread->param = param;
-    thread->retval = 0;
-
-    error = pthread_attr_init(&attr);
-    if (error != 0) {
-        // @Enhancement: log?
-        return error;
+    struct start_info *info;
+    if (!create_start_info(&info, start, param)) {
+        return 1;
     }
-    
-    error = pthread_create(&handle, &attr, start_routine, thread);
-    if (error != 0) {
+    if (pthread_attr_init(&attr) != 0) {
         // @Enhancement: log?
-        return error;
+        return 1;
+    }
+    if (pthread_create(&handle, &attr, thread_entry, info) != 0) {
+        // @Enhancement: log?
+        return 1;
     }
 
     thread->handle = handle;
@@ -40,33 +54,40 @@ int thread_create(struct thread *thread, thread_start_t start, void *param)
     return 0;
 }
 
-_Noreturn void thread_exit(void)
+_Noreturn void thread_exit(int retval)
 {
-    pthread_exit(NULL);
+    pthread_exit((void *)((intptr_t)retval));
 }
 
-int thread_detach(struct thread *thread)
+thread_t thread_self(void)
 {
-    pthread_t handle = thread->handle;
+    thread_t thread;
+    thread.handle = pthread_self();
+    return thread;
+}
+
+int thread_detach(thread_t thread)
+{
+    pthread_t handle = thread.handle;
     int retval = pthread_detach(handle);
-    thread->handle = 0;
     return retval;
 }
 
-int thread_join(struct thread *thread, int *retval)
+int thread_join(thread_t thread, int *retval)
 {
     // @Cleanup:
     // It would seem that on linux, pthread_join will release the
     // ressources, if the thread is joined.
     // Need to confirm.
-    pthread_t handle = thread->handle;
-    int error = pthread_join(handle, NULL);
-    if (error == 0 && retval != NULL)
-        *retval = thread->retval;
+    void *rv;
+    pthread_t handle = thread.handle;
+    int error = pthread_join(handle, &rv);
+    if (error == 0)
+        *rv = (int)((intptr_t)rv);
     return error;
 }
 
-int thread_sleep(struct thread *thread, const struct timespec *ts)
+int thread_sleep(thread_t thread, const struct timespec *ts)
 {
     pthread_t handle = thread->handle;
     struct timespec rem;

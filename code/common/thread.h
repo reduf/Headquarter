@@ -27,27 +27,22 @@
 # define _mtx_internal_imp_alignment    8
 #endif
 
-
-struct thread;
-typedef int (*thread_start_t)(struct thread *thread, void *);
-
-struct thread {
+typedef struct thread {
 #ifdef _WIN32
     void *handle;
 #else
     unsigned long int handle;
 #endif
-    int retval;
-    void *param;
-    thread_start_t start;
-};
+} thread_t;
+typedef int (*thread_start_t)(void *);
 
-int thread_create(struct thread *thread, thread_start_t start, void *param);
-_Noreturn void thread_exit(void);
+int thread_create(thread_t *thread, thread_start_t start, void *param);
+_Noreturn void thread_exit(int retval);
+thread_t thread_self(void);
 
-int  thread_detach(struct thread *thread);
-int  thread_join(struct thread *thread, int *retval);
-int  thread_sleep(struct thread *thread, const struct timespec *ts);
+int  thread_detach(thread_t thread);
+int  thread_join(thread_t thread, int *retval);
+int  thread_sleep(thread_t thread, const struct timespec *ts);
 void thread_yield(void);
 
 typedef struct thread_mutex {

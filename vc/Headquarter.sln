@@ -5,8 +5,6 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client", "client.vcxproj", "{108CF579-D038-40EC-9874-B914565CD43E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mbedTLS", "..\mbedtls-2.4.0\visualc\VS2010\mbedTLS.vcxproj", "{46CF2D25-6A36-4189-B59C-E4815388E554}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common", "common.vcxproj", "{7E9E2CB3-BD8E-450C-BFE4-C9B537477CE1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fibers", "..\plugins\fibers\fibers.vcxproj", "{D5C4E406-4445-4F48-B565-8CD4CF72150C}"
@@ -14,6 +12,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ether", "..\plugins\ether\ether.vcxproj", "{39E46789-C9EB-414E-BB2E-17844A533B4D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kamadan-trade-client", "..\plugins\kamadan-trade-client\kamadan-trade-client.vcxproj", "{BD9F7395-2F57-4C52-A29C-BE2F7A1785AA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mbedTLS", "..\deps\mbedtls-2.16.5\visualc\VS2015\mbedTLS.vcxproj", "{46CF2D25-6A36-4189-B59C-E4815388E554}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,14 +31,6 @@ Global
 		{108CF579-D038-40EC-9874-B914565CD43E}.Release|x64.Build.0 = Release|x64
 		{108CF579-D038-40EC-9874-B914565CD43E}.Release|x86.ActiveCfg = Release|Win32
 		{108CF579-D038-40EC-9874-B914565CD43E}.Release|x86.Build.0 = Release|Win32
-		{46CF2D25-6A36-4189-B59C-E4815388E554}.Debug|x64.ActiveCfg = Debug|x64
-		{46CF2D25-6A36-4189-B59C-E4815388E554}.Debug|x64.Build.0 = Debug|x64
-		{46CF2D25-6A36-4189-B59C-E4815388E554}.Debug|x86.ActiveCfg = Debug|Win32
-		{46CF2D25-6A36-4189-B59C-E4815388E554}.Debug|x86.Build.0 = Debug|Win32
-		{46CF2D25-6A36-4189-B59C-E4815388E554}.Release|x64.ActiveCfg = Release|x64
-		{46CF2D25-6A36-4189-B59C-E4815388E554}.Release|x64.Build.0 = Release|x64
-		{46CF2D25-6A36-4189-B59C-E4815388E554}.Release|x86.ActiveCfg = Release|Win32
-		{46CF2D25-6A36-4189-B59C-E4815388E554}.Release|x86.Build.0 = Release|Win32
 		{7E9E2CB3-BD8E-450C-BFE4-C9B537477CE1}.Debug|x64.ActiveCfg = Debug|x64
 		{7E9E2CB3-BD8E-450C-BFE4-C9B537477CE1}.Debug|x64.Build.0 = Debug|x64
 		{7E9E2CB3-BD8E-450C-BFE4-C9B537477CE1}.Debug|x86.ActiveCfg = Debug|Win32
@@ -71,6 +63,14 @@ Global
 		{BD9F7395-2F57-4C52-A29C-BE2F7A1785AA}.Release|x64.Build.0 = Release|x64
 		{BD9F7395-2F57-4C52-A29C-BE2F7A1785AA}.Release|x86.ActiveCfg = Release|Win32
 		{BD9F7395-2F57-4C52-A29C-BE2F7A1785AA}.Release|x86.Build.0 = Release|Win32
+		{46CF2D25-6A36-4189-B59C-E4815388E554}.Debug|x64.ActiveCfg = Debug|x64
+		{46CF2D25-6A36-4189-B59C-E4815388E554}.Debug|x64.Build.0 = Debug|x64
+		{46CF2D25-6A36-4189-B59C-E4815388E554}.Debug|x86.ActiveCfg = Debug|Win32
+		{46CF2D25-6A36-4189-B59C-E4815388E554}.Debug|x86.Build.0 = Debug|Win32
+		{46CF2D25-6A36-4189-B59C-E4815388E554}.Release|x64.ActiveCfg = Release|x64
+		{46CF2D25-6A36-4189-B59C-E4815388E554}.Release|x64.Build.0 = Release|x64
+		{46CF2D25-6A36-4189-B59C-E4815388E554}.Release|x86.ActiveCfg = Release|Win32
+		{46CF2D25-6A36-4189-B59C-E4815388E554}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
