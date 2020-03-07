@@ -3,6 +3,7 @@
 
 #include "rbtree.h"
 
+struct timer;
 typedef void (*timer_callback_pt)(struct timer *timer);
 struct timer {
     struct rbnode       rbnode;

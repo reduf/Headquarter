@@ -60,7 +60,7 @@ void log_init(void)
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d_%H-%M-%S", ts);
 
     char file_path[1024];
-    snprintf(file_path, sizeof(file_path), "logs/%s_%ld.txt", timestamp, getpid());
+    snprintf(file_path, sizeof(file_path), "logs/%s_%d.txt", timestamp, getpid());
 
     log_file = fopen(file_path, "w");
     if (!log_file) {

@@ -5,12 +5,12 @@
 
 #include "../dlfunc.h"
 
-void *dlopen(const char *filename)
+void *dllopen(const char *filename)
 {
     return LoadLibraryA(filename);
 }
 
-int dlclose(void *handle)
+int dllclose(void *handle)
 {
     if (FreeLibrary(handle))
         return 0;
@@ -18,7 +18,7 @@ int dlclose(void *handle)
         return -1;
 }
 
-void *dlsym(void *handle, const char *symbol)
+void *dllsym(void *handle, const char *symbol)
 {
     return (void *)GetProcAddress(handle, symbol);
 }

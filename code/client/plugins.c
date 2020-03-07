@@ -49,15 +49,15 @@ bool plugin_load(const char *path)
     safe_strcpy(temp_path, PLUGIN_MAX_PATH, path);
 #endif
 
-    plugin->module = dlopen(temp_path);
+    plugin->module = dllopen(temp_path);
     if (plugin->module == NULL) {
         LogError("Couldn't load the plugin '%s'", temp_path);
         return false;
     }
 
     plugin->path = path;
-    plugin->OnPluginLoad   = dlsym(plugin->module, "OnPluginLoad");
-    plugin->OnPluginUnload = dlsym(plugin->module, "OnPluginUnload");
+    plugin->OnPluginLoad   = dllsym(plugin->module, "OnPluginLoad");
+    plugin->OnPluginUnload = dllsym(plugin->module, "OnPluginUnload");
 
     list_node_init(&plugin->entry);
     list_insert_tail(&plugins, &plugin->entry);
@@ -82,7 +82,7 @@ void plugin_unload(Plugin *plugin)
     if (!list_node_unlinked(&plugin->entry))
         list_remove(&plugin->entry);
     if (plugin->module) {
-        dlclose(plugin->module);
+        dllclose(plugin->module);
         plugin->module = NULL;
     }
     plugin->plugin_id = 0;

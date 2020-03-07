@@ -1,9 +1,9 @@
 #ifndef COMMON_DLFUNC_H
 #define COMMON_DLFUNC_H
 
-void *dlopen(const char *filename);
-int dlclose(void *handle);
+void *dllopen(const char *filename);
+int dllclose(void *handle);
 
-void *dlsym(void *handle, const char *symbol);
+void *dllsym(void *handle, const char *symbol);
 
 #endif // COMMON_DLFUNC_H

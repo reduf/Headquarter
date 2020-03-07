@@ -20,7 +20,7 @@ int get_wall_clock_res(struct timespec *ts)
     if (QueryPerformanceFrequency(&result) == 0)
         return 1;
     ts->tv_sec = 0;
-    ts->tv_nsec = (long)(1000000000 / result.QuadPart);
+    ts->tv_nsec = (long)(1000000000ll / result.QuadPart);
     return 0;
 }
 
@@ -36,15 +36,15 @@ int get_wall_clock_time(struct timespec *ts)
     return 0;
 }
 
-void time_sleep_us(unsigned int us)
-{
-    unsigned int sleep_time = us / 1000000000;
-    Sleep(sleep_time);
-}
-
 void time_sleep_ns(unsigned int ns)
 {
     unsigned int sleep_time = ns / 1000000;
+    Sleep(sleep_time);
+}
+
+void time_sleep_us(unsigned int us)
+{
+    unsigned int sleep_time = us / 1000;
     Sleep(sleep_time);
 }
 

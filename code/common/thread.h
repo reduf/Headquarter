@@ -14,27 +14,40 @@
 #endif
 #define thread_local _Thread_local
 
-#ifdef _WIN64
-# define _mtx_internal_imp_size         40
+#ifdef _WIN32
+# ifdef _WIN64
+#  define _mtx_internal_imp_size         40
+#  define _mtx_internal_imp_alignment    8
+# else
+#  define _mtx_internal_imp_size         24
+#  define _mtx_internal_imp_alignment    4
+# endif // _WIN64
+#else // _WIN32
+# define _mtx_internal_imp_size         80
 # define _mtx_internal_imp_alignment    8
-#else
-# define _mtx_internal_imp_size         24
-# define _mtx_internal_imp_alignment    4
 #endif
 
-typedef struct thread {
+
+struct thread;
+typedef int (*thread_start_t)(struct thread *thread, void *);
+
+struct thread {
+#ifdef _WIN32
     void *handle;
-} thread_t;
+#else
+    unsigned long int handle;
+#endif
+    int retval;
+    void *param;
+    thread_start_t start;
+};
 
-typedef int (*thread_start_t)(void *);
+int thread_create(struct thread *thread, thread_start_t start, void *param);
+_Noreturn void thread_exit(void);
 
-int thread_create(thread_t *thread, thread_start_t start, void *arg);
-_Noreturn void thread_exit(int retval);
-thread_t thread_self(void);
-
-int  thread_detach(thread_t thread);
-int  thread_join(thread_t thread, int *retval);
-int  thread_sleep(thread_t thread, struct timespec *ts);
+int  thread_detach(struct thread *thread);
+int  thread_join(struct thread *thread, int *retval);
+int  thread_sleep(struct thread *thread, const struct timespec *ts);
 void thread_yield(void);
 
 typedef struct thread_mutex {

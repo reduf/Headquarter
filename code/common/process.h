@@ -3,7 +3,7 @@
 
 #ifdef _WIN32
 
-typedef unsigned long pid_t;
+typedef int pid_t;
 pid_t getpid(void);
 
 #else

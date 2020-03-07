@@ -19,12 +19,23 @@
 // #include "unixstd.h"
 
 #include "macro.h"
-#include "win32/win32.h"
 
-#include "win32/time.c"
-#include "win32/dlfunc.c"
-#include "win32/thread.c"
-#include "win32/process.c"
+#ifdef _WIN32
+# include "win32/win32.h"
+# include "win32/time.c"
+# include "win32/dlfunc.c"
+# include "win32/thread.c"
+# include "win32/process.c"
+#else
+# include <sys/types.h>
+# include <dlfcn.h>
+# include <pthread.h>
+# include <unistd.h>
+
+# include "linux/dlfunc.c"
+# include "linux/thread.c"
+# include "linux/time.c"
+#endif
 
 #include "log.c"
 #include "array.c"

@@ -7,5 +7,5 @@
 
 pid_t getpid(void)
 {
-    return GetCurrentProcessId();
+    return (int)GetCurrentProcessId();
 }
