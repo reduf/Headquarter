@@ -15,7 +15,7 @@ DESTDIR=`/bin/pwd`/bin
 .PHONY: clean
 
 LOCAL_CFLAGS = $(WARNING_CFLAGS) \
-	-I$(DESTDIR)/include -Iinclude -Icode -Iinclude/linux
+	-I$(DESTDIR)/include -Iinclude -Icode
 
 LOCAL_LDFLAGS = -L$(DESTDIR)/lib
 
