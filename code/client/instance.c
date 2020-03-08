@@ -15,10 +15,15 @@ void start_loading_new_zone(GwClient *client, struct sockaddr *host,
     LogDebug("start_loading_new_zone {map_id: %lu, player_id: %lu}", map_id, player_id);
 
     if (!NetConn_IsShutdown(&client->game_srv)) {
+        // @Remark:
+        // GameSrv_Disconnect will set the state to "AwaitGameServerDisconnect".
         GameSrv_Disconnect(client);
+    } else {
+        // @Remark:
+        // If we don't disconnect, we just wait for the Game Server Transfer.
+        client->state = AwaitGameServerTransfer;
     }
 
-    client->server_transfer.pending = true;
     client->server_transfer.map_id = map_id;
     client->server_transfer.world_id = world_id;
     client->server_transfer.player_id = player_id;
@@ -28,24 +33,23 @@ void start_loading_new_zone(GwClient *client, struct sockaddr *host,
 void TransferGameServer(GwClient *client)
 {
     assert(NetConn_IsShutdown(&client->game_srv));
-    assert(client->server_transfer.pending);
+    assert(client->state == AwaitGameServerTransfer);
 
     Character *cc = client->current_character;
-    AsyncServerTransfer *transfer = &client->server_transfer;
+    GameServerTransfer *transfer = &client->server_transfer;
 
     // @Cleanup:
     // We might need to reset all the world state here.
     init_world(&client->world, transfer->world_id);
     client->game_srv.host = transfer->host;
 
-    transfer->pending = false;
     if (!GameSrv_Connect(&client->game_srv, client->uuid, cc->uuid,
         transfer->world_id, transfer->player_id, transfer->map_id)) {
 
         LogError("Game handshake failed !");
         reset_world(&client->world, &client->object_mgr);
         NetConn_Reset(&client->game_srv);
-        client->state.ingame = false;
+        client->state = AwaitNothing;
         return;
     }
 
@@ -70,6 +74,8 @@ void HandleGameServerInfo(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     GameServerInfo *pack = cast(GameServerInfo *)packet;
     assert(client);
+
+    assert(client->state == AwaitGameServerInfo);
 
     struct sockaddr host;
     memcpy(&host, pack->host, sizeof(host));
@@ -301,8 +307,7 @@ void HandleInstanceLoaded(Connection *conn, size_t psize, Packet *packet)
     InstanceLoaded *pack = cast(InstanceLoaded *)packet;
     assert(client && client->game_srv.secured);
 
-    client->state.ingame = true;
-    client->state.playing_request_pending = false;
+    client->ingame = true;
 }
 
 void HandleInstanceLoadFinish(Connection *conn, size_t psize, Packet *packet)

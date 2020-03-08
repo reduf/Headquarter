@@ -19,7 +19,7 @@ void remove_item_from_bag(Item *item)
 
 Item *get_item_safe(GwClient *client, int32_t id)
 {
-    if (!(client->state.ingame && client->world.hash))
+    if (!(client->ingame && client->world.hash))
         return NULL;
     ArrayItem items = client->world.items;
     if (!array_inside(items, id))
@@ -29,7 +29,7 @@ Item *get_item_safe(GwClient *client, int32_t id)
 
 Bag *get_bag_safe(GwClient *client, BagEnum bag_id)
 {
-    if (!client->state.ingame)
+    if (!client->ingame)
         return NULL;
     return client->inventory.bags[bag_id];
 }

@@ -133,7 +133,7 @@ void HandleReadyForMapSpawn(Connection *conn, size_t psize, Packet *packet)
     (void)packet;
     GwClient *client = cast(GwClient *)conn->data;
     assert(client && client->game_srv.secured);
-    assert(!client->state.ingame);
+    assert(!client->ingame);
     Packet spawn = NewPacket(GAME_CMSG_INSTANCE_LOAD_REQUEST_SPAWN);
     SendPacket(conn, sizeof(Packet), &spawn); // 2
 }

@@ -62,7 +62,7 @@ static void agent_set_distination(Agent *agent, Vec2f dest)
 
 static Agent *get_agent_safe(GwClient *client, AgentId id)
 {
-    if (!(client->state.ingame && client->world.hash))
+    if (!(client->ingame && client->world.hash))
         return NULL;
     ArrayAgent agents = client->world.agents;
     if (!array_inside(agents, id))

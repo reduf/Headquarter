@@ -112,7 +112,7 @@ void HandleSessionInfo(Connection *conn, size_t psize, Packet *packet)
     assert(client);
 
     client->static_salt = pack->server_salt;
-    client->state.session_ready = true;
+    client->state = AwaitAccountConnect;
 }
 
 void HandleAccountInfo(Connection *conn, size_t psize, Packet *packet)
@@ -420,16 +420,22 @@ bool init_auth_connection(GwClient *client, const char *host)
         }
     }
 
+    client->state = AwaitAuthServer;
     if (!AuthSrv_Connect(conn)) {
         LogInfo("Auth handshake failed !");
+        client->state = AwaitNothing;
         return false;
     }
 
     if (!conn->secured) {
         LogError("Couldn't connect to Auth serveur");
+        client->state = AwaitNothing;
         return false;
     }
 
+    assert(client->state == AwaitAuthServer);
+    client->state = AwaitSessionInfo;
     AuthSrv_ComputerInfo(conn);
+
     return true;
 }

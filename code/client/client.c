@@ -12,6 +12,10 @@ void init_client(GwClient *client)
     kstr_init(&client->email, client->email_buffer, 0, ARRAY_SIZE(client->email_buffer));
     kstr_init(&client->charname, client->charname_buffer, 0, ARRAY_SIZE(client->charname_buffer));
 
+    client->state = AwaitAuthServer;
+    client->ingame = false;
+    client->connected = true;
+
     array_init(client->characters, 8);
     array_init(client->merchant_items, 32);
     array_init(client->trade_session.trader_items, 7);
@@ -53,26 +57,25 @@ void compute_pswd_hash(struct kstr *email, struct kstr *pswd, char digest[20])
 
 void ContinueAccountLogin(GwClient *client, uint32_t error_code)
 {
-    assert(!client->state.connected);
-    assert(client->state.connection_pending);
+    assert(client->state == AwaitAccountConnection);
 
     if (error_code != 0) {
         LogError("AccountLogin failed");
-        client->state.connection_pending = false;
+        client->state = AwaitNothing;
         return;
     }
 
     uint32_t trans_id = issue_next_transaction(client, AsyncType_SendHardwareInfo);
+    client->state = AwaitHardwareInfoReply;
     AuthSrv_HardwareInfo(&client->auth_srv);
     AuthSrv_AskServerResponse(&client->auth_srv, trans_id);
 }
 
 void ContinueSendHardwareInfo(GwClient *client, uint32_t error_code)
 {
-    assert(!client->state.connected);
-    assert(client->state.connection_pending);
-
-    client->state.connected = true;
+    assert(client->state == AwaitHardwareInfoReply);
+    client->state = AwaitPlayCharacter;
+    client->connected = true;
 }
 
 void OldAccountConnect(GwClient *client, struct kstr *email, struct kstr *pswd, struct kstr *charname)
@@ -94,14 +97,14 @@ void OldAccountConnect(GwClient *client, struct kstr *email, struct kstr *pswd, 
 
     Connection *auth = &client->auth_srv;
 
-    if (!client->state.session_ready) {
+    if (client->state != AwaitAccountConnect) {
         LogError("You must connect & send computer infos before calling OldAccountConnect");
         return;
     }
 
     // @Remark: If pswd isn't set, it will use the static hash of the password.
     // It must be computed before. (compute_pswd_hash can help)
-    if (pswd->length) {
+    if (pswd && pswd->length) {
         compute_pswd_hash(email, pswd, client->password);
     }
 
@@ -158,7 +161,7 @@ void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, s
     // This check is a little bit weird, we would want to do something like
     // `if (client->screen == SCREEN_LOGIN_SCREEN)`, but when we are ingame it
     // we should be ingame rather than at the handshake.
-    if (!client->state.session_ready) {
+    if (client->state != AwaitAccountConnect) {
         LogError("You must connect & send computer infos before calling PortalAccountConnect");
         return;
     }
@@ -187,6 +190,7 @@ void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, s
 
 void AccountLogin(GwClient *client)
 {
+    assert(client->state == AwaitAccountConnect);
     if (options.newauth) {
         if (!portal_received_key) {
             LogError("GwLoginClient didn't replied with the connection key yet");
@@ -196,7 +200,8 @@ void AccountLogin(GwClient *client)
     } else {
         OldAccountConnect(client, &client->email, NULL, &client->charname);
     }
-    client->state.connection_pending = true;
+    client->state = AwaitAccountConnection;
+    // client->state.connection_pending = true;
 }
 
 void AccountLogout(GwClient *client)
@@ -219,7 +224,7 @@ void AccountLogout(GwClient *client)
 
 void ContinuePlayCharacter(GwClient *client, uint32_t error_code)
 {
-    assert(client->state.playing_request_pending);
+    assert(client->state == AwaitChangeCharacter);
 
     if (error_code != 0) {
         LogInfo("ContinuePlayCharacter failed (Code=%03d)", error_code);
@@ -235,22 +240,21 @@ void ContinuePlayCharacter(GwClient *client, uint32_t error_code)
     // Character *cc = client->current_character; // can use to find the map
     uint32_t trans_id = issue_next_transaction(client, AsyncType_PlayCharacter);
     LogDebug("AuthSrv_RequestInstance: {trans_id: %lu}", trans_id);
+    client->state = AwaitGameServerInfo;
     AuthSrv_RequestInstance(&client->auth_srv, trans_id,
         options.mapid, options.maptype, DistrictRegion_America, 0, DistrictLanguage_Default);
 }
 
 void PlayCharacter(GwClient *client, struct kstr *name, PlayerStatus status)
 {
-    assert(client->state.connected);
-    assert(!client->state.playing_request_pending);
-
-    client->state.playing_request_pending = true;
+    assert(client->state == AwaitPlayCharacter);
 
     if (client->player_status != status) {
         AuthSrv_SetPlayerStatus(&client->auth_srv, status);
         client->player_status = status;
     }
 
+    client->state = AwaitChangeCharacter;
     Character *cc = client->current_character;
     if (name && kstr_compare(&cc->name, name)) {
         uint32_t trans_id = issue_next_transaction(client, AsyncType_ChangeCharacter);
@@ -258,6 +262,7 @@ void PlayCharacter(GwClient *client, struct kstr *name, PlayerStatus status)
         LogDebug("AuthSrv_ChangeCharacter {trans_id: %lu}", trans_id);
         AuthSrv_ChangeCharacter(&client->auth_srv, trans_id, name);
     } else {
+        // @Remark: We can assume we changed character.
         ContinuePlayCharacter(client, 0);
     }
 }
@@ -266,7 +271,7 @@ void GameSrv_Disconnect(GwClient *client)
 {
     assert(client && client->game_srv.secured);
 
-    client->state.ingame = false;
+    client->state = AwaitGameServerDisconnect;
     NetConn_Shutdown(&client->game_srv);
 
     Packet packet = NewPacket(GAME_CMSG_DISCONNECT);
@@ -326,7 +331,7 @@ void client_frame_update(GwClient *client, msec_t diff)
         auth->last_tick_time = frame_time;
     }
 
-    if (client->state.ingame && ((frame_time - game->last_tick_time) >= 5*1000)) {
+    if (client->ingame && ((frame_time - game->last_tick_time) >= 5*1000)) {
         GameSrv_HeartBeat(game);
         game->last_tick_time = frame_time;
     }

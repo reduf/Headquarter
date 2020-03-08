@@ -28,39 +28,63 @@ typedef struct AsyncRequest {
 } AsyncRequest;
 typedef array(AsyncRequest) ArrayAsyncRequest;
 
-typedef struct AsyncServerTransfer {
-    bool pending;
+typedef struct GameServerTransfer {
     uint32_t map_id;
     uint32_t world_id;
     uint32_t player_id;
     struct sockaddr host;
-} AsyncServerTransfer;
+} GameServerTransfer;
 
 //
-// Connecting to an account follow the following flow:
-// 1. Connect to the authentication server.
-// 2. Send the computer information. (AUTH_CMSG_SEND_COMPUTER_INFO & AUTH_CMSG_SEND_COMPUTER_HASH)
-// 3. Server replies with session information. (AUTH_SMSG_SESSION_INFO)
-// The authentication server is ready to receive further packet.
-// 4. Begin the connection without or with GwLoginClient.dll. (AUTH_CMSG_ACCOUNT_LOGIN or AUTH_CMSG_PORTAL_ACCOUNT_LOGIN)
-// 5. Send hardware information and ask for a reply. (Probably to know when the server received the hardware info)
+// AwaitState is used to connect and start playing a character.
+// Every state should be added here to precisely know what is
+// happening at every moments.
+//
+typedef enum AwaitState {
+    // AwaitNothing means that we are done with our action,
+    // generally, because their was an error.
+    AwaitNothing,
 
-typedef struct ClientState {
-    // When set, the client is on a game server.
-    bool ingame : 1;
+    // We are awaiting the connection to the auth server.
+    // It's currently unused, because we do the handshake synchronously.
+    AwaitAuthServer,
 
-    // When set, the auth server is ready for being played.
-    bool connected : 1;
+    // After connecting to the auth server, we are waiting to receive
+    // "session info" to proceed. It's necessary for the old auth.
+    AwaitSessionInfo,
 
-    // Set as soon as the flow to connect starts
-    bool connection_pending : 1;
+    // We received the "session info", and we are ready to connect
+    // to the account.
+    AwaitAccountConnect,
 
-    // When set, the auth server is ready for a connection request.
-    bool session_ready : 1;
+    // We sent a request to connect, wait for the answer.
+    AwaitAccountConnection,
 
-    // playing pending
-    bool playing_request_pending : 1;
-} ClientState;
+    // If we successfully connected, we have to send our hardware info
+    // and we have to wait for the reply to start playing.
+    AwaitHardwareInfoReply,
+
+    // We successfully connected to the authentication server and it's
+    // ready to receive our play request.
+    AwaitPlayCharacter,
+
+    // If we need to change character, we have to wait for the request
+    // to succeed.
+    AwaitChangeCharacter,
+
+    // We sent the request to start playing and we are waiting to receive
+    // the server on which we will be playing.
+    AwaitGameServerInfo,
+
+    // If we were playing and we choose to disconnect or we went through a
+    // portal so we are disconnecting from the current game server, we wait
+    // to flush the socket stream and properly close the communication.
+    AwaitGameServerDisconnect,
+
+    // We have the information to connect to a game server and we can now
+    // proceed to the connection.
+    AwaitGameServerTransfer,
+} AwaitState;
 
 typedef struct GwClient {
     Connection          auth_srv;
@@ -76,7 +100,9 @@ typedef struct GwClient {
     uint16_t            email_buffer[100];
     uint16_t            charname_buffer[64];
 
-    ClientState         state;
+    AwaitState          state;
+    bool                ingame;
+    bool                connected;
     bool                try_changing_zone;
 
     // Server keys.
@@ -121,7 +147,7 @@ typedef struct GwClient {
     //
     // There is a series of action that need to have server replies, before continuing.
     //
-    AsyncServerTransfer server_transfer;
+    GameServerTransfer  server_transfer;
 } GwClient;
 extern GwClient *client;
 

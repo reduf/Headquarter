@@ -173,22 +173,28 @@ static void main_loop(void)
         // - Connecting to an GuildWars account.
         // - Connecting to a game server or transferring game server.
         //
-        if (!(client->state.connected || client->state.connection_pending)) {
+        if (client->state == AwaitAccountConnect) {
             if (!options.newauth || portal_received_key)
                 AccountLogin(client);
         }
 
         // @Enhancement:
         // We gotta think a bit more about theses condition
-        if (client->state.connected &&
-            NetConn_IsShutdown(&client->game_srv) &&
-            !client->server_transfer.pending &&
-            !client->state.playing_request_pending) {
-
+        if (client->state == AwaitPlayCharacter) {
+            assert(NetConn_IsShutdown(&client->game_srv));
             PlayCharacter(client, NULL, PlayerStatus_Online);
         }
 
-        if (NetConn_IsShutdown(&client->game_srv) && client->server_transfer.pending) {
+        if (client->state == AwaitGameServerDisconnect &&
+            NetConn_IsShutdown(&client->game_srv))
+        {
+            client->ingame = false;
+            client->state = AwaitGameServerTransfer;
+        }
+
+        if (client->state == AwaitGameServerTransfer &&
+            NetConn_IsShutdown(&client->game_srv)) {
+
             TransferGameServer(client);
         }
 
