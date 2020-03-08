@@ -7,7 +7,7 @@
 
 void *dllopen(const char *filename)
 {
-    return dlopen(filename, 0);
+    return dlopen(filename, RTLD_LAZY);
 }
 
 int dllclose(void *handle)
