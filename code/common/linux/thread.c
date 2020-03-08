@@ -28,7 +28,7 @@ static void *thread_entry(void *param)
     thread_start_t start = info->start;
     free(info);
     int retval = start(param);
-    return (void *)((intptr_t)thread);
+    return (void *)((intptr_t)retval);
 }
 
 int thread_create(thread_t *thread, thread_start_t start, void *param)
@@ -83,13 +83,13 @@ int thread_join(thread_t thread, int *retval)
     pthread_t handle = thread.handle;
     int error = pthread_join(handle, &rv);
     if (error == 0)
-        *rv = (int)((intptr_t)rv);
+        *retval = (int)((intptr_t)rv);
     return error;
 }
 
 int thread_sleep(thread_t thread, const struct timespec *ts)
 {
-    pthread_t handle = thread->handle;
+    pthread_t handle = thread.handle;
     struct timespec rem;
     int error = nanosleep(ts, &rem);
     // @Cleanup:
