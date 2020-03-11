@@ -1,13 +1,13 @@
 # Headquarter
 
-CFLAGS	?= -O2 -pedantic
-LDFLAGS ?= -pthread -ldl -lm
+CFLAGS	?= -O2 -pedantic -fPIC -pie 
+LDFLAGS ?= -pthread -ldl -lm -Wl,-E
 WARNING_CFLAGS ?= \
 	-Wno-missing-field-initializers \
 	-Wno-int-to-pointer-cast \
 	-Wno-visibility
 
-DFLAGS ?= -D_POSIX_C_SOURCE=200809L
+DFLAGS ?= -D_POSIX_C_SOURCE=200809L -DHEADQUARTER_BUILD_EXPORTS
 
 DESTDIR=`/bin/pwd`/bin
 

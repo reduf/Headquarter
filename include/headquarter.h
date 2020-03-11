@@ -5,9 +5,13 @@
 #define HEADQUARTER_VERSION_MAJOR   (1)
 #define HEADQUARTER_VERSION_MINOR   (0)
 
-#if defined(HEADQUARTER_BUILD_EXPORT)
-# define HQAPI __declspec(dllexport)
+#if defined(HEADQUARTER_BUILD_EXPORTS)
+# ifdef _WIN32
+#  define HQAPI __declspec(dllexport)
 # else
+#  define HQAPI __attribute__((visibility("default")))
+# endif
+#else
 # define HQAPI extern
 #endif
 
