@@ -15,6 +15,10 @@
 # define HQAPI extern
 #endif
 
+# ifndef _WIN32
+#  define __cdecl __attribute__((__cdecl__))
+# endif
+
 #include "str.h"
 #include <common/array.h>
 #include <common/noreturn.h>
