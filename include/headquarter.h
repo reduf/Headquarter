@@ -75,9 +75,8 @@ HQBOOL_pt GetIsIngame, GetIsConnected;
 typedef void(__cdecl* HQVOID_pt)(void);
 HQVOID_pt LeaveHall;
 
-typedef void(__cdecl* HQVOID_pt)(uint32_t guild_id);
-HQVOID_pt InteractAgent;
-HQVOID_pt TravelHall;
+typedef void(__cdecl* InteractAgent_pt)(uint32_t guild_id);
+InteractAgent_pt InteractAgent, TravelHall;
 
 typedef void(__cdecl* MoveToPoint_pt)(Vec2f pos);
 MoveToPoint_pt MoveToPoint;
@@ -94,9 +93,9 @@ typedef void(__cdecl* Travel_pt)(uint32_t map_id, District district, int distric
 Travel_pt Travel;
 
 static bool hq_init() {
-    HMODULE hnd = GetModuleHandle(NULL);
+    void* hnd = dllopen(NULL);
     if (!hnd) {
-        printf("ERROR Loading current process module: %d", GetLastError());
+        //printf("ERROR Loading current process module: %d", GetLastError());
         return false;
     }
     assert(FreePluginAndExitThread = (FreePluginAndExitThread_pt)dllsym(hnd, "FreePluginAndExitThread"));
@@ -112,8 +111,8 @@ static bool hq_init() {
     assert(LogWarn = (Log_pt)dllsym(hnd, "LogWarn"));
 
     assert(LeaveHall = (HQVOID_pt)dllsym(hnd, "LeaveHall"));
-    assert(InteractAgent = (HQVOID_pt)dllsym(hnd, "InteractAgent"));
-    assert(TravelHall = (HQVOID_pt)dllsym(hnd, "TravelHall"));
+    assert(InteractAgent = (InteractAgent_pt)dllsym(hnd, "InteractAgent"));
+    assert(TravelHall = (InteractAgent_pt)dllsym(hnd, "TravelHall"));
 
     assert(GetIsIngame = (HQBOOL_pt)dllsym(hnd, "GetIsIngame"));
     assert(GetIsConnected = (HQBOOL_pt)dllsym(hnd, "GetIsConnected"));
