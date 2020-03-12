@@ -6,6 +6,7 @@
 # define _CRT_NONSTDC_NO_DEPRECATE
 #endif
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <assert.h>
 #include <stdint.h>
