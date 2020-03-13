@@ -173,7 +173,7 @@ static bool hq_init() {
     assert(GetAgentEffects = (GetAgentEffects_pt)dllsym(hnd, "GetAgentEffects"));
     assert(SetDifficulty = (SetDifficulty_pt)dllsym(hnd, "SetDifficulty"));
     
-    
+    dllclose(hnd);
     // TODO: Other functions etc...
     return true;
 }
