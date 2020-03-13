@@ -318,7 +318,7 @@ static bool socket_set_nonblock(struct socket *sock)
     int flags = fcntl(sock->handle, F_GETFL, 0);
     if (flags == -1)
         return false;
-    flags = flags & ~O_NONBLOCK;
+    flags = flags | O_NONBLOCK;
     return (fcntl(sock->handle, F_SETFL, flags) == 0) ? true : false;
 #endif
 }
@@ -600,6 +600,7 @@ void SendPacket(Connection *conn, size_t size, void *p)
     // @Robustness: This is undefined behaviors ! (Well not int practice)
     Packet *packet = cast(Packet *)p;
     Header header = packet->header & 0x7FFF;
+
     assert(array_inside(conn->client_msg_format, header));
 
     MsgFormat format = conn->client_msg_format.data[header];
