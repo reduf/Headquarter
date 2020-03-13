@@ -367,7 +367,7 @@ void HandleCinematicData(Connection *conn, size_t psize, Packet *packet)
 #pragma pack(push, 1)
     typedef struct {
         Header header;
-        size_t  n_data;
+        uint32_t n_data;
         uint8_t data[1024];
     } CinematicData;
 #pragma pack(pop)

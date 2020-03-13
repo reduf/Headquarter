@@ -266,7 +266,7 @@ void AuthSrv_HardwareInfo(Connection *conn)
 #pragma pack(push, 1)
     typedef struct {
         Header header;
-        size_t n_info;
+        uint32_t n_info;
         uint8_t info[92];
         uint8_t hash[16];
     } HardwareInfo;

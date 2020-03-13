@@ -86,7 +86,7 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
         /* +h0019 */ int32_t model;
         /* +h001D */ int32_t quantity;
         /* +h0021 */ uint16_t name[64];
-        /* +h009D */ size_t n_unk2;
+        /* +h009D */ uint32_t n_unk2;
         /* +h00A1 */ uint32_t unk2[64];
     } ItemInfo;
 #pragma pack(pop)

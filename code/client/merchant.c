@@ -12,14 +12,14 @@ void GameSrv_TransactItems(GwClient *client, TransactionType type,
         Header header;
         int8_t type;
         int32_t gold_send;
-        size_t n_item_ids_send;
+        uint32_t n_item_ids_send;
         int32_t item_ids_send[16];
-        size_t n_item_quant_send;
+        uint32_t n_item_quant_send;
         uint8_t item_quant_send[16];
         int32_t gold_recv;
-        size_t n_item_ids_recv;
+        uint32_t n_item_ids_recv;
         int32_t item_ids_recv[16];
-        size_t n_item_quant_recv;
+        uint32_t n_item_quant_recv;
         uint8_t item_quant_recv[16];
     } TransactItem;
 #pragma pack(pop)
@@ -60,10 +60,10 @@ void GameSrv_BuyMaterials(GwClient *client, TransactionType type,
         Header header;
         int8_t type;
         int32_t gold_send;
-        size_t n_item_ids_send;
+        uint32_t n_item_ids_send;
         int32_t item_ids_send[16];
         int32_t gold_recv;
-        size_t n_item_ids_recv;
+        uint32_t n_item_ids_recv;
         int32_t item_ids_recv[16];
     } TransactItem;
 #pragma pack(pop)

@@ -854,7 +854,7 @@ void HandleNPCUpdateModel(Connection *conn, size_t psize, Packet *packet)
     typedef struct {
         Header header;
         uint32_t npc_id;
-        size_t   n_models;
+        uint32_t n_models;
         uint32_t models[8];
     } NpcModel;
 #pragma pack(pop)
