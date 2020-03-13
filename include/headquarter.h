@@ -49,7 +49,6 @@ typedef struct Vec3f {
 #include "object/plugin.h"
 
 #include "event.h"
-
 #ifdef HEADQUARTER_RUNTIME_LINKING
 
 typedef void(__cdecl* Log_pt)(const char* fmt, ...);
@@ -73,24 +72,58 @@ typedef bool(__cdecl* HQBOOL_pt)(void);
 HQBOOL_pt GetIsIngame, GetIsConnected;
 
 typedef void(__cdecl* HQVOID_pt)(void);
-HQVOID_pt LeaveHall;
+HQVOID_pt LeaveHall, ReturnToOutpost;
 
 typedef void(__cdecl* InteractAgent_pt)(uint32_t guild_id);
 InteractAgent_pt InteractAgent, TravelHall;
 
 typedef void(__cdecl* MoveToPoint_pt)(Vec2f pos);
 MoveToPoint_pt MoveToPoint;
+typedef void(__cdecl* MoveToCoord_pt)(float x, float y);
+MoveToCoord_pt MoveToCoord;
+typedef void(__cdecl* RotateToAngle_pt)(float angle);
+RotateToAngle_pt RotateToAngle;
+
+typedef Difficulty(__cdecl* GetDifficulty_pt)(void);
+GetDifficulty_pt GetDifficulty;
+typedef void(__cdecl* SetDifficulty_pt)(Difficulty mode);
+SetDifficulty_pt SetDifficulty;
 
 typedef void(__cdecl* RedirectMap_pt)(uint32_t map_id, uint32_t type, District district, int district_number);
 RedirectMap_pt RedirectMap;
 
 typedef int(__cdecl* HQINT_pt)(void);
-HQINT_pt GetMapId, GetDistrict, GetDistrictNumber, GetMyAgentId;
+HQINT_pt GetMapId, GetDistrict, GetDistrictNumber, GetMyAgentId, GetMyGuildId;
 
 typedef Vec2f(__cdecl* GetAgentPos_pt)(AgentId agent);
 GetAgentPos_pt GetAgentPos;
 typedef void(__cdecl* Travel_pt)(uint32_t map_id, District district, int district_number);
 Travel_pt Travel;
+
+typedef AgentEffect(__cdecl* GetAgentEffects_pt)(AgentId agent_id);
+GetAgentEffects_pt GetAgentEffects;
+typedef size_t(__cdecl* GetNpcIdOfAgent_pt)(AgentId agent_id);
+GetNpcIdOfAgent_pt GetNpcIdOfAgent;
+typedef size_t(__cdecl* GetBagItems_pt)(BagEnum bag, ApiItem* buffer, size_t length);
+GetBagItems_pt GetBagItems;
+typedef size_t(__cdecl* GetBagCapacity_pt)(BagEnum bag);
+GetBagCapacity_pt GetBagCapacity;
+
+typedef size_t(__cdecl* GetBuffer_pt)(void* buffer, size_t length);
+GetBuffer_pt GetQuests, GetPlayers, GetAgents;
+
+typedef size_t(__cdecl* GetPlayerName_pt)(uint32_t player_id, char* buffer, size_t length);
+GetPlayerName_pt GetPlayerName;
+
+typedef void(__cdecl* GetSkillbar_pt)(uint32_t* skills, AgentId agent_id);
+GetSkillbar_pt GetSkillbar;
+typedef void(__cdecl* UseSkill_pt)(uint32_t skill_id, AgentId target_id);
+UseSkill_pt UseSkill;
+typedef bool(__cdecl* GetSkillCasting_pt)(int pos, AgentId* target_id);
+GetSkillCasting_pt GetSkillCasting;
+
+typedef uint32_t(__cdecl* GetGuildFaction_pt)(uint32_t guild_id, FactionType* type);
+GetGuildFaction_pt GetGuildFaction;
 
 static bool hq_init() {
     void* hnd = dllopen(NULL);
@@ -111,6 +144,8 @@ static bool hq_init() {
     assert(LogWarn = (Log_pt)dllsym(hnd, "LogWarn"));
 
     assert(LeaveHall = (HQVOID_pt)dllsym(hnd, "LeaveHall"));
+    assert(ReturnToOutpost = (HQVOID_pt)dllsym(hnd, "ReturnToOutpost"));
+
     assert(InteractAgent = (InteractAgent_pt)dllsym(hnd, "InteractAgent"));
     assert(TravelHall = (InteractAgent_pt)dllsym(hnd, "TravelHall"));
 
@@ -128,6 +163,17 @@ static bool hq_init() {
     assert(GetAgentPos = (GetAgentPos_pt)dllsym(hnd, "GetAgentPos"));
     assert(Travel = (Travel_pt)dllsym(hnd, "Travel"));
 
+    assert(MoveToPoint = (MoveToPoint_pt)dllsym(hnd, "MoveToPoint"));
+    assert(MoveToCoord = (MoveToCoord_pt)dllsym(hnd, "MoveToCoord"));
+    assert(RotateToAngle = (RotateToAngle_pt)dllsym(hnd, "RotateToAngle"));
+
+    assert(GetDifficulty = (GetDifficulty_pt)dllsym(hnd, "GetDifficulty"));
+    assert(SetDifficulty = (SetDifficulty_pt)dllsym(hnd, "SetDifficulty"));
+
+    assert(GetAgentEffects = (GetAgentEffects_pt)dllsym(hnd, "GetAgentEffects"));
+    assert(SetDifficulty = (SetDifficulty_pt)dllsym(hnd, "SetDifficulty"));
+    
+    
     // TODO: Other functions etc...
     return true;
 }

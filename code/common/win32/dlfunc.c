@@ -7,6 +7,8 @@
 
 void *dllopen(const char *filename)
 {
+    if (filename == NULL)
+        return GetModuleHandle(NULL);
     return LoadLibraryA(filename);
 }
 
