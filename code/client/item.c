@@ -363,6 +363,10 @@ void HandleItemPriceQuote(Connection *conn, size_t psize, Packet *packet)
     Item *item = array_at(*items, pack->item_id);
 
     item->quote_price = pack->price;
+    Event_ItemPrice params;
+    params.item_id = item->item_id;
+    params.quote_price = item->quote_price;
+    broadcast_event(&client->event_mgr, EventType_ItemQuotePrice, &params);
 }
 
 void HandleItemChangeLocation(Connection *conn, size_t psize, Packet *packet)

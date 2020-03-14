@@ -4,6 +4,8 @@
 #include <common/list.h>
 
 typedef enum EventType {
+    EventType_ItemQuotePrice, // Item quote received.
+
     EventType_ChatMessage,
 
     EventType_Disconnect,
@@ -79,6 +81,11 @@ typedef struct Event_ChatMessage {
         const uint16_t *buffer;
     } sender;
 } Event_ChatMessage;
+
+typedef struct Event_ItemPrice {
+    int32_t     item_id;
+    uint32_t    quote_price;
+} Event_ItemPrice;
 
 typedef struct Event_AgentFocus {
     uint32_t player_id; // player that issued the focus
