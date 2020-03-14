@@ -228,7 +228,6 @@ void HandleWhisperReceived(Connection *conn, size_t psize, Packet *packet)
     WhisperReceived *pack = cast(WhisperReceived *)packet;
     assert(client && client->game_srv.secured);
 
-    
     Event_ChatMessage params;
     params.channel = Channel_Whisper;
     params.sender.buffer = pack->sender;

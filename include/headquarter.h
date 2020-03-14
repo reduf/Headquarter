@@ -110,7 +110,7 @@ typedef size_t(__cdecl* GetBagCapacity_pt)(BagEnum bag);
 GetBagCapacity_pt GetBagCapacity;
 
 typedef size_t(__cdecl* GetBuffer_pt)(void* buffer, size_t length);
-GetBuffer_pt GetQuests, GetPlayers, GetAgents;
+GetBuffer_pt GetQuests, GetPlayers, GetAgents, GetMerchantItems;
 
 typedef size_t(__cdecl* GetPlayerName_pt)(uint32_t player_id, char* buffer, size_t length);
 GetPlayerName_pt GetPlayerName;
@@ -124,6 +124,16 @@ GetSkillCasting_pt GetSkillCasting;
 
 typedef uint32_t(__cdecl* GetGuildFaction_pt)(uint32_t guild_id, FactionType* type);
 GetGuildFaction_pt GetGuildFaction;
+
+typedef void(__cdecl* SendChat_pt)(Channel channel, const char* msg);
+SendChat_pt SendChat;
+
+typedef bool(__cdecl* GetItem_pt)(ApiItem* item, uint32_t item_id);
+GetItem_pt GetItem;
+typedef BagEnum(__cdecl* GetItemLocation_pt)(uint32_t item_id, unsigned int* slot);
+GetItemLocation_pt GetItemLocation;
+typedef bool(__cdecl* RequestItemQuote_pt)(uint32_t item_id);
+RequestItemQuote_pt RequestItemQuote;
 
 static bool hq_init() {
     void* hnd = dllopen(NULL);
@@ -172,6 +182,19 @@ static bool hq_init() {
 
     assert(GetAgentEffects = (GetAgentEffects_pt)dllsym(hnd, "GetAgentEffects"));
     assert(SetDifficulty = (SetDifficulty_pt)dllsym(hnd, "SetDifficulty"));
+
+    assert(SendChat = (SendChat_pt)dllsym(hnd, "SendChat"));
+
+    assert(GetItem = (GetItem_pt)dllsym(hnd, "GetItem"));
+    assert(GetItemLocation = (GetItemLocation_pt)dllsym(hnd, "GetItemLocation"));
+    assert(GetMerchantItems = (GetBuffer_pt)dllsym(hnd, "GetMerchantItems"));
+    assert(RequestItemQuote = (RequestItemQuote_pt)dllsym(hnd, "RequestItemQuote"));
+
+    assert(GetAgents = (GetBuffer_pt)dllsym(hnd, "GetAgents"));
+    assert(GetPlayers = (GetBuffer_pt)dllsym(hnd, "GetPlayers"));
+    assert(GetQuests = (GetBuffer_pt)dllsym(hnd, "GetQuests"));
+
+    assert(GetNpcIdOfAgent = (GetNpcIdOfAgent_pt)dllsym(hnd, "GetNpcIdOfAgent"));
     
     dllclose(hnd);
     // TODO: Other functions etc...

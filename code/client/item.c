@@ -302,6 +302,9 @@ void HandleWindowOwner(Connection *conn, size_t psize, Packet *packet)
     array_clear(client->merchant_items);
     client->merchant_agent_id = pack->agent_id;
     client->interact_with = pack->agent_id;
+    Event_DialogOpenned event;
+    event.sender_agent_id = pack->agent_id;
+    broadcast_event(&client->event_mgr, DIALOG_OPENNED, &event);
 }
 
 void HandleWindowAddItems(Connection *conn, size_t psize, Packet *packet)

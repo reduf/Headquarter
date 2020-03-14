@@ -731,6 +731,60 @@ leave:
     return count;
 }
 
+HQAPI bool RequestItemQuote(uint32_t item_id)
+{
+    assert(client != NULL);
+    bool success = false;
+    size_t count = 0;
+    thread_mutex_lock(&client->mutex);
+    if (!client->ingame)
+        goto leave;
+    size_t merchant_item_size = array_size(client->merchant_items);
+    if (!merchant_item_size)
+        goto leave;
+    if (!client->merchant_agent_id)
+        goto leave;
+    Vec2f agent_pos = GetAgentPos(client->merchant_agent_id);
+    Vec2f player_pos = GetAgentPos(GetMyAgentId());
+    float dx = agent_pos.x - player_pos.x;
+    float dy = agent_pos.y - player_pos.y;
+    float dist = sqrtf((dx * dx) + (dy * dy));
+    if (dist > 160.f)
+        goto leave; // Too far from merchant
+    bool found = false;
+    Item* item = NULL;
+    for (size_t i = 0; i < merchant_item_size && !found; i++) {
+        item = client->merchant_items.data[i];
+        found = item && item->item_id == item_id;
+    }
+    if (!found)
+        goto leave;
+    TransactionType type = TRANSACT_TYPE_TraderSell;
+    QuoteInfo give;
+    give.item_count = 0;
+    give.unk1 = 0;
+    QuoteInfo recv;
+    recv.item_count = 0;
+    recv.unk1 = 0;
+    if (!item->bag) {
+        // Buy quote
+        type = TRANSACT_TYPE_TraderBuy;
+        recv.item_count = 1;
+        recv.item_ids[0] = item_id;
+    }
+    else {
+        // Sell quote
+        type = TRANSACT_TYPE_TraderSell;
+        give.item_count = 1;
+        give.item_ids[0] = item_id;
+    }
+    GameSrv_RequestQuote(client, type, &give, &recv);
+    success = true;
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return success;
+}
+
 HQAPI size_t GetMerchantItems(ApiItem *buffer, size_t length)
 {
     assert(client != NULL);

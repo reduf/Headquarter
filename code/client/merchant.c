@@ -108,11 +108,13 @@ void GameSrv_RequestQuote(GwClient *client, TransactionType type,
 
     ReqQuote packet = NewPacket(GAME_CMSG_REQUEST_QUOTE);
     packet.type = type;
-
+    
+    packet.unk_send = 0;
     packet.n_item_ids_send= send_info->item_count;
     for (int i = 0; i < send_info->item_count; i++)
         packet.item_ids_send[i] = send_info->item_ids[i];
 
+    packet.unk_recv = 0;
     packet.n_item_ids_recv= recv_info->item_count;
     for (int i = 0; i < recv_info->item_count; i++)
         packet.item_ids_recv[i] = recv_info->item_ids[i];
