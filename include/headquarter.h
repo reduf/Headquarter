@@ -230,15 +230,26 @@ static bool hq_init() {
 #else
 static bool hq_init() {};
 
-HQAPI void __cdecl      LogError(const char* fmt, ...);
-HQAPI void __cdecl      LogDebug(const char* fmt, ...);
-HQAPI void __cdecl      LogFatal(const char* fmt, ...);
-HQAPI void __cdecl      LogInfo(const char* fmt, ...);
-HQAPI void __cdecl      LogWarn(const char* fmt, ...);
+typedef struct PluginObject PluginObject;
+typedef bool (*PluginEntry_pt)(PluginObject *);
+typedef void (*PluginUnload_pt)(PluginObject *);
 
-HQAPI _Noreturn void    FreePluginAndExitThread(void* module, int retval);
-HQAPI size_t            GetPlugins(ApiPlugin* buffer, size_t length);
-HQAPI bool              LoadPlugin(const char* path);
+struct PluginObject {
+    void           *module;
+
+    PluginEntry_pt  PluginInit;
+    PluginUnload_pt PluginUnload;
+};
+
+HQAPI void __cdecl      LogError(const char *fmt, ...);
+HQAPI void __cdecl      LogDebug(const char *fmt, ...);
+HQAPI void __cdecl      LogFatal(const char *fmt, ...);
+HQAPI void __cdecl      LogInfo(const char *fmt, ...);
+HQAPI void __cdecl      LogWarn(const char *fmt, ...);
+
+HQAPI _Noreturn void    FreePluginAndExitThread(PluginObject *plugin, int retval);
+HQAPI size_t            GetPlugins(ApiPlugin *buffer, size_t length);
+HQAPI bool              LoadPlugin(const char *path);
 
 HQAPI bool              RegisterEvent(EventType event, CallbackEntry* entry);
 HQAPI bool              UnRegisterEvent(CallbackEntry* entry);

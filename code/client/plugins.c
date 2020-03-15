@@ -22,6 +22,8 @@ bool plugin_load(const char *path)
 
     char temp_path[PLUGIN_MAX_PATH];
     Plugin *plugin = &plugins_table[plugin_id];
+    memset(plugin, 0, sizeof(*plugin));
+
     plugin->plugin_id = plugin_id;
 
 #if defined(OS_WINDOWS) && defined(NDEBUG)
@@ -58,14 +60,21 @@ bool plugin_load(const char *path)
     //GetModuleFileName(plugin->module, plugin_loaded_location, sizeof(plugin_loaded_location));
     //LogInfo("Loaded plugin from %s", plugin_loaded_location);
     plugin->path = path;
-    plugin->OnPluginLoad   = dllsym(plugin->module, "OnPluginLoad");
-    plugin->OnPluginUnload = dllsym(plugin->module, "OnPluginUnload");
+
+    PluginEntry_pt PluginInit = dllsym(plugin->module, "PluginEntry");
+    if (PluginInit == NULL) {
+        LogError("Couldn't load the plugin '%s'", path);
+        plugin_unload(plugin);
+        return false;
+    }
+
+    plugin->plugin_object.module = plugin->module;
+    plugin->plugin_object.PluginInit = PluginInit;
 
     list_node_init(&plugin->entry);
     list_insert_tail(&plugins, &plugin->entry);
 
-    if (!(plugin->OnPluginLoad && plugin->OnPluginLoad())) {
-        LogError("Couldn't load the plugin '%s' - missing proc '%s'", temp_path, plugin->OnPluginLoad ? "OnPluginUnload" : "OnPluginLoad");
+    if (!PluginInit(&plugin->plugin_object)) {
         plugin_unload(plugin);
         return false;
     }
@@ -78,10 +87,8 @@ bool plugin_load(const char *path)
 void plugin_unload(Plugin *plugin)
 {
     if (!plugin) return;
-#if 0
-    if (plugin->loaded && plugin->OnPluginUnload)
-        plugin->OnPluginUnload();
-#endif
+    if (plugin->loaded && plugin->plugin_object.PluginUnload)
+        plugin->plugin_object.PluginUnload(&plugin->plugin_object);
     if (!list_node_unlinked(&plugin->entry))
         list_remove(&plugin->entry);
     if (plugin->module) {

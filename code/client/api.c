@@ -43,13 +43,13 @@ HQAPI void LogWarn(const char *fmt, ...)
     va_end(args);
 }
 
-HQAPI void FreePluginAndExitThread(void *module, int retval)
+HQAPI void FreePluginAndExitThread(PluginObject *plugin, int retval)
 {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     Plugin *it;
     plugin_foreach(it) {
-        if (it->module == module) {
+        if (it->module == plugin->module) {
             plugin_unload(it);
             break;
         }

@@ -11,11 +11,7 @@ typedef struct Plugin {
     bool            loaded;
 
     const char     *path;
-    const char     *name;
-    const char     *description;
-
-    bool (*OnPluginLoad)(void);
-    void (*OnPluginUnload)(void);
+    PluginObject    plugin_object;
 } Plugin;
 
 #define PLUGINS_MAX         (32)
