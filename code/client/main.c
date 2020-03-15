@@ -10,16 +10,16 @@
 # define __STDC__ 1
 #endif
 
-#include <math.h>
-#include <ctype.h>
-#include <stdio.h>
 #include <assert.h>
+#include <ctype.h>
+#include <math.h>
 #include <signal.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 #ifdef _WIN32
 # pragma comment(lib, "Ws2_32.lib")

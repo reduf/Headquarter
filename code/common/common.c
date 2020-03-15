@@ -6,13 +6,13 @@
 # define _CRT_NONSTDC_NO_DEPRECATE
 #endif
 
-#include <stdarg.h>
-#include <stdio.h>
 #include <assert.h>
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 // #include "time.h"
 // #include "assert.h"
