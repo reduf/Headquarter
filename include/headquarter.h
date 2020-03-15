@@ -241,11 +241,11 @@ struct PluginObject {
     PluginUnload_pt PluginUnload;
 };
 
-HQAPI void __cdecl      LogError(const char *fmt, ...);
-HQAPI void __cdecl      LogDebug(const char *fmt, ...);
-HQAPI void __cdecl      LogFatal(const char *fmt, ...);
-HQAPI void __cdecl      LogInfo(const char *fmt, ...);
-HQAPI void __cdecl      LogWarn(const char *fmt, ...);
+HQAPI void              LogError(const char *fmt, ...);
+HQAPI void              LogDebug(const char *fmt, ...);
+HQAPI void              LogFatal(const char *fmt, ...);
+HQAPI void              LogInfo(const char *fmt, ...);
+HQAPI void              LogWarn(const char *fmt, ...);
 
 HQAPI _Noreturn void    FreePluginAndExitThread(PluginObject *plugin, int retval);
 HQAPI size_t            GetPlugins(ApiPlugin *buffer, size_t length);
