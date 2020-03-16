@@ -313,7 +313,7 @@ void HandleWindowAddItems(Connection *conn, size_t psize, Packet *packet)
 #pragma pack(push, 1)
     typedef struct {
         Header header;
-        size_t  n_items;
+        uint32_t  n_items;
         int32_t items[16];
     } AddItems;
 #pragma pack(pop)
@@ -349,7 +349,7 @@ void HandleWindowAddPrices(Connection* conn, size_t psize, Packet* packet)
 #pragma pack(push, 1)
     typedef struct {
         Header header;
-        size_t  n_prices;
+        uint32_t  n_prices;
         int32_t prices[16];
     } AddPrices;
 #pragma pack(pop)
@@ -580,7 +580,7 @@ void HandleSalvageSessionStart(Connection *conn, size_t psize, Packet *packet)
         Header  header;
         int16_t salvage_session_id;
         int32_t item_id; // representing the trade
-        size_t  n_upgrades;
+        uint32_t  n_upgrades;
         int32_t upgrades[3];
     } SalvagePacket;
 #pragma pack(pop)
