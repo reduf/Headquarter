@@ -14,7 +14,7 @@ DESTDIR=`/bin/pwd`/bin
 .SILENT:
 .PHONY: clean
 
-LOCAL_CFLAGS = -m32 $(WARNING_CFLAGS) \
+LOCAL_CFLAGS = $(WARNING_CFLAGS) \
 	-I$(DESTDIR)/include -Iinclude -Icode
 
 LOCAL_LDFLAGS = -L$(DESTDIR)/lib
