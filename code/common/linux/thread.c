@@ -112,6 +112,8 @@ int thread_mutex_init(thread_mutex_t *mutex)
     union mutex_impl *mtx = (union mutex_impl *)mutex;
     pthread_mutexattr_t mutexattr;
     pthread_mutexattr_init(&mutexattr);
+    pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
+
     int error = pthread_mutex_init(&mtx->pmtx, &mutexattr);
     pthread_mutexattr_destroy(&mutexattr);
     return error;
