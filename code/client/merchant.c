@@ -98,10 +98,10 @@ void GameSrv_RequestQuote(GwClient *client, TransactionType type,
         int8_t type;
         int8_t unk1;
         int32_t unk_send;
-        size_t n_item_ids_send;
+        uint32_t n_item_ids_send;
         int32_t item_ids_send[16];
         int32_t unk_recv;
-        size_t n_item_ids_recv;
+        uint32_t n_item_ids_recv;
         int32_t item_ids_recv[16];
     } ReqQuote;
 #pragma pack(pop)

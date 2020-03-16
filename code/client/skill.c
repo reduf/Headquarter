@@ -62,9 +62,9 @@ void HandleSkillbarUpdate(Connection *conn, size_t psize, Packet *packet)
     typedef struct {
         Header header;
         AgentId agent_id;
-        size_t n_skills;
+        uint32_t n_skills;
         int32_t skills[8];
-        size_t n_pvp_masks;
+        uint32_t n_pvp_masks;
         int32_t pvp_masks[8];
         int8_t unk1;
     } SkillbarUpdate;
@@ -373,7 +373,7 @@ void HandleAgentUpdateAttribute(Connection *conn, size_t psize, Packet *packet)
     typedef struct {
         Header header;
         AgentId agent_id;
-        size_t n_data;
+        uint32_t n_data;
         int32_t data[48];
     } UpdateAttribute;
 #pragma pack(pop)
