@@ -57,7 +57,7 @@ Log_pt LogError, LogDebug, LogFatal, LogInfo, LogWarn;
 typedef void(__cdecl* FreePluginAndExitThread_pt)(void* module, int retval);
 FreePluginAndExitThread_pt FreePluginAndExitThread;
 
-HQAPI size_t            GetPlugins(ApiPlugin* buffer, size_t length);
+HQAPI uint32_t            GetPlugins(ApiPlugin* buffer, size_t length);
 HQAPI bool              LoadPlugin(const char* path);
 
 typedef bool(__cdecl* RegisterEvent_pt)(EventType event, CallbackEntry* entry);
@@ -105,17 +105,17 @@ GetAgent_pt GetAgent;
 
 typedef AgentEffect(__cdecl* GetAgentEffects_pt)(AgentId agent_id);
 GetAgentEffects_pt GetAgentEffects;
-typedef size_t(__cdecl* GetNpcIdOfAgent_pt)(AgentId agent_id);
+typedef uint32_t(__cdecl* GetNpcIdOfAgent_pt)(AgentId agent_id);
 GetNpcIdOfAgent_pt GetNpcIdOfAgent;
-typedef size_t(__cdecl* GetBagItems_pt)(BagEnum bag, ApiItem* buffer, size_t length);
+typedef uint32_t(__cdecl* GetBagItems_pt)(BagEnum bag, ApiItem* buffer, size_t length);
 GetBagItems_pt GetBagItems;
-typedef size_t(__cdecl* GetBagCapacity_pt)(BagEnum bag);
+typedef uint32_t(__cdecl* GetBagCapacity_pt)(BagEnum bag);
 GetBagCapacity_pt GetBagCapacity;
 
-typedef size_t(__cdecl* GetBuffer_pt)(void* buffer, size_t length);
+typedef uint32_t(__cdecl* GetBuffer_pt)(void* buffer, size_t length);
 GetBuffer_pt GetQuests, GetPlayers, GetAgents, GetMerchantItems, GetCharacterName;
 
-typedef size_t(__cdecl* GetPlayerName_pt)(uint32_t player_id, char* buffer, size_t length);
+typedef uint32_t(__cdecl* GetPlayerName_pt)(uint32_t player_id, char* buffer, size_t length);
 GetPlayerName_pt GetPlayerName;
 
 typedef void(__cdecl* GetSkillbar_pt)(uint32_t* skills, AgentId agent_id);

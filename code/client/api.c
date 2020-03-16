@@ -735,7 +735,6 @@ HQAPI bool RequestItemQuote(uint32_t item_id)
 {
     assert(client != NULL);
     bool success = false;
-    size_t count = 0;
     thread_mutex_lock(&client->mutex);
     if (!client->ingame)
         goto leave;
@@ -744,20 +743,26 @@ HQAPI bool RequestItemQuote(uint32_t item_id)
         goto leave;
     if (!client->merchant_agent_id)
         goto leave;
-    Vec2f agent_pos = GetAgentPos(client->merchant_agent_id);
+    Agent* agent = get_agent_safe(client, client->player_agent_id);
+    if (!agent) goto leave;
     Vec2f player_pos = GetAgentPos(GetMyAgentId());
+    agent = get_agent_safe(client, client->merchant_agent_id);
+    if (!agent) goto leave;
+    Vec2f agent_pos = GetAgentPos(GetMyAgentId());
     float dx = agent_pos.x - player_pos.x;
     float dy = agent_pos.y - player_pos.y;
     float dist = sqrtf((dx * dx) + (dy * dy));
     if (dist > 160.f)
         goto leave; // Too far from merchant
-    bool found = false;
+    Item** arr_item = NULL;
     Item* item = NULL;
-    for (size_t i = 0; i < merchant_item_size && !found; i++) {
-        item = client->merchant_items.data[i];
-        found = item && item->item_id == item_id;
+    array_foreach(arr_item, client->merchant_items) {
+        if (*arr_item && (*arr_item)->item_id == item_id) {
+            item = *arr_item;
+            break;
+        }
     }
-    if (!found)
+    if (!item)
         goto leave;
     TransactionType type = TRANSACT_TYPE_TraderSell;
     QuoteInfo give;
