@@ -111,6 +111,7 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
     new_item->model_id = pack->model;
     new_item->quantity = pack->quantity;
     new_item->type = pack->type;
+    new_item->value = pack->value;
 
     array_set(*items, pack->item_id, new_item);
 }
@@ -340,6 +341,40 @@ void HandleWindowAddItems(Connection *conn, size_t psize, Packet *packet)
             continue;
         }
         array_add(*merchant_items, item);
+    }
+}
+
+void HandleWindowAddPrices(Connection* conn, size_t psize, Packet* packet)
+{
+#pragma pack(push, 1)
+    typedef struct {
+        Header header;
+        size_t  n_prices;
+        int32_t prices[16];
+    } AddPrices;
+#pragma pack(pop)
+
+    assert(packet->header == GAME_SMSG_ITEM_PRICES);
+    assert(sizeof(AddPrices) == psize);
+
+    GwClient* client = cast(GwClient*)conn->data;
+    AddPrices* pack = cast(AddPrices*)packet;
+    assert(client&& client->game_srv.secured);
+
+    ArrayItem* merchant_items = &client->merchant_items;
+
+    for (size_t i = 0; i < pack->n_prices; i++) {
+        if (!array_inside(*merchant_items, i)) {
+            LogError("Expected merchant item index '%d' but was not found", i);
+            continue;
+        }
+
+        Item* item = array_at(*merchant_items, i);
+        if (!item) {
+            LogError("Expected merchant item index '%d' but was not found", i);
+            continue;
+        }
+        item->value = pack->prices[i];
     }
 }
 

@@ -216,6 +216,7 @@
 #define GAME_SMSG_MISSION_OBJECTIVE_ADD             (0x00BC) // 188
 #define GAME_SMSG_MISSION_OBJECTIVE_COMPLETE        (0x00BD) // 189
 #define GAME_SMSG_MISSION_OBJECTIVE_UPDATE_STRING   (0x00BE) // 190
+#define GAME_SMSG_WINDOW_MERCHANT                   (0x00C4) // 196
 #define GAME_SMSG_WINDOW_OWNER                      (0x00C5) // 197
 #define GAME_SMSG_TRANSACTION_DONE                  (0x00CD) // 205
 #define GAME_SMSG_SKILLBAR_UPDATE_SKILL             (0x00DA) // 218
@@ -240,6 +241,7 @@
 #define GAME_SMSG_TITLE_RANK_DISPLAY                (0x00F5) // 245
 #define GAME_SMSG_TITLE_TRACK_INFO                  (0x00F7) // 247
 #define GAME_SMSG_ITEM_PRICE_QUOTE                  (0x00F8) // 248
+#define GAME_SMSG_ITEM_PRICES						(0x00FA) // 250
 #define GAME_SMSG_CINEMATIC_SKIP_EVERYONE           (0x0100) // 256
 #define GAME_SMSG_CINEMATIC_SKIP_COUNT              (0x0101) // 257
 #define GAME_SMSG_CINEMATIC_START                   (0x0102) // 258

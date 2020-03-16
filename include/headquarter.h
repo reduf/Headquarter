@@ -93,12 +93,15 @@ typedef void(__cdecl* RedirectMap_pt)(uint32_t map_id, uint32_t type, District d
 RedirectMap_pt RedirectMap;
 
 typedef int(__cdecl* HQINT_pt)(void);
-HQINT_pt GetMapId, GetDistrict, GetDistrictNumber, GetMyAgentId, GetMyGuildId;
+HQINT_pt GetMapId, GetDistrict, GetDistrictNumber, GetMyAgentId, GetMyGuildId, GetMyPlayerId;
 
 typedef Vec2f(__cdecl* GetAgentPos_pt)(AgentId agent);
 GetAgentPos_pt GetAgentPos;
 typedef void(__cdecl* Travel_pt)(uint32_t map_id, District district, int district_number);
 Travel_pt Travel;
+
+typedef bool(__cdecl* GetAgent_pt)(ApiAgent* agent, AgentId agent_id);
+GetAgent_pt GetAgent;
 
 typedef AgentEffect(__cdecl* GetAgentEffects_pt)(AgentId agent_id);
 GetAgentEffects_pt GetAgentEffects;
@@ -110,7 +113,7 @@ typedef size_t(__cdecl* GetBagCapacity_pt)(BagEnum bag);
 GetBagCapacity_pt GetBagCapacity;
 
 typedef size_t(__cdecl* GetBuffer_pt)(void* buffer, size_t length);
-GetBuffer_pt GetQuests, GetPlayers, GetAgents, GetMerchantItems;
+GetBuffer_pt GetQuests, GetPlayers, GetAgents, GetMerchantItems, GetCharacterName;
 
 typedef size_t(__cdecl* GetPlayerName_pt)(uint32_t player_id, char* buffer, size_t length);
 GetPlayerName_pt GetPlayerName;
@@ -169,6 +172,7 @@ static bool hq_init() {
     assert(GetDistrict = (HQINT_pt)dllsym(hnd, "GetDistrict"));
     assert(GetDistrictNumber = (HQINT_pt)dllsym(hnd, "GetDistrictNumber"));
     assert(GetMyAgentId = (HQINT_pt)dllsym(hnd, "GetMyAgentId"));
+    assert(GetMyPlayerId = (HQINT_pt)dllsym(hnd, "GetMyPlayerId"));
 
     assert(GetAgentPos = (GetAgentPos_pt)dllsym(hnd, "GetAgentPos"));
     assert(Travel = (Travel_pt)dllsym(hnd, "Travel"));
@@ -193,8 +197,12 @@ static bool hq_init() {
     assert(GetAgents = (GetBuffer_pt)dllsym(hnd, "GetAgents"));
     assert(GetPlayers = (GetBuffer_pt)dllsym(hnd, "GetPlayers"));
     assert(GetQuests = (GetBuffer_pt)dllsym(hnd, "GetQuests"));
+    assert(GetCharacterName = (GetBuffer_pt)dllsym(hnd, "GetCharacterName"));
 
     assert(GetNpcIdOfAgent = (GetNpcIdOfAgent_pt)dllsym(hnd, "GetNpcIdOfAgent"));
+
+    assert(GetPlayerName = (GetPlayerName_pt)dllsym(hnd, "GetPlayerName"));
+    assert(GetAgent = (GetAgent_pt)dllsym(hnd, "GetAgent"));
     
     dllclose(hnd);
     // TODO: Other functions etc...

@@ -42,6 +42,7 @@ typedef struct ApiItem {
     uint32_t    item_id;
     uint32_t    model_id;
     uint32_t    quantity;
+    uint32_t    value;
     ItemType    type;
 } ApiItem;
 typedef array(ApiItem) ArrayApiItem;

@@ -25,6 +25,7 @@ static void api_make_item(ApiItem *dest, Item *src)
     dest->model_id  = src->model_id;
     dest->quantity  = src->quantity;
     dest->type      = src->type;
+    dest->value     = src->value;
 }
 
 void remove_item_from_bag(Item *item);

@@ -95,6 +95,7 @@ void HandleItemStreamDestroy(Connection *conn, size_t psize, Packet *packet);
 void HandleItemPriceQuote(Connection *conn, size_t psize, Packet *packet);
 void HandleWindowOwner(Connection *conn, size_t psize, Packet *packet);
 void HandleWindowAddItems(Connection *conn, size_t psize, Packet *packet);
+void HandleWindowAddPrices(Connection* conn, size_t psize, Packet* packet);
 void HandleSalvageSessionStart(Connection *conn, size_t psize, Packet *packet);
 void HandleSalvageSessionCancel(Connection *conn, size_t psize, Packet *packet);
 void HandleSalvageSessionDone(Connection *conn, size_t psize, Packet *packet);
