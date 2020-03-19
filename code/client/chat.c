@@ -242,7 +242,8 @@ void GameSrv_SendChat(GwClient *client, Channel channel, struct kstr *msg)
 #pragma pack(push, 1)
     typedef struct {
         Header header;
-        uint16_t buffer[140];
+        uint32_t unk0;
+        uint16_t buffer[138];
     } ChatMessage;
 #pragma pack(pop)
 
@@ -251,52 +252,26 @@ void GameSrv_SendChat(GwClient *client, Channel channel, struct kstr *msg)
     char chan_char = get_channel_character(channel);
     if (chan_char == 0)
         return;
-
-    if (!kstr_write(msg, packet.buffer, ARRAY_SIZE(packet.buffer))) {
+    packet.buffer[0] = chan_char;
+    if (!kstr_write(msg, &packet.buffer[1], ARRAY_SIZE(packet.buffer) - 1)) {
         LogError("Couldn't send a string, it was too big");
         return;
     }
-
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
 
 void GameSrv_SendWhisper(GwClient *client, struct kstr *target, struct kstr *msg)
 {
-#pragma pack(push, 1)
-    typedef struct {
-        Header header;
-        uint16_t buffer[140];
-    } ChatMessage;
-#pragma pack(pop)
-
-    ChatMessage packet = NewPacket(GAME_CMSG_SEND_CHAT_MESSAGE);
-
-    /*
-     * The format of packet.buffer is:
-     * "target,message
-     *
-     * So, the final message length is 2 (for " & ,) + target->length + msg->length
-     */
-
-    size_t final_length = 2 + target->length + msg->length;
-    if (final_length >= ARRAY_SIZE(packet.buffer))
-    {
-        LogError("Maximum size in packet is %zu, but we need %zu", ARRAY_SIZE(packet.buffer), final_length + 1);
-        return;
-    }
-
-    uint16_t *buffer = packet.buffer;
+    uint16_t buffer[255];
+    assert(target->length + msg->length < ARRAY_SIZE(buffer));
     size_t wpos = 0;
-
-    buffer[wpos++] = '"';
     for (size_t i = 0; i < target->length; i++)
         buffer[wpos++] = target->buffer[i];
-
     buffer[wpos++] = ',';
     for (size_t i = 0; i < msg->length; i++)
         buffer[wpos++] = msg->buffer[i];
-
-    buffer[wpos++] = 0;
-    assert(wpos <= ARRAY_SIZE(packet.buffer));
-    SendPacket(&client->game_srv, sizeof(packet), &packet);
+    buffer[wpos] = 0;
+    DECLARE_KSTR(kmsg, ARRAY_SIZE(buffer));
+    kstr_read(&kmsg, buffer, wpos);
+    GameSrv_SendChat(client, Channel_Whisper, &kmsg);
 }
