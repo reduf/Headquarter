@@ -130,6 +130,9 @@ GetGuildFaction_pt GetGuildFaction;
 
 typedef void(__cdecl* SendChat_pt)(Channel channel, const char* msg);
 SendChat_pt SendChat;
+typedef void(__cdecl* SendWhisper_pt)(const char* target, const char* msg);
+SendWhisper_pt SendWhisper;
+
 
 typedef bool(__cdecl* GetItem_pt)(ApiItem* item, uint32_t item_id);
 GetItem_pt GetItem;
@@ -188,6 +191,7 @@ static bool hq_init() {
     assert(SetDifficulty = (SetDifficulty_pt)dllsym(hnd, "SetDifficulty"));
 
     assert(SendChat = (SendChat_pt)dllsym(hnd, "SendChat"));
+    assert(SendWhisper = (SendWhisper_pt)dllsym(hnd, "SendWhisper"));
 
     assert(GetItem = (GetItem_pt)dllsym(hnd, "GetItem"));
     assert(GetItemLocation = (GetItemLocation_pt)dllsym(hnd, "GetItemLocation"));
