@@ -5,6 +5,7 @@ Configuration.ini
 Debug/
 Release/
 tests/
+bin/
 
 archive/
 logs/
