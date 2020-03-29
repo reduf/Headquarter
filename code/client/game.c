@@ -478,6 +478,8 @@ void GameSrv_RegisterCallbacks(Connection *conn)
     handlers[GAME_SMSG_ITEM_CHANGE_LOCATION]            = HandleItemChangeLocation;
     handlers[GAME_SMSG_ITEM_REMOVE]                     = HandleItemRemove;
     handlers[GAME_SMSG_ITEM_PRICE_QUOTE]                = HandleItemPriceQuote;
+    handlers[GAME_SMSG_WINDOW_MERCHANT]                 = HandleWindowMerchant;
+    handlers[GAME_SMSG_WINDOW_ITEM_STREAM_END]          = HandleWindowItemStreamEnd;
     handlers[GAME_SMSG_WINDOW_OWNER]                    = HandleWindowOwner;
     handlers[GAME_SMSG_WINDOW_ADD_ITEMS]                = HandleWindowAddItems;
     handlers[GAME_SMSG_ITEM_PRICES]                     = HandleWindowAddPrices;

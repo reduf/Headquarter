@@ -283,7 +283,44 @@ void HandleInventoryCreateBag(Connection *conn, size_t psize, Packet *packet)
     assert(pack->bag_model_id < BagEnum_Count);
     client->inventory.bags[pack->bag_model_id] = bag;
 }
+void HandleWindowItemStreamEnd(Connection* conn, size_t psize, Packet* packet) {
+    #pragma pack(push, 1)
+        typedef struct {
+            Header header;
+            uint8_t type;
+        } ItemStreamEnd;
+    #pragma pack(pop)
 
+    assert(packet->header == GAME_SMSG_WINDOW_ITEM_STREAM_END);
+    assert(sizeof(ItemStreamEnd) == psize);
+
+    GwClient* client = cast(GwClient*)conn->data;
+    ItemStreamEnd* pack = cast(ItemStreamEnd*)packet;
+    assert(client && client->game_srv.secured);
+
+    HandleMerchantReady();
+}
+void HandleWindowMerchant(Connection* conn, size_t psize, Packet* packet) {
+    #pragma pack(push, 1)
+        typedef struct {
+            Header header;
+            uint8_t type;
+            uint32_t unk;
+        } WindowMerchant;
+    #pragma pack(pop)
+
+    assert(packet->header == GAME_SMSG_WINDOW_MERCHANT);
+    assert(sizeof(WindowMerchant) == psize);
+
+    GwClient* client = cast(GwClient*)conn->data;
+    WindowMerchant* pack = cast(WindowMerchant*)packet;
+    assert(client&& client->game_srv.secured);
+
+    if (pack->type == 11 && !pack->unk) {
+        // Special case for merchant; only receives list of buyable items (i.e. no WindowPricesEnd packet; GW client figures out the sell tab)
+        HandleMerchantReady();
+    }
+}
 void HandleWindowOwner(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
@@ -301,11 +338,29 @@ void HandleWindowOwner(Connection *conn, size_t psize, Packet *packet)
     assert(client && client->game_srv.secured);
 
     array_clear(client->merchant_items);
+    array_clear(client->tmp_merchant_items);
+    array_clear(client->tmp_merchant_prices);
     client->merchant_agent_id = pack->agent_id;
     client->interact_with = pack->agent_id;
     Event_DialogOpenned event;
     event.sender_agent_id = pack->agent_id;
     broadcast_event(&client->event_mgr, DIALOG_OPENNED, &event);
+}
+void HandleMerchantReady() {
+    Item* item;
+    for (int i = 0; i < client->tmp_merchant_items.size; i++) {
+        array_add(client->merchant_items, client->tmp_merchant_items.data[i]);
+        if (array_inside(client->tmp_merchant_prices, i)) {
+            item = client->tmp_merchant_items.data[i];
+            item->value = client->tmp_merchant_prices.data[i];
+        }
+    }
+    array_clear(client->tmp_merchant_items);
+    array_clear(client->tmp_merchant_prices);
+
+    Event_DialogOpenned event;
+    event.sender_agent_id = client->merchant_agent_id;
+    broadcast_event(&client->event_mgr, MERCHANT_WINDOW_OPENED, &event);
 }
 
 void HandleWindowAddItems(Connection *conn, size_t psize, Packet *packet)
@@ -326,7 +381,7 @@ void HandleWindowAddItems(Connection *conn, size_t psize, Packet *packet)
     assert(client && client->game_srv.secured);
 
     ArrayItem *items = &client->world.items;
-    ArrayItem *merchant_items = &client->merchant_items;
+    ArrayItem *merchant_items = &client->tmp_merchant_items;
 
     for (size_t i = 0; i < pack->n_items; i++) {
         int32_t item_id = pack->items[i];
@@ -342,6 +397,7 @@ void HandleWindowAddItems(Connection *conn, size_t psize, Packet *packet)
         }
         array_add(*merchant_items, item);
     }
+    printf("AddItems, %d\n", pack->n_items);
 }
 
 void HandleWindowAddPrices(Connection* conn, size_t psize, Packet* packet)
@@ -361,20 +417,10 @@ void HandleWindowAddPrices(Connection* conn, size_t psize, Packet* packet)
     AddPrices* pack = cast(AddPrices*)packet;
     assert(client&& client->game_srv.secured);
 
-    ArrayItem* merchant_items = &client->merchant_items;
+    ArrayItem* merchant_items = &client->tmp_merchant_items;
 
     for (size_t i = 0; i < pack->n_prices; i++) {
-        if (!array_inside(*merchant_items, i)) {
-            LogError("Expected merchant item index '%d' but was not found", i);
-            continue;
-        }
-
-        Item* item = array_at(*merchant_items, i);
-        if (!item) {
-            LogError("Expected merchant item index '%d' but was not found", i);
-            continue;
-        }
-        item->value = pack->prices[i];
+        array_add(client->tmp_merchant_prices, pack->prices[i]);
     }
 }
 

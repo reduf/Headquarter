@@ -47,6 +47,7 @@ typedef enum EventType {
     AGENT_FOCUS,
 
     DIALOG_OPENNED,
+    MERCHANT_WINDOW_OPENED,
 
     N_EVENT
 } EventType;
