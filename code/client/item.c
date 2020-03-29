@@ -352,11 +352,11 @@ void HandleMerchantReady() {
         array_add(client->merchant_items, client->tmp_merchant_items.data[i]);
         if (array_inside(client->tmp_merchant_prices, i)) {
             item = client->tmp_merchant_items.data[i];
-            item->value = client->tmp_merchant_prices.data[i];
+            // GW Bug: last sale price can be LOWER than the default item value!
+            if(item->value < client->tmp_merchant_prices.data[i])
+                item->value = client->tmp_merchant_prices.data[i];
         }
     }
-    array_clear(client->tmp_merchant_items);
-    array_clear(client->tmp_merchant_prices);
 
     Event_DialogOpenned event;
     event.sender_agent_id = client->merchant_agent_id;
