@@ -162,7 +162,7 @@ HQAPI bool GetIsIngame(void)
 HQAPI bool GetIsConnected(void)
 {
     assert(client != NULL);
-    return client->connected;
+    return client->connected && !NetConn_IsShutdown(&client->auth_srv);// && !NetConn_IsShutdown(&client->game_srv);
 }
 
 HQAPI int GetMapId(void)
@@ -1471,7 +1471,6 @@ leave:
     thread_mutex_unlock(&client->mutex);
     return player_id;
 }
-
 HQAPI int GetTradeGold(void)
 {
     assert(client != NULL);

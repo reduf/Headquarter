@@ -348,7 +348,7 @@ void HandleWindowOwner(Connection *conn, size_t psize, Packet *packet)
 }
 void HandleMerchantReady() {
     Item* item;
-    for (int i = 0; i < client->tmp_merchant_items.size; i++) {
+    for (size_t i = 0; i < client->tmp_merchant_items.size; i++) {
         array_add(client->merchant_items, client->tmp_merchant_items.data[i]);
         if (array_inside(client->tmp_merchant_prices, i)) {
             item = client->tmp_merchant_items.data[i];
