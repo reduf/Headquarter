@@ -4,24 +4,25 @@
 #define CORE_MERCHANT_H
 
 typedef enum TransactionType {
-    TRANSACT_TYPE_MerchantBuy = 1,
-    TRANSACT_TYPE_CollectorBuy,
-    TRANSACT_TYPE_CrafterBuy,
-    TRANSACT_TYPE_WeaponsmithCustomize,
-    TRANSACT_TYPE_MerchantSell = 11,
-    TRANSACT_TYPE_TraderBuy,
-    TRANSACT_TYPE_TraderSell,
-    TRANSACT_TYPE_UnlockRunePriestOfBalth = 15
+    TransactionType_MerchantBuy = 1,
+    TransactionType_CollectorBuy,
+    TransactionType_CrafterBuy,
+    TransactionType_WeaponsmithCustomize,
+    TransactionType_MerchantSell = 11,
+    TransactionType_TraderBuy,
+    TransactionType_TraderSell,
+    TransactionType_UnlockRunePriestOfBalth = 15
 } TransactionType;
 
 typedef struct TransactionInfo {
-    int item_count;
-    int item_ids[16];
-    int item_quants[16];
+    uint32_t gold;
+    size_t   item_count;
+    uint32_t item_ids[16];
+    uint32_t item_quants[16];
 } TransactionInfo;
 
 typedef struct QuoteInfo {
-    int unk1;
-    int item_count;
-    int item_ids[16];
+    uint32_t unk1;
+    size_t   item_count;
+    uint32_t item_ids[16];
 } QuoteInfo;

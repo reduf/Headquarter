@@ -32,7 +32,7 @@ void GameSrv_TransactItems(GwClient *client, TransactionType type,
 
     packet.n_item_ids_send = send_info->item_count;
     packet.n_item_quant_send = send_info->item_count;
-    for (int i = 0; i < send_info->item_count; i++) {
+    for (size_t i = 0; i < send_info->item_count; i++) {
         packet.item_ids_send[i] = send_info->item_ids[i];
         packet.item_quant_send[i] = (int8_t)send_info->item_quants[i];
     }
@@ -42,7 +42,7 @@ void GameSrv_TransactItems(GwClient *client, TransactionType type,
 
     packet.n_item_ids_recv = recv_info->item_count;
     packet.n_item_quant_recv = recv_info->item_count;
-    for (int i = 0; i < recv_info->item_count; i++) {
+    for (size_t i = 0; i < recv_info->item_count; i++) {
         packet.item_ids_recv[i] = recv_info->item_ids[i];
         packet.item_quant_recv[i] = (int8_t)recv_info->item_quants[i];
     }
@@ -75,14 +75,14 @@ void GameSrv_BuyMaterials(GwClient *client, TransactionType type,
     assert(0 <= send_info->item_count && send_info->item_count <= 16);
 
     packet.n_item_ids_send = send_info->item_count;
-    for (int i = 0; i < send_info->item_count; i++) {
+    for (size_t i = 0; i < send_info->item_count; i++) {
         packet.item_ids_send[i] = send_info->item_ids[i];
     }
 
     packet.gold_recv = gold_recv;
     assert(0 <= recv_info->item_count && recv_info->item_count <= 16);
     packet.n_item_ids_recv = recv_info->item_count;
-    for (int i = 0; i < recv_info->item_count; i++) {
+    for (size_t i = 0; i < recv_info->item_count; i++) {
         packet.item_ids_recv[i] = recv_info->item_ids[i];
     }
 
@@ -111,12 +111,12 @@ void GameSrv_RequestQuote(GwClient *client, TransactionType type,
     
     packet.unk_send = 0;
     packet.n_item_ids_send= send_info->item_count;
-    for (int i = 0; i < send_info->item_count; i++)
+    for (size_t i = 0; i < send_info->item_count; i++)
         packet.item_ids_send[i] = send_info->item_ids[i];
 
     packet.unk_recv = 0;
     packet.n_item_ids_recv= recv_info->item_count;
-    for (int i = 0; i < recv_info->item_count; i++)
+    for (size_t i = 0; i < recv_info->item_count; i++)
         packet.item_ids_recv[i] = recv_info->item_ids[i];
 
     SendPacket(&client->game_srv, sizeof(packet), &packet);

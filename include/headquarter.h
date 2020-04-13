@@ -303,8 +303,8 @@ HQAPI size_t            GetBagCapacity(BagEnum bag);
 HQAPI size_t            GetBagItems(BagEnum bag, ApiItem* buffer, size_t length);
 HQAPI size_t            GetMerchantItems(ApiItem* buffer, size_t length);
 
-HQAPI bool              GetQuest(ApiQuest* quest, uint32_t quest_id);
-HQAPI size_t            GetQuests(ApiQuest* buffer, size_t length);
+HQAPI bool              GetQuest(ApiQuest *quest, uint32_t quest_id);
+HQAPI size_t            GetQuests(ApiQuest *buffer, size_t length);
 
 HQAPI FactionPoint      GetLuxonPoints(void);
 HQAPI FactionPoint      GetKurzickPoints(void);

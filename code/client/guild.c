@@ -391,6 +391,11 @@ void HandleGuildInviteReceived(Connection *conn, size_t psize, Packet *packet)
     GuildInvite *pack = cast(GuildInvite *)packet;
     assert(client && client->game_srv.secured);
 
-    //LogInfo("%S sent you a guild invite '%S [%S]' of type '%d'", pack->inviter, pack->name,
-    //    pack->tag, pack->type);
+    // @Cleanup:
+    // This function is bugged on Linux, because %ls will be a pointer to wchar_t
+    // and it's a pointer to uint16_t.
+    // It will also make the custom client crash, so we disabled the log for now.
+    //
+    // LogInfo("%ls sent you a guild invite '%ls [%ls]' of type '%d'",
+    //     pack->inviter, pack->name, pack->tag, pack->type);
 }
