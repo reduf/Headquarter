@@ -378,7 +378,7 @@ leave:
     return count;
 }
 
-HQAPI size_t GetPlayerName(uint32_t player_id, char *buffer, size_t length)
+HQAPI size_t GetPlayerName(uint32_t player_id, uint16_t *buffer, size_t length)
 {
     assert(client != NULL);
     if (!length && buffer)
@@ -396,7 +396,7 @@ HQAPI size_t GetPlayerName(uint32_t player_id, char *buffer, size_t length)
         written = player->name.length;
         goto leave;
     }
-    if (kstr_write_ascii(&player->name, buffer, length)) {
+    if (kstr_write(&player->name, buffer, length)) {
         written = player->name.length;
     } else {
         written = 0;
@@ -824,6 +824,41 @@ HQAPI bool GetQuest(ApiQuest *quest, uint32_t quest_id)
     if (!quest_ptr)
         goto leave;
     api_make_quest(quest, quest_ptr);
+    found = true;
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return found;
+}
+
+HQAPI bool GetFriends(ApiFriend* buffer, size_t length)
+{
+    assert(client != NULL);
+
+    size_t count = 0;
+    thread_mutex_lock(&client->mutex);
+    FriendArray friends = client->friends;
+    if (buffer == NULL) {
+        count = friends.size;
+        goto leave;
+    }
+    for (size_t i = 0; (i < friends.size) && (count < length); i++) {
+        ApiFriend* friend = &buffer[count++];
+        api_make_friend(friend, &friends.data[i]);
+    }
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return count;
+}
+
+HQAPI bool GetFriend(ApiFriend* gwfriend, const uint16_t* name)
+{
+    assert(client != NULL);
+    bool found = false;
+    thread_mutex_lock(&client->mutex);
+    Friend* friend_ptr = get_friend(NULL, (uint16_t * )name);
+    if (!friend_ptr)
+        goto leave;
+    api_make_friend(gwfriend, friend_ptr);
     found = true;
 leave:
     thread_mutex_unlock(&client->mutex);
