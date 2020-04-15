@@ -55,7 +55,10 @@ void HandleErrorMessage(Connection *conn, size_t psize, Packet *packet)
     if (pack->code != 0) {
         LogDebug("(Code=%03d) %s", pack->code, error_s);
     }
-
+    Event_Error params;
+    params.code = pack->code;
+    params.type = type;
+    broadcast_event(&client->event_mgr, EventType_Error, &params);
     switch (type) {
         case AsyncType_None:
             break;
