@@ -4,6 +4,8 @@
 #include <common/list.h>
 
 typedef enum EventType {
+    EventType_Error,
+
     EventType_ItemQuotePrice, // Item quote received.
 
     EventType_ChatMessage,
@@ -71,7 +73,7 @@ CallbackEntry_Init(CallbackEntry *entry, Callback cb, void *param)
 
 typedef struct Event_ChatMessage {
     Channel             channel;
-
+    uint16_t extra_id;
     struct {
         size_t          length;
         const uint16_t *buffer;
@@ -92,6 +94,11 @@ typedef struct Event_AgentFocus {
     uint32_t player_id; // player that issued the focus
     uint32_t agent_id;  // id of the focused mob
 } Event_AgentFocus;
+
+typedef struct Event_Error {
+    uint32_t type;
+    uint32_t code;
+} Event_Error;
 
 typedef struct Event_DialogOpenned {
     uint32_t sender_agent_id;

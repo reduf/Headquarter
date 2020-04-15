@@ -113,6 +113,7 @@ void HandleChatMessageLocal(Connection *conn, size_t psize, Packet *packet)
     array_u16_t *sb = &client->chat.str_builder;
 
     Event_ChatMessage params;
+    params.extra_id = 0;
     params.channel = channel;
     params.sender.length = player->name.length;
     params.sender.buffer = player->name.buffer;
@@ -148,6 +149,30 @@ void HandleChatMessageGlobal(Connection *conn, size_t psize, Packet *packet)
         LogError("Channel received is too big, %u when max is %u", channel, Channel_Count);
         goto clear_buffer_and_exit;
     }
+    array_u16_t* sb = &client->chat.str_builder;
+
+    Event_ChatMessage params;
+    params.extra_id = 0;
+    params.channel = channel;
+    uint16_t sender_with_tag[48];
+    int length = 0;
+    for (int i = 0; i < ARRAY_SIZE(pack->sender) && pack->sender[i] != 0; i++) {
+        sender_with_tag[length++] = pack->sender[i];
+    }
+    sender_with_tag[length++] = ' ';
+    sender_with_tag[length++] = '[';
+    for (int i = 0; i < ARRAY_SIZE(pack->tag) && pack->tag[i] != 0; i++) {
+        sender_with_tag[length++] = pack->tag[i];
+    }
+    sender_with_tag[length++] = ']';
+    sender_with_tag[length] = 0;
+
+    params.sender.buffer = sender_with_tag;
+    params.sender.length = length;
+    for (params.sender.length = 0; params.sender.length < ARRAY_SIZE(pack->sender) && pack->sender[params.sender.length] != 0; params.sender.length++) {}
+    params.message.length = sb->size;
+    params.message.buffer = sb->data;
+    broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
 
     array_u16_t* sb = &client->chat.str_builder;
 
@@ -206,6 +231,17 @@ void HandleChatMessageServer(Connection *conn, size_t psize, Packet *packet)
 
     broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
 
+    array_u16_t* sb = &client->chat.str_builder;
+
+    Event_ChatMessage params;
+    params.channel = channel;
+    params.sender.buffer = NULL;
+    params.sender.length = 0;
+    params.message.length = sb->size;
+    params.message.buffer = sb->data;
+    params.extra_id = pack->id;
+    broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
+
 clear_buffer_and_exit:
     array_clear(client->chat.str_builder);
 }
@@ -229,6 +265,7 @@ void HandleWhisperReceived(Connection *conn, size_t psize, Packet *packet)
     assert(client && client->game_srv.secured);
 
     Event_ChatMessage params;
+    params.extra_id = 0;
     params.channel = Channel_Whisper;
     params.sender.buffer = pack->sender;
     for (params.sender.length = 0; params.sender.length < ARRAY_SIZE(pack->sender) && pack->sender[params.sender.length] != 0; params.sender.length++) {}
