@@ -54,7 +54,9 @@ bool plugin_load(const char *path)
         LogError("Couldn't load the plugin '%s'", temp_path);
         return false;
     }
-
+    char plugin_loaded_location[255];
+    GetModuleFileName(plugin->module, plugin_loaded_location, sizeof(plugin_loaded_location));
+    LogInfo("Loaded plugin from %s", plugin_loaded_location);
     plugin->path = path;
     plugin->OnPluginLoad   = dllsym(plugin->module, "OnPluginLoad");
     plugin->OnPluginUnload = dllsym(plugin->module, "OnPluginUnload");
@@ -63,6 +65,7 @@ bool plugin_load(const char *path)
     list_insert_tail(&plugins, &plugin->entry);
 
     if (!(plugin->OnPluginLoad && plugin->OnPluginLoad())) {
+        LogError("Couldn't load the plugin '%s' - missing proc '%s'", temp_path, plugin->OnPluginLoad ? "OnPluginUnload" : "OnPluginLoad");
         plugin_unload(plugin);
         return false;
     }

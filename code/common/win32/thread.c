@@ -13,7 +13,7 @@ struct start_info {
 
 static bool create_start_info(struct start_info **outinfo, thread_start_t start, void *param)
 {
-    struct start_info *info = malloc(sizeof(*info));
+    struct start_info *info = (struct start_info* )malloc(sizeof(*info));
     if (!info)
         return false;
     info->param = param;
@@ -24,7 +24,7 @@ static bool create_start_info(struct start_info **outinfo, thread_start_t start,
 
 static DWORD WINAPI thread_entry(LPVOID lpParam)
 {
-    struct start_info *info = lpParam;
+    struct start_info *info = (struct start_info* )lpParam;
     void *param = info->param;
     thread_start_t start = info->start;
     free(info);
