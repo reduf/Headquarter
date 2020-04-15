@@ -171,6 +171,6 @@ void HandleGuildInviteReceived(Connection *conn, size_t psize, Packet *packet)
     GuildInvite *pack = cast(GuildInvite *)packet;
     assert(client && client->game_srv.secured);
 
-    LogInfo("%S sent you a guild invite '%S [%S]' of type '%d'", pack->inviter, pack->name,
-        pack->tag, pack->type);
+    //LogInfo("%S sent you a guild invite '%S [%S]' of type '%d'", pack->inviter, pack->name,
+    //    pack->tag, pack->type);
 }

@@ -21,6 +21,7 @@ void init_client(GwClient *client)
     array_init(client->trade_session.trader_items, 7);
     array_init(client->trade_session.player_items, 7);
     array_init2(client->titles, 64);
+    array_init(client->friends, 150);
 
     // @Cleanup: What is the practical max amount of button in the game.
     array_init(client->dialog.buttons, 16);

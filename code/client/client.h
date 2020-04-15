@@ -132,7 +132,7 @@ typedef struct GwClient {
     ObjectManager       object_mgr;
 
     ArrayItem           tmp_merchant_items;
-    array(int32_t)      tmp_merchant_prices;
+    array(uint32_t)      tmp_merchant_prices;
     ArrayItem           merchant_items;
     AgentId             merchant_agent_id;
     AgentId             interact_with;
