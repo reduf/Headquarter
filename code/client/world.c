@@ -19,6 +19,7 @@ static void init_world(World *world, uint32_t hash)
     // We use pointers to element in a array of Skillbar.
     array_init(world->skillbars, 8);
 
+    world->player_count = 0;
     world->hash = hash;
 }
 
@@ -50,6 +51,7 @@ static void reset_world(World *world, ObjectManager *mgr)
     array_reset(world->players);
     array_reset(world->effects);
 
+    world->player_count = 0;
     world->hash = 0;
 }
 

@@ -22,6 +22,8 @@ typedef struct World {
     DistrictRegion      region;
     DistrictLanguage    language;
 
+    size_t              player_count;
+
     size_t              objective_count;
 
     msec_t              world_time; // time updated at every frame

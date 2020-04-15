@@ -363,11 +363,11 @@ HQAPI size_t GetPlayers(ApiPlayer *buffer, size_t length)
     thread_mutex_lock(&client->mutex);
     if (!(client->ingame && client->world.hash))
         goto leave;
-    ArrayPlayer players = client->world.players;
     if (buffer == NULL) {
-        count = players.size;
+        count = client->world.player_count;
         goto leave;
     }
+    ArrayPlayer players = client->world.players;
     for (size_t i = 0; (i < players.size) && (count < length); i++) {
         if (!players.data[i]) continue;
         ApiPlayer *dest = &buffer[count++];

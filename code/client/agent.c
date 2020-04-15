@@ -557,6 +557,29 @@ void HandleAgentUpdateDestination(Connection *conn, size_t psize, Packet *packet
     agent_set_distination(agent, pack->dest);
 }
 
+void HandleAgentDestroyPlayer(Connection* conn, size_t psize, Packet* packet) {
+#pragma pack(push, 1)
+    typedef struct {
+        Header      header;
+        int32_t     player_id;
+    } PlayerInfo;
+#pragma pack(pop)
+
+    assert(packet->header == GAME_SMSG_AGENT_DESTROY_PLAYER);
+    assert(sizeof(PlayerInfo) == psize);
+
+    GwClient* client = cast(GwClient*)conn->data;
+    PlayerInfo* pack = cast(PlayerInfo*)packet;
+    assert(client&& client->game_srv.secured);
+
+    ArrayPlayer* players = &client->world.players;
+    assert(array_inside(*players, pack->player_id));
+    Player* player = array_at(*players, pack->player_id);
+    game_object_free(&client->object_mgr, &player->object);
+
+    client->world.player_count--;
+}
+
 void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
@@ -599,6 +622,8 @@ void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
         init_player(player);
         array_set(*players, pack->player_id, player);
     }
+
+    client->world.player_count++;
 
     init_player(player);
     player->player_id = pack->player_id;
