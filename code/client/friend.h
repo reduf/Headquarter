@@ -31,6 +31,7 @@ static void api_make_friend(ApiFriend* dest, Friend* src)
     dest->type = src->type;
     dest->status = src->status;
     dest->map_id = src->zone;
+    uuid_copy(dest->uuid, src->uuid);
     kstr_write(&src->account, dest->account, ARRAY_SIZE(dest->account));
     kstr_write(&src->name, dest->playing, ARRAY_SIZE(dest->playing));
 }

@@ -830,7 +830,7 @@ leave:
     return found;
 }
 
-HQAPI bool GetFriends(ApiFriend* buffer, size_t length)
+HQAPI size_t GetFriends(ApiFriend* buffer, size_t length)
 {
     assert(client != NULL);
 
@@ -848,6 +848,21 @@ HQAPI bool GetFriends(ApiFriend* buffer, size_t length)
 leave:
     thread_mutex_unlock(&client->mutex);
     return count;
+}
+
+HQAPI bool GetFriendByUuid(ApiFriend* gwfriend, uuid_t uuid)
+{
+    assert(client != NULL);
+    bool found = false;
+    thread_mutex_lock(&client->mutex);
+    Friend* friend_ptr = get_friend(uuid, NULL);
+    if (!friend_ptr)
+        goto leave;
+    api_make_friend(gwfriend, friend_ptr);
+    found = true;
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return found;
 }
 
 HQAPI bool GetFriend(ApiFriend* gwfriend, const uint16_t* name)

@@ -64,6 +64,13 @@ void HandleFriendUpdateInfo(Connection *conn, size_t psize, Packet *packet)
 
     gwfriend->status = pack->status;
     gwfriend->type = pack->type;
+    if (gwfriend->status < 1) {
+        // Offline, reset.
+        gwfriend->status = 0;
+        gwfriend->name.length = 0;
+        gwfriend->name.buffer[0] = 0;
+        gwfriend->zone = 0;
+    }
 
     Event_FriendStatus event;
     api_make_friend(&event.gwfriend, gwfriend);
@@ -97,6 +104,13 @@ void HandleFriendUpdateStatus(Connection *conn, size_t psize, Packet *packet)
     kstr_read(&gwfriend->name, pack->played, ARRAY_SIZE(pack->played));
 
     gwfriend->status = pack->status;
+    if (gwfriend->status < 1) {
+        // Offline, reset.
+        gwfriend->status = 0;
+        gwfriend->name.length = 0;
+        gwfriend->name.buffer[0] = 0;
+        gwfriend->zone = 0;
+    }
 
     Event_FriendStatus event;
     api_make_friend(&event.gwfriend, gwfriend);
@@ -128,7 +142,7 @@ void HandleFriendUpdateLocation(Connection *conn, size_t psize, Packet *packet)
     }
 
     gwfriend->zone = pack->map_id;
-    gwfriend->type = pack->type;
+    //gwfriend->type = pack->type;
 
     Event_FriendStatus event;
     api_make_friend(&event.gwfriend, gwfriend);

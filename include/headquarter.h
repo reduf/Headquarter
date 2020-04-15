@@ -103,8 +103,8 @@ Travel_pt Travel;
 typedef bool(__cdecl* GetAgent_pt)(ApiAgent* agent, AgentId agent_id);
 GetAgent_pt GetAgent;
 
-typedef bool(__cdecl* GetFriend_pt)(ApiFriend* gwfriend, const uint16_t* name);
-GetFriend_pt GetFriend;
+typedef bool(__cdecl* GetFriend_pt)(ApiFriend* gwfriend, const void* name);
+GetFriend_pt GetFriend, GetFriendByUuid;
 
 typedef AgentEffect(__cdecl* GetAgentEffects_pt)(AgentId agent_id);
 GetAgentEffects_pt GetAgentEffects;
@@ -213,6 +213,7 @@ static bool hq_init() {
     assert(GetAgent = (GetAgent_pt)dllsym(hnd, "GetAgent"));
     
     assert(GetFriend = (GetFriend_pt)dllsym(hnd, "GetFriend"));
+    assert(GetFriendByUuid = (GetFriend_pt)dllsym(hnd, "GetFriendByUuid"));
 
     dllclose(hnd);
     // TODO: Other functions etc...
