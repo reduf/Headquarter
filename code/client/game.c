@@ -505,6 +505,8 @@ void GameSrv_RegisterCallbacks(Connection *conn)
     handlers[GAME_SMSG_AGENT_UPDATE_ROTATION]           = HandleAgentUpdateRotation;
     handlers[GAME_SMSG_AGENT_UPDATE_DESTINATION]        = HandleAgentUpdateDestination;
     handlers[GAME_SMSG_AGENT_CREATE_PLAYER]             = HandleAgentCreatePlayer;
+    handlers[GAME_SMSG_AGENT_DESTROY_PLAYER]            = HandleAgentDestroyPlayer;
+    
     handlers[GAME_SMSG_AGENT_CREATE_NPC]                = HandleAgentCreateNPC;
     handlers[GAME_SMSG_AGENT_PINGED]                    = HandleAgentPingeg;
     handlers[GAME_SMSG_AGENT_UPDATE_EFFECTS]            = HandleAgentUpdateEffects;

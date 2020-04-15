@@ -116,6 +116,7 @@ void HandleAgentUpdateSpeedModifier(Connection *conn, size_t psize, Packet *pack
 void HandleAgentUpdatePosition(Connection *conn, size_t psize, Packet *packet);
 void HandleAgentUpdateRotation(Connection *conn, size_t psize, Packet *packet);
 void HandleAgentUpdateDestination(Connection *conn, size_t psize, Packet *packet);
+void HandleAgentDestroyPlayer(Connection* conn, size_t psize, Packet* packet);
 void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet);
 void HandleAgentCreateNPC(Connection *conn, size_t psize, Packet *packet);
 void HandleAgentPingeg(Connection *conn, size_t psize, Packet *packet);
