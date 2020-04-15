@@ -4,6 +4,8 @@
 #include <common/list.h>
 
 typedef enum EventType {
+    EventType_Friend_Updated,
+
     EventType_Error,
 
     EventType_ItemQuotePrice, // Item quote received.
@@ -89,6 +91,10 @@ typedef struct Event_ItemPrice {
     int32_t     item_id;
     uint32_t    quote_price;
 } Event_ItemPrice;
+
+typedef struct Event_FriendStatus {
+    ApiFriend gwfriend;
+} Event_FriendStatus;
 
 typedef struct Event_AgentFocus {
     uint32_t player_id; // player that issued the focus

@@ -103,6 +103,9 @@ Travel_pt Travel;
 typedef bool(__cdecl* GetAgent_pt)(ApiAgent* agent, AgentId agent_id);
 GetAgent_pt GetAgent;
 
+typedef bool(__cdecl* GetFriend_pt)(ApiFriend* gwfriend, const uint16_t* name);
+GetFriend_pt GetFriend;
+
 typedef AgentEffect(__cdecl* GetAgentEffects_pt)(AgentId agent_id);
 GetAgentEffects_pt GetAgentEffects;
 typedef uint32_t(__cdecl* GetNpcIdOfAgent_pt)(AgentId agent_id);
@@ -113,9 +116,9 @@ typedef uint32_t(__cdecl* GetBagCapacity_pt)(BagEnum bag);
 GetBagCapacity_pt GetBagCapacity;
 
 typedef uint32_t(__cdecl* GetBuffer_pt)(void* buffer, size_t length);
-GetBuffer_pt GetQuests, GetPlayers, GetAgents, GetMerchantItems, GetCharacterName;
+GetBuffer_pt GetQuests, GetPlayers, GetAgents, GetFriends, GetMerchantItems, GetCharacterName;
 
-typedef uint32_t(__cdecl* GetPlayerName_pt)(uint32_t player_id, char* buffer, size_t length);
+typedef uint32_t(__cdecl* GetPlayerName_pt)(uint32_t player_id, uint16_t* buffer, size_t length);
 GetPlayerName_pt GetPlayerName;
 
 typedef void(__cdecl* GetSkillbar_pt)(uint32_t* skills, AgentId agent_id);
@@ -200,6 +203,7 @@ static bool hq_init() {
 
     assert(GetAgents = (GetBuffer_pt)dllsym(hnd, "GetAgents"));
     assert(GetPlayers = (GetBuffer_pt)dllsym(hnd, "GetPlayers"));
+    assert(GetFriends = (GetBuffer_pt)dllsym(hnd, "GetFriends"));
     assert(GetQuests = (GetBuffer_pt)dllsym(hnd, "GetQuests"));
     assert(GetCharacterName = (GetBuffer_pt)dllsym(hnd, "GetCharacterName"));
 
@@ -208,6 +212,8 @@ static bool hq_init() {
     assert(GetPlayerName = (GetPlayerName_pt)dllsym(hnd, "GetPlayerName"));
     assert(GetAgent = (GetAgent_pt)dllsym(hnd, "GetAgent"));
     
+    assert(GetFriend = (GetFriend_pt)dllsym(hnd, "GetFriend"));
+
     dllclose(hnd);
     // TODO: Other functions etc...
     return true;
@@ -250,7 +256,7 @@ HQAPI void              SkipCinematic(void);
 HQAPI size_t            GetCharacterName(char* buffer, size_t length);
 
 HQAPI size_t            GetPlayers(ApiPlayer* buffer, size_t length);
-HQAPI size_t            GetPlayerName(uint32_t player_id, char* buffer, size_t length);
+HQAPI size_t            GetPlayerName(uint32_t player_id, uint16_t* buffer, size_t length);
 HQAPI bool              GetPlayerIsPartyLeader(uint32_t player_id);
 HQAPI size_t            GetPlayersOfParty(uint32_t party_id, uint32_t* buffer, size_t length);
 

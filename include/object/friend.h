@@ -13,3 +13,11 @@ typedef enum FriendType {
     FriendType_RecentlyPlayed   = 3,
     FriendType_RecentlyPraded   = 4,
 } FriendType;
+
+typedef struct ApiFriend {
+    uint32_t type;
+    uint32_t status;
+    uint32_t map_id;
+    uint16_t account[20];
+    uint16_t playing[20];
+} ApiFriend;
