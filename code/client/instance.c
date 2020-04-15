@@ -89,7 +89,7 @@ void HandleGameTransferInfo(Connection *conn, size_t psize, Packet *packet)
         Header header;
         uint8_t host[24];
         uint32_t world_id;
-        uint8_t  region;
+        int8_t  region;
         uint16_t map_id;
         uint8_t  is_explorable;
         uint32_t player_id;
@@ -103,6 +103,7 @@ void HandleGameTransferInfo(Connection *conn, size_t psize, Packet *packet)
     ServerInfo *pack = cast(ServerInfo *)packet;
     assert(client && client->game_srv.secured);
 
+    client->world.region = pack->region;
     struct sockaddr host;
     memcpy(&host, pack->host, sizeof(host));
     start_loading_new_zone(client, &host, pack->map_id, pack->world_id, pack->player_id, true);
