@@ -572,10 +572,9 @@ void HandleAgentDestroyPlayer(Connection* conn, size_t psize, Packet* packet) {
     PlayerInfo* pack = cast(PlayerInfo*)packet;
     assert(client&& client->game_srv.secured);
 
-    ArrayPlayer* players = &client->world.players;
-    assert(array_inside(*players, pack->player_id));
-    Player* player = array_at(*players, pack->player_id);
-    game_object_free(&client->object_mgr, &player->object);
+    assert(array_inside(client->world.players, pack->player_id));
+    /*Player* player = array_at(*players, pack->player_id);
+    game_object_free(&client->object_mgr, &player->object);*/
 
     client->world.player_count--;
 }
