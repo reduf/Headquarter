@@ -55,14 +55,10 @@ void HandleFriendUpdateInfo(Connection *conn, size_t psize, Packet *packet)
     assert(client);
 
     Friend* gwfriend = get_or_create_friend(pack->uuid, pack->account);
-    if (!gwfriend) {
-        LogError("Couldn't create or find a new friend (1)");
-        return;
-    }
+    assert(gwfriend);
     kstr_read(&gwfriend->account, pack->account, ARRAY_SIZE(pack->account));
     uuid_dec_le(pack->uuid, gwfriend->uuid);
 
-    gwfriend->status = pack->status;
     gwfriend->type = pack->type;
     if (gwfriend->status < 1) {
         // Offline, reset.
@@ -72,9 +68,9 @@ void HandleFriendUpdateInfo(Connection *conn, size_t psize, Packet *packet)
         gwfriend->zone = 0;
     }
 
-    Event_FriendStatus event;
-    api_make_friend(&event.gwfriend, gwfriend);
-    broadcast_event(&client->event_mgr, EventType_Friend_Updated, &event);
+    //Event_FriendStatus event;
+    //api_make_friend(&event.gwfriend, gwfriend);
+    //broadcast_event(&client->event_mgr, EventType_Friend_Updated, &event);
     //LogInfo("Friend info updated: %ls (%ls), status %d, type %d, map %d", friend->name_buffer, friend->account_buffer, friend->status, friend->type, friend->zone);
 }
 
@@ -96,13 +92,9 @@ void HandleFriendUpdateStatus(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     UpdateStatus *pack = cast(UpdateStatus *)packet;
     assert(client);
-    Friend* gwfriend = get_or_create_friend(pack->uuid, pack->account);
-    if (!gwfriend) {
-        LogError("Couldn't create or find a new friend (2)");
-        return;
-    }
-    kstr_read(&gwfriend->name, pack->played, ARRAY_SIZE(pack->played));
-
+    assert(pack->status >= 0 && pack->status <= 3);
+    Friend* gwfriend = get_or_create_friend(pack->uuid, NULL);
+    assert(gwfriend);
     gwfriend->status = pack->status;
     if (gwfriend->status < 1) {
         // Offline, reset.
@@ -111,10 +103,16 @@ void HandleFriendUpdateStatus(Connection *conn, size_t psize, Packet *packet)
         gwfriend->name.buffer[0] = 0;
         gwfriend->zone = 0;
     }
+    else {
+        // Online, read in player name
+        kstr_read(&gwfriend->name, pack->played, ARRAY_SIZE(pack->played));
+    }
 
-    Event_FriendStatus event;
-    api_make_friend(&event.gwfriend, gwfriend);
-    broadcast_event(&client->event_mgr, EventType_Friend_Updated, &event);
+    if (!list_empty(&client->event_mgr.callbacks[EventType_Friend_Updated])) {
+        Event_FriendStatus event;
+        api_make_friend(&event.gwfriend, gwfriend);
+        broadcast_event(&client->event_mgr, EventType_Friend_Updated, &event);
+    }
     //LogInfo("Friend status updated: %ls (%ls), status %d, type %d, map %d", friend->name_buffer, friend->account_buffer, friend->status, friend->type, friend->zone);
 }
 
@@ -142,11 +140,11 @@ void HandleFriendUpdateLocation(Connection *conn, size_t psize, Packet *packet)
     }
 
     gwfriend->zone = pack->map_id;
-    //gwfriend->type = pack->type;
-
-    Event_FriendStatus event;
-    api_make_friend(&event.gwfriend, gwfriend);
-    broadcast_event(&client->event_mgr, EventType_Friend_Updated, &event);
+    if (!list_empty(&client->event_mgr.callbacks[EventType_Friend_Updated])) {
+        Event_FriendStatus event;
+        api_make_friend(&event.gwfriend, gwfriend);
+        broadcast_event(&client->event_mgr, EventType_Friend_Updated, &event);
+    }
     //LogInfo("Friend location updated: %ls (%ls), status %d, type %d, map %d", friend->name_buffer, friend->account_buffer, friend->status, friend->type, friend->zone);
 }
 
