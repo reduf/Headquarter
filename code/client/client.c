@@ -33,6 +33,8 @@ void init_client(GwClient *client)
     init_object_manager(&client->object_mgr);
     init_event_manager(&client->event_mgr);
 
+    init_guildmember_update(client);
+
     init_connection(&client->auth_srv, client);
     init_connection(&client->game_srv, client);
 }

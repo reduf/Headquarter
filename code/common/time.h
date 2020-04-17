@@ -9,6 +9,7 @@ void time_init(void);
 
 int get_wall_clock_res(struct timespec *ts);
 int get_wall_clock_time(struct timespec *ts);
+uint64_t get_time_since_epoch(void);
 
 void time_sleep_us(unsigned int us);
 void time_sleep_ns(unsigned int ns);

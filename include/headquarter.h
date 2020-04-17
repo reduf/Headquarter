@@ -47,6 +47,7 @@ typedef struct Vec3f {
 #include "object/friend.h"
 #include "object/player.h"
 #include "object/plugin.h"
+#include "object/guild.h"
 
 #include "event.h"
 #ifdef HEADQUARTER_RUNTIME_LINKING
@@ -100,8 +101,8 @@ GetAgentPos_pt GetAgentPos;
 typedef void(__cdecl* Travel_pt)(uint32_t map_id, District district, int district_number);
 Travel_pt Travel;
 
-typedef bool(__cdecl* GetAgent_pt)(ApiAgent* agent, AgentId agent_id);
-GetAgent_pt GetAgent;
+typedef bool(__cdecl* GetObject_pt)(void* object, uint32_t object_id);
+GetObject_pt GetAgent, GetGuildInfo;
 
 typedef bool(__cdecl* GetFriend_pt)(ApiFriend* gwfriend, const void* name);
 GetFriend_pt GetFriend, GetFriendByUuid;
@@ -116,7 +117,7 @@ typedef uint32_t(__cdecl* GetBagCapacity_pt)(BagEnum bag);
 GetBagCapacity_pt GetBagCapacity;
 
 typedef uint32_t(__cdecl* GetBuffer_pt)(void* buffer, size_t length);
-GetBuffer_pt GetQuests, GetPlayers, GetAgents, GetFriends, GetMerchantItems, GetCharacterName;
+GetBuffer_pt GetQuests, GetPlayers, GetAgents, GetFriends, GetMerchantItems, GetCharacterName, GetGuildMembers;
 
 typedef uint32_t(__cdecl* GetPlayerName_pt)(uint32_t player_id, uint16_t* buffer, size_t length);
 GetPlayerName_pt GetPlayerName;
@@ -179,6 +180,7 @@ static bool hq_init() {
     assert(GetDistrictNumber = (HQINT_pt)dllsym(hnd, "GetDistrictNumber"));
     assert(GetMyAgentId = (HQINT_pt)dllsym(hnd, "GetMyAgentId"));
     assert(GetMyPlayerId = (HQINT_pt)dllsym(hnd, "GetMyPlayerId"));
+    assert(GetMyGuildId = (HQINT_pt)dllsym(hnd, "GetMyGuildId"));
 
     assert(GetAgentPos = (GetAgentPos_pt)dllsym(hnd, "GetAgentPos"));
     assert(Travel = (Travel_pt)dllsym(hnd, "Travel"));
@@ -205,12 +207,14 @@ static bool hq_init() {
     assert(GetPlayers = (GetBuffer_pt)dllsym(hnd, "GetPlayers"));
     assert(GetFriends = (GetBuffer_pt)dllsym(hnd, "GetFriends"));
     assert(GetQuests = (GetBuffer_pt)dllsym(hnd, "GetQuests"));
+    assert(GetGuildMembers = (GetBuffer_pt)dllsym(hnd, "GetGuildMembers"));
     assert(GetCharacterName = (GetBuffer_pt)dllsym(hnd, "GetCharacterName"));
 
     assert(GetNpcIdOfAgent = (GetNpcIdOfAgent_pt)dllsym(hnd, "GetNpcIdOfAgent"));
 
     assert(GetPlayerName = (GetPlayerName_pt)dllsym(hnd, "GetPlayerName"));
-    assert(GetAgent = (GetAgent_pt)dllsym(hnd, "GetAgent"));
+    assert(GetAgent = (GetObject_pt)dllsym(hnd, "GetAgent"));
+    assert(GetGuildInfo = (GetObject_pt)dllsym(hnd, "GetGuildInfo"));
     
     assert(GetFriend = (GetFriend_pt)dllsym(hnd, "GetFriend"));
     assert(GetFriendByUuid = (GetFriend_pt)dllsym(hnd, "GetFriendByUuid"));

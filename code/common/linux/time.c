@@ -91,6 +91,12 @@ uint64_t time_get_ms(void)
 {
     return (uint64_t)millis_since_boot();
 }
+uint64_t get_time_since_epoch(void)
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (uint64_t)tv.tv_sec;
+}
 
 long time_diff_nsec(struct timespec *end, struct timespec *beginning)
 {

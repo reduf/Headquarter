@@ -591,9 +591,15 @@ void GameSrv_RegisterCallbacks(Connection *conn)
 
     // guilds
     handlers[GAME_SMSG_GUILD_PLAYER_ROLE]               = HandleGuildPlayerRole;
+    handlers[GAME_SMSG_GUILD_PLAYER_INFO]               = HandleGuildPlayerInfo;
     handlers[GAME_SMSG_GUILD_GENERAL_INFO]              = HandleGuildGeneralInfo;
     handlers[GAME_SMSG_GUILD_CHANGE_FACTION]            = HandleGuildChangeFaction;
     handlers[GAME_SMSG_GUILD_INVITE_RECEIVED]           = HandleGuildInviteReceived;
+    handlers[GAME_SMSG_GUILD_PLAYER_CHANGE_COMPLETE]    = HandleGuildPlayerChangeComplete;
+    handlers[GAME_SMSG_GUILD_CHANGE_PLAYER_CONTEXT]     = HandleGuildChangePlayerContext;
+    handlers[GAME_SMSG_GUILD_CHANGE_PLAYER_TYPE]        = HandleGuildChangePlayerType;
+    handlers[GAME_SMSG_GUILD_CHANGE_PLAYER_STATUS]      = HandleGuildChangePlayerStatus;
+   // handlers[GAME_SMSG_GUILD_CHANGE_MEMBER_NAME]        = HandleGuildChangePlayerName;
 
     // effects
     handlers[GAME_SMSG_EFFECT_UPKEEP_ADDED]             = HandleEffectUpkeepAdded;

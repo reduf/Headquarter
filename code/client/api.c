@@ -450,6 +450,42 @@ HQAPI AgentId GetMyAgentId(void)
     return client->player_agent_id;
 }
 
+HQAPI bool GetGuildInfo(ApiGuild* api_guild, uint32_t guild_id) {
+    assert(client != NULL);
+    bool success = false;
+    thread_mutex_lock(&client->mutex);
+    Guild* guild = get_guild_safe(client, guild_id);
+    if (!guild) goto leave;
+    api_make_guild(api_guild, guild);
+    success = true;
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return success;
+}
+
+HQAPI size_t GetGuildMembers(ApiGuildMember* buffer, size_t length)
+{
+    assert(client != NULL);
+    size_t count = 0;
+    thread_mutex_lock(&client->mutex);
+    if (!(client->ingame && client->player))
+        goto leave;
+    if (!client->player->guild)
+        goto leave;
+    ArrayGuildMember members = client->player->guild->members;
+    if (buffer == NULL) {
+        count = members.size;
+        goto leave;
+    }
+    for (size_t i = 0; (i < members.size) && (count < length); i++) {
+        ApiGuildMember* dest = &buffer[count++];
+        api_make_guild_member(dest, &members.data[i]);
+    }
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return count;
+}
+
 HQAPI uint32_t GetMyGuildId(void)
 {
     assert(client != NULL);

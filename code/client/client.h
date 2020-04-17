@@ -120,6 +120,8 @@ typedef struct GwClient {
     CharacterArray      characters;
     Character          *current_character;
 
+    GuildMemberUpdate   guild_member_update;
+
     Chat                chat;
     World               world;
 
