@@ -57,7 +57,7 @@ typedef enum EventType {
     N_EVENT
 } EventType;
 
-typedef void (__cdecl *Callback)(EventType event, void *args, void *param);
+typedef void (*Callback)(EventType event, void *args, void *param);
 typedef struct CallbackEntry {
     struct list node;
     bool        registered;

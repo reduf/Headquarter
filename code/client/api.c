@@ -3,7 +3,7 @@
 #endif
 #define CORE_API_C
 
-HQAPI void __cdecl LogError(const char *fmt, ...)
+HQAPI void LogError(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -11,7 +11,7 @@ HQAPI void __cdecl LogError(const char *fmt, ...)
     va_end(args);
 }
 
-HQAPI void __cdecl LogDebug(const char *fmt, ...)
+HQAPI void LogDebug(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -19,7 +19,7 @@ HQAPI void __cdecl LogDebug(const char *fmt, ...)
     va_end(args);
 }
 
-HQAPI void __cdecl LogFatal(const char *fmt, ...)
+HQAPI void LogFatal(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -27,7 +27,7 @@ HQAPI void __cdecl LogFatal(const char *fmt, ...)
     va_end(args);
 }
 
-HQAPI void __cdecl LogInfo(const char *fmt, ...)
+HQAPI void LogInfo(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -35,7 +35,7 @@ HQAPI void __cdecl LogInfo(const char *fmt, ...)
     va_end(args);
 }
 
-HQAPI void __cdecl LogWarn(const char *fmt, ...)
+HQAPI void LogWarn(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
