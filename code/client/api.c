@@ -1098,8 +1098,8 @@ HQAPI void SendWhisper(const char *target, const char *msg)
     thread_mutex_lock(&client->mutex);
     if (!client->ingame)
         goto leave;
-    DECLARE_KSTR(kmsg, 32);
-    DECLARE_KSTR(ktarget, 32);
+    DECLARE_KSTR(kmsg, 120);
+    DECLARE_KSTR(ktarget, 20);
     kstr_read_ascii(&kmsg, msg, strlen(msg));
     kstr_read_ascii(&ktarget, target, strlen(target));
     GameSrv_SendWhisper(client, &ktarget, &kmsg);

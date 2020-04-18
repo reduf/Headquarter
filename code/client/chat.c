@@ -291,7 +291,7 @@ void GameSrv_SendChat(GwClient *client, Channel channel, struct kstr *msg)
         return;
     packet.buffer[0] = chan_char;
     if (!kstr_write(msg, &packet.buffer[1], ARRAY_SIZE(packet.buffer) - 1)) {
-        LogError("Couldn't send a string, it was too big");
+        LogError("Couldn't send a string, length of %d is too big (%d max)",msg->length, ARRAY_SIZE(packet.buffer) - 1);
         return;
     }
     SendPacket(&client->game_srv, sizeof(packet), &packet);
@@ -299,16 +299,18 @@ void GameSrv_SendChat(GwClient *client, Channel channel, struct kstr *msg)
 
 void GameSrv_SendWhisper(GwClient *client, struct kstr *target, struct kstr *msg)
 {
-    uint16_t buffer[255];
+    uint16_t buffer[137];
     assert(target->length + msg->length < ARRAY_SIZE(buffer));
     size_t wpos = 0;
-    for (size_t i = 0; i < target->length; i++)
+    size_t max_length = ARRAY_SIZE(buffer) - 1;
+    for (size_t i = 0; i < target->length && wpos < max_length; i++)
         buffer[wpos++] = target->buffer[i];
     buffer[wpos++] = ',';
-    for (size_t i = 0; i < msg->length; i++)
+    for (size_t i = 0; i < msg->length && wpos < max_length; i++)
         buffer[wpos++] = msg->buffer[i];
     buffer[wpos] = 0;
     DECLARE_KSTR(kmsg, ARRAY_SIZE(buffer));
     kstr_read(&kmsg, buffer, wpos);
+    LogInfo("Sendchat %ls", buffer);
     GameSrv_SendChat(client, Channel_Whisper, &kmsg);
 }
