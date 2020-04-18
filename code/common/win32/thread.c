@@ -47,7 +47,7 @@ int thread_create(thread_t *thread, thread_start_t start, void *arg)
     return error;
 }
 
-_Noreturn void thread_exit(int retval)
+void thread_exit(int retval)
 {
     ExitThread((DWORD)retval);
 }

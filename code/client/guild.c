@@ -267,8 +267,8 @@ void HandleGuildPlayerInfo(Connection* conn, size_t psize, Packet* packet)
     found->member_type = pack->member_type;
     calc_last_login(found, pack->minutes_since_login);
     //found->last_login_date = 0;
-    LogInfo("Guild member added: %ls (%ls), unk %d, type %d, status %d", 
-        found->account_name_buffer, found->player_name_buffer, pack->unk, found->member_type, found->status);
+    //LogInfo("Guild member added: %ls (%ls), unk %d, type %d, status %d", 
+    //    found->account_name_buffer, found->player_name_buffer, pack->unk, found->member_type, found->status);
     if (!list_empty(&client->event_mgr.callbacks[EventType_GuildMember_Updated])) {
         Event_GuildMemberUpdated event;
         api_make_guild_member(&event.member, found);
