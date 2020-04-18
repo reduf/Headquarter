@@ -54,7 +54,7 @@ bool plugin_load(const char *path)
         LogError("Couldn't load the plugin '%s'", temp_path);
         return false;
     }
-    char plugin_loaded_location[255];
+//    char plugin_loaded_location[255];
     //GetModuleFileName(plugin->module, plugin_loaded_location, sizeof(plugin_loaded_location));
     //LogInfo("Loaded plugin from %s", plugin_loaded_location);
     plugin->path = path;

@@ -173,6 +173,7 @@ void HandleTitleRankData(Connection *conn, size_t psize, Packet *packet);
 void HandleTitleRankDisplay(Connection *conn, size_t psize, Packet *packet);
 void HandleTitleTrackInfo(Connection *conn, size_t psize, Packet *packet);
 void HandleMissionAddGoal(Connection *conn, size_t psize, Packet *packet);
+void HandleFriendListMessage(Connection* conn, size_t psize, Packet* packet);
 void HandleMissionAddObjective(Connection *conn, size_t psize, Packet *packet);
 void HandleDialogButton(Connection *conn, size_t psize, Packet *packet);
 void HandleDialogBody(Connection *conn, size_t psize, Packet *packet);

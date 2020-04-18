@@ -143,6 +143,7 @@
 #define GAME_SMSG_TRADE_OFFERED_COUNT               (0x0008) // 8
 #define GAME_SMSG_PING_REQUEST                      (0x000C) // 12
 #define GAME_SMSG_PING_REPLY                        (0x000D) // 13
+#define GAME_SMSG_FRIENDLIST_MESSAGE				(0x000E) // 14
 #define GAME_SMSG_ACCOUNT_CURRENCY                  (0x0010) // 16
 #define GAME_SMSG_AGENT_MOVEMENT_TICK               (0x001F) // 31
 #define GAME_SMSG_AGENT_INSTANCE_TIMER              (0x0020) // 32

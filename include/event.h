@@ -12,6 +12,7 @@ typedef enum EventType {
     EventType_ItemQuotePrice, // Item quote received.
 
     EventType_ChatMessage,
+    EventType_FriendListMessage,
 
     EventType_Disconnect,
 

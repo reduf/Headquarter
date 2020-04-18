@@ -419,6 +419,55 @@ void HandleMissionAddGoal(Connection *conn, size_t psize, Packet *packet)
 
     client->world.objective_count += 1;
 }
+void HandleFriendListMessage(Connection* conn, size_t psize, Packet* packet)
+{
+#pragma pack(push, 1)
+    typedef struct {
+        Header header;
+        int32_t type;
+        int32_t unk2;
+        uint16_t subject[256];
+        uint16_t message[256];
+    } ErrorMessage;
+#pragma pack(pop)
+
+    assert(packet->header == GAME_SMSG_FRIENDLIST_MESSAGE);
+    assert(sizeof(ErrorMessage) == psize);
+
+    GwClient* client = cast(GwClient*)conn->data;
+    ErrorMessage* pack = cast(ErrorMessage*)packet;
+    assert(client && client->game_srv.secured);
+    
+    LogInfo("Game server message %d %d %ls %ls", pack->type, pack->unk2, pack->subject, pack->message);
+
+    Event_ChatMessage params;
+    params.extra_id = 0;
+    switch (pack->type) {
+    case 2:
+        // Outgoing whisper
+        params.channel = Channel_GWCA1;
+        break;
+    case 54:
+        // Player is not online, slap a message in.
+        params.channel = Channel_Warning;
+        params.sender.buffer = pack->subject;
+        wchar_t new_message[512];
+        wchar_t sender_ws[ARRAY_SIZE(pack->subject)];
+        size_t length = 0;
+        for (length = 0; length < ARRAY_SIZE(pack->subject) && pack->subject[length]; length++)
+            sender_ws[length] = pack->subject[length];
+        sender_ws[length] = 0;
+        swprintf(new_message, ARRAY_SIZE(new_message), L"Player %s is not online", sender_ws);
+        for (length = 0; length < ARRAY_SIZE(new_message) && new_message[length]; length++)
+            pack->message[length] = new_message[length];
+        pack->message[length] = 0;
+    }
+    params.sender.buffer = pack->subject;
+    for (params.sender.length = 0; params.sender.length < ARRAY_SIZE(pack->subject) && pack->subject[params.sender.length] != 0; params.sender.length++) {}
+    params.message.buffer = pack->message;
+    for (params.message.length = 0; params.message.length < ARRAY_SIZE(pack->message) && pack->message[params.message.length] != 0; params.message.length++) {}
+    broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
+}
 
 void HandleMissionAddObjective(Connection *conn, size_t psize, Packet *packet)
 {
@@ -460,6 +509,7 @@ void GameSrv_RegisterCallbacks(Connection *conn)
     handlers[GAME_SMSG_INSTANCE_TRAVEL_TIMER]           = HandleInstanceTravelTimer;
     handlers[GAME_SMSG_INSTANCE_LOAD_FINISH]            = HandleInstanceLoadFinish;
     handlers[GAME_SMSG_INSTANCE_LOADED]                 = HandleInstanceLoaded;
+    handlers[GAME_SMSG_FRIENDLIST_MESSAGE]              = HandleFriendListMessage;
 
     handlers[GAME_SMSG_GOLD_CHARACTER_ADD]              = HandleGoldCharacterAdd;
     handlers[GAME_SMSG_GOLD_STORAGE_ADD]                = HandleGoldStorageAdd;
@@ -654,7 +704,7 @@ void HandleCantEnterOutpost(Connection *conn, size_t psize, Packet *packet)
     LogInfo("Can't enter outpost: %d\n", pack->value);
     client->try_changing_zone = false;
 
-    broadcast_event(&client->event_mgr, WORLD_CANT_TRAVEL, NULL);
+    broadcast_event(&client->event_mgr, WORLD_CANT_TRAVEL, &pack->value);
 }
 
 void GameSrv_HeartBeat(Connection *conn)
