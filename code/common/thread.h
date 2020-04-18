@@ -37,7 +37,7 @@ typedef struct thread {
 typedef int (*thread_start_t)(void *);
 
 int thread_create(thread_t *thread, thread_start_t start, void *param);
-_Noreturn void thread_exit(int retval);
+void thread_exit(int retval);
 thread_t thread_self(void);
 
 int  thread_detach(thread_t thread);

@@ -12,7 +12,7 @@ struct start_info {
 
 static bool create_start_info(struct start_info **outinfo, thread_start_t start, void *param)
 {
-    struct start_info *info = malloc(sizeof(*info));
+    struct start_info *info = (struct start_info*)malloc(sizeof(*info));
     if (!info)
         return false;
     info->param = param;
@@ -23,7 +23,7 @@ static bool create_start_info(struct start_info **outinfo, thread_start_t start,
 
 static void *thread_entry(void *param)
 {
-    struct start_info *info = param;
+    struct start_info *info = (struct start_info*)param;
     param = info->param;
     thread_start_t start = info->start;
     free(info);
@@ -54,7 +54,7 @@ int thread_create(thread_t *thread, thread_start_t start, void *param)
     return 0;
 }
 
-_Noreturn void thread_exit(int retval)
+void thread_exit(int retval)
 {
     pthread_exit((void *)((intptr_t)retval));
 }

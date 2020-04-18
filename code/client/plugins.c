@@ -55,8 +55,8 @@ bool plugin_load(const char *path)
         return false;
     }
     char plugin_loaded_location[255];
-    GetModuleFileName(plugin->module, plugin_loaded_location, sizeof(plugin_loaded_location));
-    LogInfo("Loaded plugin from %s", plugin_loaded_location);
+    //GetModuleFileName(plugin->module, plugin_loaded_location, sizeof(plugin_loaded_location));
+    //LogInfo("Loaded plugin from %s", plugin_loaded_location);
     plugin->path = path;
     plugin->OnPluginLoad   = dllsym(plugin->module, "OnPluginLoad");
     plugin->OnPluginUnload = dllsym(plugin->module, "OnPluginUnload");
