@@ -28,7 +28,11 @@
 # include "win32/thread.c"
 # include "win32/process.c"
 #else
+#ifndef _GNU_SOURCE
+# define _GNU_SOURCE 
+#endif
 # include <sys/types.h>
+# include <link.h>
 # include <dlfcn.h>
 # include <pthread.h>
 # include <unistd.h>

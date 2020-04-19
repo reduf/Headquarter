@@ -4,7 +4,6 @@
 #define OS_DLFUNC_C
 
 #include "../dlfunc.h"
-#include <link.h>
 
 void *dllopen(const char *filename)
 {
@@ -26,8 +25,8 @@ int dlllocation(void* handle, char* buffer, int length) {
     else {
         struct link_map* lm;
         dlinfo(handle, RTLD_DI_LINKMAP, &lm);
-        for (bytes = 0; lm->lm_name[bytes] && bytes < length - 1; bytes++)
-            buffer[bytes] = lb->lm_name[bytes];
+        for (bytes = 0; lm->l_name[bytes] && bytes < length - 1; bytes++)
+            buffer[bytes] = lm->l_name[bytes];
         buffer[bytes] = '\0';
     }
 }
