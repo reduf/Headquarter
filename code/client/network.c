@@ -159,14 +159,19 @@ void Network_Init(void)
 #ifdef _WIN32
     WSADATA wsaData = {0};
     int wsa_error = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (wsa_error != NO_ERROR)
+    if (wsa_error != NO_ERROR) {
+        printf("WSAError %d", wsa_error);
         return;
+    }
 #endif
 
-    char key_path[256];
-    snprintf(key_path, 256, "data/gw_%d.pub", GUILD_WARS_VERSION);
-    if (!read_dhm_key_file(&official_server_keys, key_path))
+    char key_path[1024];
+    int length = dlldir(NULL, key_path,sizeof(key_path));
+    snprintf(&key_path[length], sizeof(key_path) - length, "/data/gw_%d.pub", GUILD_WARS_VERSION);
+    if (!read_dhm_key_file(&official_server_keys, key_path)) {
+        printf("Key file read fail");
         return;
+    }
 
     if (!read_dhm_key_file(&custom_server_keys, "data/authkey.pub")) {
         DiffieHellmanCtx_Reset(&official_server_keys);

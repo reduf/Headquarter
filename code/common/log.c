@@ -41,12 +41,15 @@ log_print_level_s(unsigned int level)
 void log_init(void)
 {
     int error;
-
+#ifndef _DEBUG
+    return;
+#endif
 #ifdef _NDEBUG
     log_print_level = LOG_INFO;
 #else
     log_print_level = LOG_DEBUG;
 #endif
+
 
     error = thread_mutex_init(&log_mutex);
     if (error) {
@@ -60,7 +63,8 @@ void log_init(void)
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d_%H-%M-%S", ts);
 
     char file_path[1024];
-    snprintf(file_path, sizeof(file_path), "logs/%s_%d.txt", timestamp, getpid());
+    int length = dlldir(NULL, file_path, sizeof(file_path));
+    snprintf(&file_path[length], sizeof(file_path) - length, "logs/%s_%d.txt", timestamp, getpid());
 
     log_file = fopen(file_path, "w");
     if (!log_file) {
@@ -91,10 +95,13 @@ int log_msg(unsigned int level, const char *format, ...)
 
 int log_vmsg(unsigned int level, const char *format, va_list ap)
 {
+#ifndef _DEBUG
+    return 0;
+#endif
     int nr_chars;
     char buffer[LOG_MSG_SIZE];
 
-    if (level > log_print_level) {
+    if (!log_file || level > log_print_level) {
         return 0;
     }
 
