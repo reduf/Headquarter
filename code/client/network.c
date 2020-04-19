@@ -169,7 +169,7 @@ void Network_Init(void)
     int length = dlldir(NULL, key_path,sizeof(key_path));
     snprintf(&key_path[length], sizeof(key_path) - length, "/data/gw_%d.pub", GUILD_WARS_VERSION);
     if (!read_dhm_key_file(&official_server_keys, key_path)) {
-        printf("Key file read fail");
+        printf("Failed to read key file at %s", key_path);
         return;
     }
 

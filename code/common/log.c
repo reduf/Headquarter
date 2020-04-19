@@ -68,6 +68,7 @@ void log_init(void)
 
     log_file = fopen(file_path, "w");
     if (!log_file) {
+        printf("Failed to open log find at %s", file_path);
         assert(!"log_init: fopen");
         return;
     }
