@@ -171,7 +171,9 @@ void HandleCharacterInfo(Connection *conn, size_t psize, Packet *packet)
         uint32_t unk0;
         uint16_t name[20];
         uint32_t n_extended;
-        uint8_t  extended[64];
+        uint16_t unk1;
+        int16_t last_map_id;
+        int16_t  extended[30];
     } CharacterInfo;
 #pragma pack(pop)
 
@@ -188,9 +190,8 @@ void HandleCharacterInfo(Connection *conn, size_t psize, Packet *packet)
         LogError("Couldn't create a new character");
         return;
     }
-
     init_character(character);
-
+    character->map = pack->last_map_id;
     kstr_read(&character->name, pack->name, ARRAY_SIZE(pack->name));
     uuid_dec_le(pack->uuid, character->uuid);
 }

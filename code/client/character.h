@@ -11,7 +11,7 @@ typedef struct Character {
 
     Profession  prof1;
     Profession  prof2;
-    // int map;
+    int32_t map;
 } Character;
 typedef array(Character) CharacterArray;
 
@@ -21,4 +21,5 @@ static void init_character(Character *character)
 
     character->prof1 = Profession_None;
     character->prof2 = Profession_None;
+    character->map = 0;
 }
