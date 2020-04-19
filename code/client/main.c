@@ -301,10 +301,14 @@ int main(int argc, const char *argv[])
     #endif
     }
 
-    if (!plugin_load(options.script)) {
-        LogError("Couldn't load the plugin '%s'", options.script);
+    char full_script_path[1024];
+    int length = dlldir(NULL, full_script_path, sizeof(full_script_path));
+    snprintf(&full_script_path[length], sizeof(full_script_path) - length, "/%s", options.script);
+    if (!plugin_load(full_script_path)) {
+        LogError("Couldn't load the plugin '%s'", full_script_path);
         return 1;
     }
+    LogInfo("Plugin loaded, %s\n", full_script_path);
 
     main_loop();
 
