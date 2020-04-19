@@ -64,11 +64,11 @@ void log_init(void)
 
     char file_path[1024];
     int length = dlldir(NULL, file_path, sizeof(file_path));
-    snprintf(&file_path[length], sizeof(file_path) - length, "logs/%s_%d.txt", timestamp, getpid());
+    snprintf(&file_path[length], sizeof(file_path) - length, "/logs/%s_%d.txt", timestamp, getpid());
 
     log_file = fopen(file_path, "w");
     if (!log_file) {
-        printf("Failed to open log find at %s", file_path);
+        printf("Failed to open log find at %s\n", file_path);
         assert(!"log_init: fopen");
         return;
     }

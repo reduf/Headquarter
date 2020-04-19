@@ -167,13 +167,17 @@ void Network_Init(void)
 
     char key_path[1024];
     int length = dlldir(NULL, key_path,sizeof(key_path));
-    snprintf(&key_path[length], sizeof(key_path) - length, "/data/gw_%d.pub", GUILD_WARS_VERSION);
+    length += snprintf(&key_path[length], sizeof(key_path) - length, "/data/gw_%d.pub", GUILD_WARS_VERSION);
+    key_path[length] = 0;
     if (!read_dhm_key_file(&official_server_keys, key_path)) {
-        printf("Failed to read key file at %s", key_path);
+        printf("Failed to read file at %s\n", key_path);
         return;
     }
-
-    if (!read_dhm_key_file(&custom_server_keys, "data/authkey.pub")) {
+    length = dlldir(NULL, key_path, sizeof(key_path));
+    length += snprintf(&key_path[length], sizeof(key_path) - length, "/data/authkey.pub", GUILD_WARS_VERSION);
+    key_path[length] = 0;
+    if (!read_dhm_key_file(&custom_server_keys, key_path)) {
+        printf("Failed to read file at %s\n", key_path);
         DiffieHellmanCtx_Reset(&official_server_keys);
         return;
     }
