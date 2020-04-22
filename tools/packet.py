@@ -164,7 +164,7 @@ class Descriptor(object):
             str_fields.append(str(f))
         
         field_count = self.count_field()
-        seperator = ',\n\t'
+        seperator = ',\n    '
 
         if not self.handler is None:
             if self.handler:
@@ -174,14 +174,14 @@ class Descriptor(object):
             print('// Handler Rva: %08X' % handler)
         print('MsgField %s_%04d[%d] = {' % (prefix, self.header, field_count))
 
-        s = '\t' + seperator.join(str_fields) + ','
+        s = '    ' + seperator.join(str_fields) + ','
         print(s)
 
         str_fields = []
         if self.has_nested_struct:
             for f in self.nested_struct_fields:
                 str_fields.append(str(f))
-            s = '\t' + seperator.join(str_fields) + ','
+            s = '    ' + seperator.join(str_fields) + ','
             print(s)
 
         print('};\n')
@@ -322,7 +322,7 @@ def main(argv):
             header = desc.header
             d = header // 10
             count = desc.count_field()
-            print('\t{%-3d, %-3d, %s_%04d, %-3d, 0},' % (header, count, prefix, header, desc.size))
+            print('    {%-3d, %-3d, %s_%04d, %-3d, 0},' % (header, count, prefix, header, desc.size))
         print('};\n')
     
     image_base = proc.module().base
