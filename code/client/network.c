@@ -165,22 +165,41 @@ void Network_Init(void)
     }
 #endif
 
-    char key_path[1024];
-    int length = dlldir(NULL, key_path,sizeof(key_path));
-    length += snprintf(&key_path[length], sizeof(key_path) - length, "/data/gw_%d.pub", GUILD_WARS_VERSION);
-    key_path[length] = 0;
-    if (!read_dhm_key_file(&official_server_keys, key_path)) {
-        printf("Failed to read file at %s\n", key_path);
-        return;
+    char file_path[1024];
+    int length = 0;
+    bool file_read_ok = false;
+    for (int i = 0; i < 4 && !file_read_ok; i++) {
+        length = dlldir(NULL, file_path, sizeof(file_path));
+        for (int j = 0; j < i; j++) {
+            file_path[length++] = '/';
+            file_path[length++] = '.';
+            file_path[length++] = '.';
+        }
+        length += snprintf(&file_path[length], sizeof(file_path) - length, "/data/gw_%d.pub", GUILD_WARS_VERSION);
+        file_read_ok = read_dhm_key_file(&official_server_keys, file_path);
+        //if (!file_read_ok) {
+        //    printf("Failed to read file at %s\n", file_path);
+        //}
     }
-    length = dlldir(NULL, key_path, sizeof(key_path));
-    length += snprintf(&key_path[length], sizeof(key_path) - length, "/data/authkey.pub");
-    key_path[length] = 0;
-    if (!read_dhm_key_file(&custom_server_keys, key_path)) {
-        printf("Failed to read file at %s\n", key_path);
-        DiffieHellmanCtx_Reset(&official_server_keys);
-        return;
+    assert(file_read_ok);
+    LogInfo("gw key found @ %s", file_path);
+
+    file_read_ok = false;
+    for (int i = 0; i < 4 && !file_read_ok; i++) {
+        length = dlldir(NULL, file_path, sizeof(file_path));
+        for (int j = 0; j < i; j++) {
+            file_path[length++] = '/';
+            file_path[length++] = '.';
+            file_path[length++] = '.';
+        }
+        length += snprintf(&file_path[length], sizeof(file_path) - length, "/data/authkey.pub");
+        file_read_ok = read_dhm_key_file(&custom_server_keys, file_path);
+        //if (!file_read_ok) {
+        //    printf("Failed to read file at %s\n", file_path);
+        //}
     }
+    assert(file_read_ok);
+    LogInfo("authkey.pub key found @ %s", file_path);
 
     const char secret[] = "Stradivarius";
     mbedtls_entropy_init(&entropy);

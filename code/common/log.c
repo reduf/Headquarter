@@ -60,15 +60,35 @@ void log_init(void)
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d_%H-%M-%S", ts);
 
     char file_path[1024];
-    int length = dlldir(NULL, file_path, sizeof(file_path));
-    snprintf(&file_path[length], sizeof(file_path) - length, "/logs/%s_%d.txt", timestamp, getpid());
+    int length = 0;
+    for (int i = 0; i < 4 && !log_file; i++) {
+        length = dlldir(NULL, file_path, sizeof(file_path));
+        for (int j = 0; j < i; j++) {
+            file_path[length++] = '/';
+            file_path[length++] = '.';
+            file_path[length++] = '.';
+        }
+        length += snprintf(&file_path[length], sizeof(file_path) - length, "/logs/%s_%d.txt", timestamp, getpid());
+        log_file = fopen(file_path, "w");
+        if (!log_file) {
+            printf("Failed to open log file at %s\n", file_path);
+        }
+    }
+    assert(log_file);
+    /*
+    snprintf(file_path, sizeof(file_path), "logs/%s_%d.txt", timestamp, getpid());
 
     log_file = fopen(file_path, "w");
     if (!log_file) {
-        printf("Failed to open log file at %s\n", file_path);
-        assert(!"log_init: fopen");
-        return;
-    }
+        length = dlldir(NULL, file_path, sizeof(file_path));
+        snprintf(&file_path[length], sizeof(file_path) - length, "../../logs/%s_%d.txt", timestamp, getpid());
+        log_file = fopen(file_path, "w");
+        if (!log_file) {
+            printf("Failed to open log file at %s\n", file_path);
+            assert(!"log_init: fopen");
+            return;
+        }
+    }*/
 }
 
 static int log_time(char *buffer, size_t size)
