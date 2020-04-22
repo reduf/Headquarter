@@ -166,7 +166,7 @@ static void main_loop(void)
         get_wall_clock_time(&t0);
 
         long frame_delta_nsec = time_diff_nsec(&t0, &last_frame_time);
-        msec_t frame_delta = frame_delta_nsec / 1000;
+        msec_t frame_delta = frame_delta_nsec / 1000000;
 
         //
         // Update the client asynchronous operations such as:
