@@ -264,6 +264,12 @@ void HandleWhisperReceived(Connection *conn, size_t psize, Packet *packet)
     WhisperReceived *pack = cast(WhisperReceived *)packet;
     assert(client && client->game_srv.secured);
 
+    DECLARE_KSTR(sender, 20);
+    DECLARE_KSTR(message, 256);
+
+    kstr_read(&sender, pack->sender, ARRAY_SIZE(pack->sender));
+    kstr_read(&message, pack->message, ARRAY_SIZE(pack->message));
+
     Event_ChatMessage params;
     params.extra_id = 0;
     params.channel = Channel_Whisper;
