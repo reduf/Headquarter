@@ -168,35 +168,29 @@ void Network_Init(void)
     char file_path[1024];
     int length = 0;
     bool file_read_ok = false;
+    char dir_path[1024];
+    length = dlldir(NULL, dir_path, sizeof(dir_path));
     for (int i = 0; i < 4 && !file_read_ok; i++) {
-        length = dlldir(NULL, file_path, sizeof(file_path));
-        for (int j = 0; j < i; j++) {
-            file_path[length++] = '/';
-            file_path[length++] = '.';
-            file_path[length++] = '.';
-        }
-        length += snprintf(&file_path[length], sizeof(file_path) - length, "/data/gw_%d.pub", GUILD_WARS_VERSION);
+        snprintf(file_path, sizeof(file_path), "%s/data/gw_%d.pub", dir_path, GUILD_WARS_VERSION);
+        dir_path[length++] = '/';
+        dir_path[length++] = '.';
+        dir_path[length++] = '.';
+        dir_path[length] = 0;
         file_read_ok = read_dhm_key_file(&official_server_keys, file_path);
-        //if (!file_read_ok) {
-        //    printf("Failed to read file at %s\n", file_path);
-        //}
     }
     assert(file_read_ok);
     LogInfo("gw key found @ %s", file_path);
 
     file_read_ok = false;
+    length = dlldir(NULL, dir_path, sizeof(dir_path));
+    dir_path[length] = 0;
     for (int i = 0; i < 4 && !file_read_ok; i++) {
-        length = dlldir(NULL, file_path, sizeof(file_path));
-        for (int j = 0; j < i; j++) {
-            file_path[length++] = '/';
-            file_path[length++] = '.';
-            file_path[length++] = '.';
-        }
-        length += snprintf(&file_path[length], sizeof(file_path) - length, "/data/authkey.pub");
+        snprintf(file_path, sizeof(file_path), "%s/data/authkey.pub",dir_path);
+        dir_path[length++] = '/';
+        dir_path[length++] = '.';
+        dir_path[length++] = '.';
+        dir_path[length] = 0;
         file_read_ok = read_dhm_key_file(&custom_server_keys, file_path);
-        //if (!file_read_ok) {
-        //    printf("Failed to read file at %s\n", file_path);
-        //}
     }
     assert(file_read_ok);
     LogInfo("authkey.pub key found @ %s", file_path);

@@ -61,20 +61,21 @@ void log_init(void)
 
     char file_path[1024];
     int length = 0;
+    char dir_path[1024];
+    length = dlldir(NULL, dir_path, sizeof(dir_path));
     for (int i = 0; i < 4 && !log_file; i++) {
-        length = dlldir(NULL, file_path, sizeof(file_path));
-        for (int j = 0; j < i; j++) {
-            file_path[length++] = '/';
-            file_path[length++] = '.';
-            file_path[length++] = '.';
-        }
-        length += snprintf(&file_path[length], sizeof(file_path) - length, "/logs/%s_%d.txt", timestamp, getpid());
+        snprintf(file_path, sizeof(file_path), "%s/logs/%s_%d.txt", dir_path,timestamp, getpid());
+        dir_path[length++] = '/';
+        dir_path[length++] = '.';
+        dir_path[length++] = '.';
+        dir_path[length] = 0;
         log_file = fopen(file_path, "w");
         if (!log_file) {
             printf("Failed to open log file at %s\n", file_path);
         }
     }
     assert(log_file);
+    printf("Logging to %s\n",file_path);
     /*
     snprintf(file_path, sizeof(file_path), "logs/%s_%d.txt", timestamp, getpid());
 
