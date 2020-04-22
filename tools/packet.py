@@ -239,7 +239,7 @@ def decode_msg_description(msg_id, gw_fields, handler = None):
 def main(argv):
     proc = Process.from_name('Gw.exe')
     scanner = ProcessScanner(proc)
-    addr = scanner.find(b'\x74\xF1\x8D\x4D\xF8\xC7\x45\xF8\x00', -6)
+    addr = scanner.find(b'\x75\x04\x33\xC0\x5D\xC3\x8B\x41\x08\xA8\x01\x75', -0x6)
     addr = proc.read(addr)[0]      # Address
     addr = proc.read(addr)[0]      # gs = *(GameServer **)Address
     addr = proc.read(addr + 8)[0]  # gs->consts
