@@ -285,7 +285,7 @@ void GameSrv_SendChat(GwClient *client, Channel channel, struct kstr *msg)
 #pragma pack(push, 1)
     typedef struct {
         Header header;
-        uint32_t unk0;
+        AgentId agent_id;
         uint16_t buffer[138];
     } ChatMessage;
 #pragma pack(pop)
