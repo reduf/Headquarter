@@ -10,7 +10,7 @@
 
 #define cast(T) (T)
 
-#define indexof(base, offset) (offset - base)
+#define indexof(base, offset) (int)(offset - base)
 
 #define ROL16(x, n) ((x << n) | ((x & 0xFFFF)     >> (16 - n)))
 #define ROL32(x, n) ((x << n) | ((x & 0xFFFFFFFF) >> (32 - n)))

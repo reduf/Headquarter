@@ -174,7 +174,7 @@ void Network_Init(void)
         return;
     }
     length = dlldir(NULL, key_path, sizeof(key_path));
-    length += snprintf(&key_path[length], sizeof(key_path) - length, "/data/authkey.pub", GUILD_WARS_VERSION);
+    length += snprintf(&key_path[length], sizeof(key_path) - length, "/data/authkey.pub");
     key_path[length] = 0;
     if (!read_dhm_key_file(&custom_server_keys, key_path)) {
         printf("Failed to read file at %s\n", key_path);

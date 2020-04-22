@@ -41,9 +41,6 @@ log_print_level_s(unsigned int level)
 void log_init(void)
 {
     int error;
-#ifndef _DEBUG
-    return;
-#endif
 #ifdef _NDEBUG
     log_print_level = LOG_INFO;
 #else
@@ -68,7 +65,7 @@ void log_init(void)
 
     log_file = fopen(file_path, "w");
     if (!log_file) {
-        printf("Failed to open log find at %s\n", file_path);
+        printf("Failed to open log file at %s\n", file_path);
         assert(!"log_init: fopen");
         return;
     }
@@ -78,7 +75,7 @@ static int log_time(char *buffer, size_t size)
 {
     time_t t = time(NULL);
     struct tm *ts = localtime(&t);
-    return strftime(buffer, size, "%Y-%m-%d %H:%M:%S", ts);
+    return (int)strftime(buffer, size, "%Y-%m-%d %H:%M:%S", ts);
 }
 
 int log_vmsg(unsigned int level, const char *format, va_list ap);
@@ -96,9 +93,6 @@ int log_msg(unsigned int level, const char *format, ...)
 
 int log_vmsg(unsigned int level, const char *format, va_list ap)
 {
-#ifndef _DEBUG
-    return 0;
-#endif
     int nr_chars;
     char buffer[LOG_MSG_SIZE];
 

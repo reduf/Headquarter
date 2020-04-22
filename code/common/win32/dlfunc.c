@@ -23,8 +23,7 @@ int dllclose(void* handle)
         return -1;
 }
 int dlllocation(void* handle, char* buffer, int length) {
-    if (GetModuleFileName(handle, buffer, length) < 0)
-        return -1;
+    return GetModuleFileName((HMODULE)handle, buffer, length);
 }
 int dlldir(void* handle, char* buffer, int length) {
     int len = dlllocation(handle, buffer, length);
@@ -32,7 +31,7 @@ int dlldir(void* handle, char* buffer, int length) {
         return len;
     char* p = strrchr(buffer, '\\');
     if (p) p[0] = 0;
-    return strlen(buffer);
+    return (int)strlen(buffer);
 }
 
 void *dllsym(void* handle, const char *symbol)
