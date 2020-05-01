@@ -79,16 +79,17 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
         /* +h000A */ int8_t type;
         /* +h000B */ int8_t unk0;
         /* +h000C */ int16_t dye_color;
-        /* +h000E */ int16_t meterials;
+        /* +h000E */ int16_t materials;
         /* +h0010 */ int8_t unk1;
-        /* +h0011 */ int32_t flags;
+        /* +h0011 */ int32_t flags; // interaction
         /* +h0015 */ int32_t value;
         /* +h0019 */ int32_t model;
         /* +h001D */ int32_t quantity;
         /* +h0021 */ uint16_t name[64];
-        /* +h009D */ uint32_t n_unk2;
-        /* +h00A1 */ uint32_t unk2[64];
+        /* +h009D */ uint32_t mod_struct_size;
+        /* +h00A1 */ uint32_t mod_struct[64];
     } ItemInfo;
+
 #pragma pack(pop)
 
     assert(packet->header == GAME_SMSG_ITEM_GENERAL_INFO);
@@ -106,12 +107,19 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
     }
 
     Item *new_item = cast(Item *)game_object_alloc(&client->object_mgr, ObjectType_Item);
+    init_item(new_item);
     new_item->item_id = pack->item_id;
     new_item->flags = pack->flags;
     new_item->model_id = pack->model;
     new_item->quantity = pack->quantity;
     new_item->type = pack->type;
     new_item->value = pack->value;
+    kstr_read(&new_item->name, pack->name, ARRAY_SIZE(pack->name));
+    size_t i = 0;
+    for (i = 0; i < pack->mod_struct_size; i++) {
+        new_item->mod_struct[i] = pack->mod_struct[i];
+    }
+    new_item->mod_struct[i] = 0;
 
     array_set(*items, pack->item_id, new_item);
 }
@@ -298,7 +306,7 @@ void HandleWindowItemStreamEnd(Connection* conn, size_t psize, Packet* packet) {
     ItemStreamEnd* pack = cast(ItemStreamEnd*)packet;
     assert(client && client->game_srv.secured);
 
-    HandleMerchantReady();
+    HandleMerchantReady(client);
 }
 void HandleWindowMerchant(Connection* conn, size_t psize, Packet* packet) {
     #pragma pack(push, 1)
@@ -318,7 +326,7 @@ void HandleWindowMerchant(Connection* conn, size_t psize, Packet* packet) {
 
     if (pack->type == 11 && !pack->unk) {
         // Special case for merchant; only receives list of buyable items (i.e. no WindowPricesEnd packet; GW client figures out the sell tab)
-        HandleMerchantReady();
+        HandleMerchantReady(client);
     }
 }
 void HandleWindowOwner(Connection *conn, size_t psize, Packet *packet)
@@ -346,8 +354,10 @@ void HandleWindowOwner(Connection *conn, size_t psize, Packet *packet)
     event.sender_agent_id = pack->agent_id;
     broadcast_event(&client->event_mgr, DIALOG_OPENNED, &event);
 }
-void HandleMerchantReady() {
+void HandleMerchantReady(GwClient* client) {
     Item* item;
+    LogInfo("HandleMerchantReady called for %d items", client->tmp_merchant_items.size);
+    thread_mutex_lock(&client->mutex);
     for (size_t i = 0; i < client->tmp_merchant_items.size; i++) {
         array_add(client->merchant_items, client->tmp_merchant_items.data[i]);
         if (array_inside(client->tmp_merchant_prices, i)) {
@@ -357,7 +367,7 @@ void HandleMerchantReady() {
                 item->value = client->tmp_merchant_prices.data[i];
         }
     }
-
+    thread_mutex_unlock(&client->mutex);
     Event_DialogOpenned event;
     event.sender_agent_id = client->merchant_agent_id;
     broadcast_event(&client->event_mgr, MERCHANT_WINDOW_OPENED, &event);

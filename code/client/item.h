@@ -13,6 +13,10 @@ typedef struct Item {
     uint32_t    quantity;
     uint32_t    model_id;
 
+    struct kstr name;
+    uint16_t    name_buffer[8];
+    uint32_t    mod_struct[12];
+
     Bag        *bag;
     ItemType    type;
     uint32_t    slot;
@@ -27,6 +31,12 @@ static void api_make_item(ApiItem *dest, Item *src)
     dest->type      = src->type;
     dest->value     = src->value;
 }
+static void init_item(Item* item)
+{
+    kstr_init(&item->name, item->name_buffer, 0, ARRAY_SIZE(item->name_buffer));
+    memset(item->mod_struct, 0, ARRAY_SIZE(item->mod_struct));
+}
+
 
 void remove_item_from_bag(Item *item);
 Item *get_item_safe(GwClient *client, int32_t id);

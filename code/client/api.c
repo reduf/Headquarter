@@ -57,6 +57,54 @@ HQAPI void FreePluginAndExitThread(void *module, int retval)
     thread_mutex_unlock(&client->mutex);
     thread_exit(retval);
 }
+HQAPI size_t GetItemModStruct(uint32_t item_id, uint32_t* buffer, size_t length) {
+    assert(client != NULL);
+    if (!length && buffer)
+        return 0;
+    size_t written = 0;
+    thread_mutex_lock(&client->mutex);
+    if (!(client->ingame && client->world.hash))
+        goto leave;
+    Item* item = get_item_safe(client, item_id);
+    if (!item)
+        goto leave;
+    if (!buffer) {
+        while (item->mod_struct[written]) written++;
+        goto leave;
+    }
+    for (written = 0; written < length && item->mod_struct[written]; written++) {
+        buffer[written] = item->mod_struct[written];
+    }
+    buffer[written] = 0;
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return written;
+}
+HQAPI size_t GetItemName(uint32_t item_id, uint16_t* buffer, size_t length) {
+    assert(client != NULL);
+    if (!length && buffer)
+        return 0;
+    size_t written = 0;
+    thread_mutex_lock(&client->mutex);
+    if (!(client->ingame && client->world.hash))
+        goto leave;
+    Item* item = get_item_safe(client, item_id);
+    if (!item)
+        goto leave;
+    if (!buffer) {
+        written = item->name.length;
+        goto leave;
+    }
+    if (kstr_write(&item->name, buffer, length)) {
+        written = item->name.length;
+    }
+    else {
+        written = 0;
+    }
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return written;
+}
 
 HQAPI size_t GetPlugins(ApiPlugin *buffer, size_t length)
 {

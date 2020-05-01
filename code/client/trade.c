@@ -94,14 +94,14 @@ void HandleTradeAddItem(Connection *conn, size_t psize, Packet *packet)
         Header header;
         int32_t item_id;
         uint8_t quantity;
-    } ItemInfo;
+    } TradeItemInfo;
 #pragma pack(pop)
     
     assert(packet->header == GAME_SMSG_TRADE_ADD_ITEM);
-    assert(sizeof(ItemInfo) == psize);
+    assert(sizeof(TradeItemInfo) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    ItemInfo *pack = cast(ItemInfo *)packet;
+    TradeItemInfo*pack = cast(TradeItemInfo*)packet;
     assert(client && client->game_srv.secured);
 
     TradeSession *session = &client->trade_session;

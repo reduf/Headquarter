@@ -1,7 +1,7 @@
 #ifndef HEADQUARTER_H
 #define HEADQUARTER_H
 
-#define GUILD_WARS_VERSION          (37046)
+#define GUILD_WARS_VERSION          (37057)
 #define HEADQUARTER_VERSION_MAJOR   (1)
 #define HEADQUARTER_VERSION_MINOR   (0)
 
@@ -119,8 +119,8 @@ GetBagCapacity_pt GetBagCapacity;
 typedef uint32_t(__cdecl* GetBuffer_pt)(void* buffer, size_t length);
 GetBuffer_pt GetQuests, GetPlayers, GetAgents, GetFriends, GetMerchantItems, GetCharacterName, GetGuildMembers;
 
-typedef uint32_t(__cdecl* GetPlayerName_pt)(uint32_t player_id, uint16_t* buffer, size_t length);
-GetPlayerName_pt GetPlayerName;
+typedef uint32_t(__cdecl* GetObjectName_pt)(uint32_t object_id, void* buffer, size_t length);
+GetObjectName_pt GetPlayerName, GetItemName, GetItemModStruct;
 
 typedef void(__cdecl* GetSkillbar_pt)(uint32_t* skills, AgentId agent_id);
 GetSkillbar_pt GetSkillbar;
@@ -212,7 +212,10 @@ static bool hq_init() {
 
     assert(GetNpcIdOfAgent = (GetNpcIdOfAgent_pt)dllsym(hnd, "GetNpcIdOfAgent"));
 
-    assert(GetPlayerName = (GetPlayerName_pt)dllsym(hnd, "GetPlayerName"));
+    assert(GetItemName = (GetObjectName_pt)dllsym(hnd, "GetItemName"));
+    assert(GetPlayerName = (GetObjectName_pt)dllsym(hnd, "GetPlayerName"));
+    assert(GetItemModStruct = (GetObjectName_pt)dllsym(hnd, "GetItemModStruct"));
+
     assert(GetAgent = (GetObject_pt)dllsym(hnd, "GetAgent"));
     assert(GetGuildInfo = (GetObject_pt)dllsym(hnd, "GetGuildInfo"));
     

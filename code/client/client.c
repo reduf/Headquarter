@@ -17,7 +17,7 @@ void init_client(GwClient *client)
     client->connected = true;
 
     array_init(client->characters, 16);
-    array_init(client->merchant_items, 32);
+    array_init(client->merchant_items, 360);
     array_init(client->trade_session.trader_items, 7);
     array_init(client->trade_session.player_items, 7);
     array_init2(client->titles, 64);

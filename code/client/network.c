@@ -1072,7 +1072,7 @@ static int unpack(const uint8_t *data, size_t data_size, uint8_t *buffer,
                 int tmp = unpack(d, d_size, b, b_size, next_fields, next_fields_count);
                 if (tmp < 0) return -1;
                 readed += tmp;
-                written += field.size;
+                written += tmp;// field.size;
             }
 
             return readed;
