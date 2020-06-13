@@ -319,6 +319,8 @@ void HandleInstanceLoadFinish(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     assert(client && client->game_srv.secured);
 
+    client->loading = false;
+
     broadcast_event(&client->event_mgr, WORLD_MAP_ENTER, NULL);
 }
 

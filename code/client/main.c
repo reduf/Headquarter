@@ -189,6 +189,7 @@ static void main_loop(void)
             NetConn_IsShutdown(&client->game_srv))
         {
             client->ingame = false;
+            client->loading = true;
             client->state = AwaitGameServerTransfer;
         }
 

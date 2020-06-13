@@ -204,7 +204,7 @@ leave:
 HQAPI bool GetIsIngame(void)
 {
     assert(client != NULL);
-    return client->ingame;
+    return client->ingame && !client->loading;
 }
 
 HQAPI bool GetIsConnected(void)

@@ -102,6 +102,7 @@ typedef struct GwClient {
 
     AwaitState          state;
     bool                ingame;
+    bool                loading;
     bool                connected;
     bool                try_changing_zone;
 

@@ -14,6 +14,7 @@ void init_client(GwClient *client)
 
     client->state = AwaitAuthServer;
     client->ingame = false;
+    client->loading = true;
     client->connected = true;
 
     array_init(client->characters, 16);
