@@ -619,6 +619,18 @@ void HandlePartySearchAdvertisement(Connection *conn, size_t psize, Packet *pack
     GwClient *client = cast(GwClient *)conn->data;
     PacketType *pack = cast(PacketType *)packet;
     assert(client && client->game_srv.secured);
+
+    Event_PartySearchAdvertisement params;
+    params.party_id = pack->ps_id;
+    params.district = pack->district;
+    params.party_size = pack->party_size;
+    params.hero_count = pack->hero_count;
+    params.search_type = pack->search_type;
+    params.sender.buffer = pack->player_name;
+    for (params.sender.length = 0; params.sender.length < ARRAY_SIZE(pack->player_name) && pack->player_name[params.sender.length] != 0; params.sender.length++) {}
+    params.message.buffer = pack->message;
+    for (params.message.length = 0; params.message.length < ARRAY_SIZE(pack->message) && pack->message[params.message.length] != 0; params.message.length++) {}
+    broadcast_event(&client->event_mgr, EventType_PartySearchAdvertisement, &params);
 }
 
 void HandlePartySearchSeek(Connection *conn, size_t psize, Packet *packet)

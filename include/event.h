@@ -4,6 +4,8 @@
 #include <common/list.h>
 
 typedef enum EventType {
+    EventType_PartySearchAdvertisement,
+
     EventType_GuildMember_Updated,
     EventType_Friend_Updated,
 
@@ -18,11 +20,6 @@ typedef enum EventType {
 
     EventType_TradeRequest,
     EventType_TradeRequestCancel,
-
-    EventType_WorldEnter,
-    EventType_WorldLeave,
-
-    EventType_Count,
 
     AUTH_DISCONNECT,
 
@@ -88,6 +85,40 @@ typedef struct Event_ChatMessage {
         const uint16_t *buffer;
     } sender;
 } Event_ChatMessage;
+
+/*
+    typedef struct {
+        Header header;
+        uint16_t ps_id;
+        uint16_t district;
+        uint8_t  unk1;
+        uint8_t  party_size;
+        uint8_t  hero_count;
+        uint8_t  search_type;
+        uint8_t  unk2;
+        uint16_t message[32];
+        uint16_t player_name[20];
+        uint8_t  unk3;
+        uint8_t  unk4;
+        uint8_t  unk5;
+        uint32_t unk6;
+    } PacketType;
+*/
+typedef struct Event_PartySearchAdvertisement {
+    uint16_t            party_id;
+    uint8_t             party_size;
+    uint8_t             hero_count;
+    uint8_t             search_type;
+    uint16_t            district;
+    struct {
+        size_t          length;
+        const uint16_t* buffer;
+    } message;
+    struct {
+        size_t          length;
+        const uint16_t* buffer;
+    } sender;
+} Event_PartySearchAdvertisement;
 
 typedef struct Event_ItemPrice {
     int32_t     item_id;
