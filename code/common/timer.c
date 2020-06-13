@@ -35,10 +35,9 @@ void process_timers(void)
         }
 
         rbtree_delete(&timer_rbtree, node);
-
-        struct timer *timer = CAST_STRUCT_FROM_MEMBER(node, struct timer, rbnode);
-        timer->timer_set = 0;
-        timer->handler(timer);
+        struct timer* timer_v = CAST_STRUCT_FROM_MEMBER(node, struct timer, rbnode);
+        timer_v->timer_set = 0;
+        timer_v->handler(timer_v);
     }
 }
 
