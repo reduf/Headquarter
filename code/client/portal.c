@@ -60,20 +60,35 @@ static void OnPortalNotify(uint32_t msgid, uint32_t unk1, void *data, void *para
 
 bool portal_init(void)
 {
-    hPortal = LoadLibraryA("data/GwLoginClient.dll");
+    char file_path[1024];
+    int length = 0;
+    bool file_read_ok = false;
+    char dir_path[1024];
+    length = dlldir(NULL, dir_path, sizeof(dir_path));
+    for (int i = 0; i < 4 && !file_read_ok; i++) {
+        snprintf(file_path, sizeof(file_path), "%s/data/GwLoginClient.dll", dir_path);
+        dir_path[length++] = '/';
+        dir_path[length++] = '.';
+        dir_path[length++] = '.';
+        dir_path[length] = 0;
+        hPortal = dllopen(file_path);
+        file_read_ok = hPortal != NULL;
+    }
+
     if (!hPortal) {
         LogError("Couldn't load Portal.dll (%d)", os_errno);
         return false;
     }
+    LogInfo("portal dll found @ %s", file_path);
 
-    *(FARPROC *)&PortalInitialize           = GetProcAddress(hPortal, "PortalInitialize");
-    *(FARPROC *)&PortalDestroy              = GetProcAddress(hPortal, "PortalDestroy");
-    *(FARPROC *)&PortalStartCleanup         = GetProcAddress(hPortal, "PortalStartCleanup");
-    *(FARPROC *)&PortalRegisterNotify       = GetProcAddress(hPortal, "PortalRegisterNotify");
-    *(FARPROC *)&PortalLogin                = GetProcAddress(hPortal, "PortalLogin");
-    *(FARPROC *)&PortalListGameAccounts     = GetProcAddress(hPortal, "PortalListGameAccounts");
-    *(FARPROC *)&PortalRequestGameToken     = GetProcAddress(hPortal, "PortalRequestGameToken");
-    *(FARPROC *)&PortalGetUserId            = GetProcAddress(hPortal, "PortalGetUserId");
+    *(FARPROC *)&PortalInitialize           = dllsym(hPortal, "PortalInitialize");
+    *(FARPROC *)&PortalDestroy              = dllsym(hPortal, "PortalDestroy");
+    *(FARPROC *)&PortalStartCleanup         = dllsym(hPortal, "PortalStartCleanup");
+    *(FARPROC *)&PortalRegisterNotify       = dllsym(hPortal, "PortalRegisterNotify");
+    *(FARPROC *)&PortalLogin                = dllsym(hPortal, "PortalLogin");
+    *(FARPROC *)&PortalListGameAccounts     = dllsym(hPortal, "PortalListGameAccounts");
+    *(FARPROC *)&PortalRequestGameToken     = dllsym(hPortal, "PortalRequestGameToken");
+    *(FARPROC *)&PortalGetUserId            = dllsym(hPortal, "PortalGetUserId");
 
     PortalInitialize(6112);
     PortalRegisterNotify(OnPortalNotify, NULL);
