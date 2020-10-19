@@ -770,11 +770,12 @@ void HandleAgentAttrUpdateFloat(Connection *conn, size_t psize, Packet *packet)
     }
 
     ArrayAgent *agents = &client->world.agents;
-    Agent *agent = array_at(*agents, pack->agent_id);
-    if (agent == NULL) {
+    Agent* agent = array_at(*agents, pack->agent_id);
+    if (!array_inside(*agents,pack->agent_id) || !agent) {
         LogError("HandleAgentAttrUpdateFloat: received for agent '%d' not spawned", pack->agent_id);
         return;
     }
+    
 
     switch (pack->attr_id) {
     case AG_ATTR_SET_ENERGY_PS:

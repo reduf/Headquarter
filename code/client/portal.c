@@ -7,6 +7,7 @@
 typedef void (*OnPortalNotify_t)(uint32_t msgid, uint32_t unk1, void *data, void *param);
 
 typedef void     (*PortalInitialize_t)(uint32_t port);
+typedef void     (*PortalLoginSecondaryAuth_t)(const wchar_t* code);
 typedef void     (*PortalDestroy_t)(void);
 typedef void     (*PortalStartCleanup_t)(void);
 typedef void     (*PortalRegisterNotify_t)(OnPortalNotify_t cb, void *param);
@@ -22,6 +23,7 @@ static PortalRegisterNotify_t       PortalRegisterNotify;
 static PortalLogin_t                PortalLogin;
 static PortalListGameAccounts_t     PortalListGameAccounts;
 static PortalRequestGameToken_t     PortalRequestGameToken;
+static PortalLoginSecondaryAuth_t   PortalLoginSecondaryAuth;
 static PortalGetUserId_t            PortalGetUserId;
 
 static HMODULE hPortal;
@@ -34,13 +36,19 @@ static void OnPortalNotify(uint32_t msgid, uint32_t unk1, void *data, void *para
 {
     uint8_t *user_id = NULL;
     uint8_t *bytes = (uint8_t *)data;
-
+    LogInfo("Portal notify %lu", msgid);
     switch (msgid) {
     case 0:
         PortalListGameAccounts(L"gw1");
         break;
     case 1:
         LogError("This account require double authentification");
+        wchar_t a_word[128];
+        // @Cleanup: this will hang indefinitely, need to find a more graceful way of handling this
+        printf("Enter auth code: ");
+        wscanf(L"%s", a_word);
+        printf("You entered: %ls\n", a_word);
+        PortalLoginSecondaryAuth(a_word);
         break;
     case 2:
         user_id = PortalGetUserId();
@@ -89,6 +97,8 @@ bool portal_init(void)
     *(FARPROC *)&PortalListGameAccounts     = dllsym(hPortal, "PortalListGameAccounts");
     *(FARPROC *)&PortalRequestGameToken     = dllsym(hPortal, "PortalRequestGameToken");
     *(FARPROC *)&PortalGetUserId            = dllsym(hPortal, "PortalGetUserId");
+    *(FARPROC*)&PortalLoginSecondaryAuth    = dllsym(hPortal, "PortalLoginSecondaryAuth");
+    
 
     PortalInitialize(6112);
     PortalRegisterNotify(OnPortalNotify, NULL);
