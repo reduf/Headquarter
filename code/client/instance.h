@@ -10,3 +10,4 @@ void start_loading_new_zone(GwClient *client, struct sockaddr *host,
 typedef struct World World;
 void extract_district(World *world,
     District district, DistrictRegion *region, DistrictLanguage *language);
+void TransferGameServer(GwClient *client);

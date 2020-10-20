@@ -169,6 +169,8 @@ void AccountLogout(GwClient *client);
 void OldAccountConnect(GwClient *client, struct kstr *email, struct kstr *pswd, struct kstr *pseudo);
 void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, struct kstr *charname);
 
+void PlayCharacter(GwClient *client, struct kstr *name, PlayerStatus status);
+
 void ContinueAccountLogin(GwClient *client, uint32_t error_code);
 void ContinueSendHardwareInfo(GwClient *client, uint32_t error_code);
 void ContinuePlayCharacter(GwClient *client, uint32_t error_code);
