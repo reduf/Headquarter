@@ -22,8 +22,6 @@ static void agent_set_distination(Agent *agent, Vec2f dest);
 static void ensure_agent_exist(GwClient *client, AgentId id);
 static void remove_agent(GwClient *client, AgentId id);
 
-static void update_agents_position(ArrayAgent *agents, msec_t diff);
-
 static inline bool v2_equals(Vec2f v1, Vec2f v2)
 {
     return (v1.x == v2.x) && (v1.y == v2.y);

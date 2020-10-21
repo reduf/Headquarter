@@ -7,7 +7,6 @@
 # error "We currently don't support big endian machine"
 #endif
 
-#define ARC4_KEY 
 typedef struct Connection Connection;
 
 typedef enum ConnectionType {
@@ -83,16 +82,6 @@ bool IPv4ToAddr(const char *host, const char *port, struct sockaddr *sockaddr);
  * Return all ip addresses (ipv4) from a host and a port.
  */
 SockAddressArray IPv4ToAddrEx(const char *host, const char *port);
-
-/*
- * Print to a stream a host `sockaddr`.
- */
-void sockaddr_fprint(FILE *stream, const struct sockaddr *host);
-
-/*
- * Print to a buffer a host `sockaddr`.
- */
-void sockaddr_sprint(char *s, size_t n, const struct sockaddr *host);
 
 /*
  * Initialize Winsock, mbedtls and find dns.
