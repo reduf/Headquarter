@@ -770,8 +770,8 @@ void HandleAgentAttrUpdateFloat(Connection *conn, size_t psize, Packet *packet)
     }
 
     ArrayAgent *agents = &client->world.agents;
-    Agent* agent = array_at(*agents, pack->agent_id);
-    if (!array_inside(*agents,pack->agent_id) || !agent) {
+    Agent* agent = array_inside(*agents, pack->agent_id) ? array_at(*agents, pack->agent_id) : NULL;
+    if (!agent) {
         LogError("HandleAgentAttrUpdateFloat: received for agent '%d' not spawned", pack->agent_id);
         return;
     }
@@ -815,11 +815,12 @@ void HandleAgentAttrUpdateFloatTarget(Connection *conn, size_t psize, Packet *pa
     }
 
     ArrayAgent *agents = &client->world.agents;
-    if (!array_inside(*agents, pack->target_id)) {
+    Agent* target = array_inside(*agents, pack->target_id) ? array_at(*agents, pack->target_id) : NULL;
+    if (!target) {
         LogError("HandleAgentAttrUpdateFloatTarget: received for target '%d' not spawned", pack->target_id);
         return;
     }
-    Agent* target = array_at(*agents, pack->target_id);
+
 
     switch (pack->attr_id) {
     case AG_ATTR_DAMAGE:
