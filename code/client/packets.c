@@ -441,7 +441,7 @@ MsgField AUTH_SERVER_0000[2] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008CC20
+// Handler Rva: 0008CC00
 MsgField AUTH_SERVER_0001[5] = {
     {TYPE_MSG_HEADER, 1},
     {TYPE_DWORD, 0},
@@ -450,21 +450,21 @@ MsgField AUTH_SERVER_0001[5] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008C7A0
+// Handler Rva: 0008C780
 MsgField AUTH_SERVER_0002[3] = {
     {TYPE_MSG_HEADER, 2},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008A8E0
+// Handler Rva: 0008A8D0
 MsgField AUTH_SERVER_0003[3] = {
     {TYPE_MSG_HEADER, 3},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008CE30
+// Handler Rva: 0008CE10
 MsgField AUTH_SERVER_0004[3] = {
     {TYPE_MSG_HEADER, 4},
     {TYPE_DWORD, 0},
@@ -476,7 +476,7 @@ MsgField AUTH_SERVER_0005[1] = {
     {TYPE_MSG_HEADER, 5},
 };
 
-// Handler Rva: 0008C5F0
+// Handler Rva: 0008C5D0
 MsgField AUTH_SERVER_0006[7] = {
     {TYPE_MSG_HEADER, 6},
     {TYPE_DWORD, 0},
@@ -487,7 +487,7 @@ MsgField AUTH_SERVER_0006[7] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008C7F0
+// Handler Rva: 0008C7D0
 MsgField AUTH_SERVER_0007[6] = {
     {TYPE_MSG_HEADER, 7},
     {TYPE_DWORD, 0},
@@ -497,7 +497,7 @@ MsgField AUTH_SERVER_0007[6] = {
     {TYPE_ARRAY_8, 64},
 };
 
-// Handler Rva: 0008C8E0
+// Handler Rva: 0008C8C0
 MsgField AUTH_SERVER_0008[5] = {
     {TYPE_MSG_HEADER, 8},
     {TYPE_DWORD, 0},
@@ -506,7 +506,7 @@ MsgField AUTH_SERVER_0008[5] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008CBF0
+// Handler Rva: 0008CBD0
 MsgField AUTH_SERVER_0009[6] = {
     {TYPE_MSG_HEADER, 9},
     {TYPE_DWORD, 0},
@@ -516,7 +516,7 @@ MsgField AUTH_SERVER_0009[6] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008C820
+// Handler Rva: 0008C800
 MsgField AUTH_SERVER_0010[5] = {
     {TYPE_MSG_HEADER, 10},
     {TYPE_DWORD, 0},
@@ -525,7 +525,7 @@ MsgField AUTH_SERVER_0010[5] = {
     {TYPE_STRING_16, 20},
 };
 
-// Handler Rva: 0008C880
+// Handler Rva: 0008C860
 MsgField AUTH_SERVER_0011[5] = {
     {TYPE_MSG_HEADER, 11},
     {TYPE_DWORD, 0},
@@ -534,7 +534,7 @@ MsgField AUTH_SERVER_0011[5] = {
     {TYPE_STRING_16, 20},
 };
 
-// Handler Rva: 0008CBD0
+// Handler Rva: 0008CBB0
 MsgField AUTH_SERVER_0012[4] = {
     {TYPE_MSG_HEADER, 12},
     {TYPE_DWORD, 0},
@@ -542,7 +542,7 @@ MsgField AUTH_SERVER_0012[4] = {
     {TYPE_STRING_16, 256},
 };
 
-// Handler Rva: 0008A970
+// Handler Rva: 0008A960
 MsgField AUTH_SERVER_0013[5] = {
     {TYPE_MSG_HEADER, 13},
     {TYPE_DWORD, 0},
@@ -551,7 +551,7 @@ MsgField AUTH_SERVER_0013[5] = {
     {TYPE_STRING_16, 256},
 };
 
-// Handler Rva: 0008C770
+// Handler Rva: 0008C750
 MsgField AUTH_SERVER_0014[4] = {
     {TYPE_MSG_HEADER, 14},
     {TYPE_DWORD, 0},
@@ -564,7 +564,7 @@ MsgField AUTH_SERVER_0015[1] = {
     {TYPE_MSG_HEADER, 15},
 };
 
-// Handler Rva: 0008C950
+// Handler Rva: 0008C930
 MsgField AUTH_SERVER_0016[7] = {
     {TYPE_MSG_HEADER, 16},
     {TYPE_DWORD, 0},
@@ -575,7 +575,7 @@ MsgField AUTH_SERVER_0016[7] = {
     {TYPE_STRING_16, 256},
 };
 
-// Handler Rva: 0008C670
+// Handler Rva: 0008C650
 MsgField AUTH_SERVER_0017[12] = {
     {TYPE_MSG_HEADER, 17},
     {TYPE_DWORD, 0},
@@ -591,7 +591,7 @@ MsgField AUTH_SERVER_0017[12] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008C980
+// Handler Rva: 0008C960
 MsgField AUTH_SERVER_0018[7] = {
     {TYPE_MSG_HEADER, 18},
     {TYPE_DWORD, 0},
@@ -602,20 +602,20 @@ MsgField AUTH_SERVER_0018[7] = {
     {TYPE_STRING_16, 256},
 };
 
-// Handler Rva: 0008C930
+// Handler Rva: 0008C910
 MsgField AUTH_SERVER_0019[2] = {
     {TYPE_MSG_HEADER, 19},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008C650
+// Handler Rva: 0008C630
 MsgField AUTH_SERVER_0020[3] = {
     {TYPE_MSG_HEADER, 20},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008C5C0
+// Handler Rva: 0008C5A0
 MsgField AUTH_SERVER_0021[7] = {
     {TYPE_MSG_HEADER, 21},
     {TYPE_DWORD, 0},
@@ -626,20 +626,20 @@ MsgField AUTH_SERVER_0021[7] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008C630
+// Handler Rva: 0008C610
 MsgField AUTH_SERVER_0022[3] = {
     {TYPE_MSG_HEADER, 22},
     {TYPE_DWORD, 0},
     {TYPE_ARRAY_8, 2048},
 };
 
-// Handler Rva: 0008C9B0
+// Handler Rva: 0008C990
 MsgField AUTH_SERVER_0023[2] = {
     {TYPE_MSG_HEADER, 23},
     {TYPE_ARRAY_8, 4096},
 };
 
-// Handler Rva: 0008C740
+// Handler Rva: 0008C720
 MsgField AUTH_SERVER_0024[5] = {
     {TYPE_MSG_HEADER, 24},
     {TYPE_DWORD, 0},
@@ -653,7 +653,7 @@ MsgField AUTH_SERVER_0025[1] = {
     {TYPE_MSG_HEADER, 25},
 };
 
-// Handler Rva: 0008CCF0
+// Handler Rva: 0008CCD0
 MsgField AUTH_SERVER_0026[5] = {
     {TYPE_MSG_HEADER, 26},
     {TYPE_DWORD, 0},
@@ -662,7 +662,7 @@ MsgField AUTH_SERVER_0026[5] = {
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 0008C7C0
+// Handler Rva: 0008C7A0
 MsgField AUTH_SERVER_0027[5] = {
     {TYPE_MSG_HEADER, 27},
     {TYPE_DWORD, 0},
@@ -671,14 +671,14 @@ MsgField AUTH_SERVER_0027[5] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008CE10
+// Handler Rva: 0008CDF0
 MsgField AUTH_SERVER_0028[3] = {
     {TYPE_MSG_HEADER, 28},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008CD10
+// Handler Rva: 0008CCF0
 MsgField AUTH_SERVER_0029[4] = {
     {TYPE_MSG_HEADER, 29},
     {TYPE_DWORD, 0},
@@ -686,7 +686,7 @@ MsgField AUTH_SERVER_0029[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008CDE0
+// Handler Rva: 0008CDC0
 MsgField AUTH_SERVER_0030[10] = {
     {TYPE_MSG_HEADER, 30},
     {TYPE_DWORD, 0},
@@ -700,7 +700,7 @@ MsgField AUTH_SERVER_0030[10] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008CD60
+// Handler Rva: 0008CD40
 MsgField AUTH_SERVER_0031[4] = {
     {TYPE_MSG_HEADER, 31},
     {TYPE_DWORD, 0},
@@ -708,7 +708,7 @@ MsgField AUTH_SERVER_0031[4] = {
     {TYPE_ARRAY_32, 16},
 };
 
-// Handler Rva: 0008C850
+// Handler Rva: 0008C830
 MsgField AUTH_SERVER_0032[6] = {
     {TYPE_MSG_HEADER, 32},
     {TYPE_DWORD, 0},
@@ -718,7 +718,7 @@ MsgField AUTH_SERVER_0032[6] = {
     {TYPE_STRING_16, 20},
 };
 
-// Handler Rva: 0008C8B0
+// Handler Rva: 0008C890
 MsgField AUTH_SERVER_0033[6] = {
     {TYPE_MSG_HEADER, 33},
     {TYPE_DWORD, 0},
@@ -728,14 +728,14 @@ MsgField AUTH_SERVER_0033[6] = {
     {TYPE_STRING_16, 20},
 };
 
-// Handler Rva: 0008C910
+// Handler Rva: 0008C8F0
 MsgField AUTH_SERVER_0034[3] = {
     {TYPE_MSG_HEADER, 34},
     {TYPE_DWORD, 0},
     {TYPE_BLOB, 12},
 };
 
-// Handler Rva: 0008CD30
+// Handler Rva: 0008CD10
 MsgField AUTH_SERVER_0035[7] = {
     {TYPE_MSG_HEADER, 35},
     {TYPE_DWORD, 0},
@@ -746,7 +746,7 @@ MsgField AUTH_SERVER_0035[7] = {
     {TYPE_STRING_16, 16},
 };
 
-// Handler Rva: 0008CD90
+// Handler Rva: 0008CD70
 MsgField AUTH_SERVER_0036[7] = {
     {TYPE_MSG_HEADER, 36},
     {TYPE_DWORD, 0},
@@ -762,7 +762,7 @@ MsgField AUTH_SERVER_0037[1] = {
     {TYPE_MSG_HEADER, 37},
 };
 
-// Handler Rva: 0008CDC0
+// Handler Rva: 0008CDA0
 MsgField AUTH_SERVER_0038[3] = {
     {TYPE_MSG_HEADER, 38},
     {TYPE_DWORD, 0},
@@ -815,21 +815,24 @@ MsgField GAME_CLIENT_0009[1] = {
     {TYPE_MSG_HEADER, 9},
 };
 
-MsgField GAME_CLIENT_0010[1] = {
+MsgField GAME_CLIENT_0010[2] = {
     {TYPE_MSG_HEADER, 10},
+    {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0011[2] = {
+MsgField GAME_CLIENT_0011[1] = {
     {TYPE_MSG_HEADER, 11},
-    {TYPE_DWORD, 0},
 };
 
 MsgField GAME_CLIENT_0012[1] = {
     {TYPE_MSG_HEADER, 12},
 };
 
-MsgField GAME_CLIENT_0013[1] = {
+MsgField GAME_CLIENT_0013[4] = {
     {TYPE_MSG_HEADER, 13},
+    {TYPE_AGENT_ID, 0},
+    {TYPE_DWORD, 0},
+    {TYPE_DWORD, 0},
 };
 
 MsgField GAME_CLIENT_0014[4] = {
@@ -839,273 +842,238 @@ MsgField GAME_CLIENT_0014[4] = {
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0015[1] = {
+MsgField GAME_CLIENT_0015[4] = {
     {TYPE_MSG_HEADER, 15},
+    {TYPE_AGENT_ID, 0},
+    {TYPE_ARRAY_32, 16},
+    {TYPE_ARRAY_32, 16},
 };
 
-MsgField GAME_CLIENT_0016[4] = {
+MsgField GAME_CLIENT_0016[2] = {
     {TYPE_MSG_HEADER, 16},
-    {TYPE_AGENT_ID, 0},
-    {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0017[4] = {
+MsgField GAME_CLIENT_0017[2] = {
     {TYPE_MSG_HEADER, 17},
-    {TYPE_AGENT_ID, 0},
-    {TYPE_ARRAY_32, 16},
-    {TYPE_ARRAY_32, 16},
+    {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0018[2] = {
+MsgField GAME_CLIENT_0018[1] = {
     {TYPE_MSG_HEADER, 18},
-    {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0019[2] = {
+MsgField GAME_CLIENT_0019[3] = {
     {TYPE_MSG_HEADER, 19},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0020[1] = {
-    {TYPE_MSG_HEADER, 20},
-};
-
-MsgField GAME_CLIENT_0021[1] = {
-    {TYPE_MSG_HEADER, 21},
-};
-
-MsgField GAME_CLIENT_0022[3] = {
-    {TYPE_MSG_HEADER, 22},
     {TYPE_DWORD, 0},
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0023[3] = {
-    {TYPE_MSG_HEADER, 23},
+MsgField GAME_CLIENT_0020[3] = {
+    {TYPE_MSG_HEADER, 20},
     {TYPE_AGENT_ID, 0},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0021[3] = {
+    {TYPE_MSG_HEADER, 21},
+    {TYPE_AGENT_ID, 0},
+    {TYPE_AGENT_ID, 0},
+};
+
+MsgField GAME_CLIENT_0022[2] = {
+    {TYPE_MSG_HEADER, 22},
+    {TYPE_AGENT_ID, 0},
+};
+
+MsgField GAME_CLIENT_0023[2] = {
+    {TYPE_MSG_HEADER, 23},
     {TYPE_DWORD, 0},
 };
 
 MsgField GAME_CLIENT_0024[3] = {
     {TYPE_MSG_HEADER, 24},
     {TYPE_AGENT_ID, 0},
-    {TYPE_AGENT_ID, 0},
-};
-
-MsgField GAME_CLIENT_0025[2] = {
-    {TYPE_MSG_HEADER, 25},
-    {TYPE_AGENT_ID, 0},
-};
-
-MsgField GAME_CLIENT_0026[2] = {
-    {TYPE_MSG_HEADER, 26},
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0027[3] = {
+MsgField GAME_CLIENT_0025[4] = {
+    {TYPE_MSG_HEADER, 25},
+    {TYPE_AGENT_ID, 0},
+    {TYPE_VECT2, 0},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0026[3] = {
+    {TYPE_MSG_HEADER, 26},
+    {TYPE_VECT2, 0},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0027[5] = {
     {TYPE_MSG_HEADER, 27},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
+    {TYPE_DWORD, 0},
+    {TYPE_AGENT_ID, 0},
 };
 
-MsgField GAME_CLIENT_0028[1] = {
+MsgField GAME_CLIENT_0028[4] = {
     {TYPE_MSG_HEADER, 28},
+    {TYPE_AGENT_ID, 0},
+    {TYPE_DWORD, 0},
+    {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0029[4] = {
+MsgField GAME_CLIENT_0029[2] = {
     {TYPE_MSG_HEADER, 29},
-    {TYPE_AGENT_ID, 0},
-    {TYPE_VECT2, 0},
-    {TYPE_DWORD, 0},
+    {TYPE_WORD, 0},
 };
 
-MsgField GAME_CLIENT_0030[3] = {
+MsgField GAME_CLIENT_0030[2] = {
     {TYPE_MSG_HEADER, 30},
-    {TYPE_VECT2, 0},
-    {TYPE_DWORD, 0},
+    {TYPE_WORD, 0},
 };
 
-MsgField GAME_CLIENT_0031[5] = {
+MsgField GAME_CLIENT_0031[2] = {
     {TYPE_MSG_HEADER, 31},
-    {TYPE_AGENT_ID, 0},
-    {TYPE_DWORD, 0},
-    {TYPE_DWORD, 0},
-    {TYPE_AGENT_ID, 0},
-};
-
-MsgField GAME_CLIENT_0032[4] = {
-    {TYPE_MSG_HEADER, 32},
-    {TYPE_AGENT_ID, 0},
-    {TYPE_DWORD, 0},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0033[2] = {
-    {TYPE_MSG_HEADER, 33},
-    {TYPE_WORD, 0},
-};
-
-MsgField GAME_CLIENT_0034[2] = {
-    {TYPE_MSG_HEADER, 34},
-    {TYPE_WORD, 0},
-};
-
-MsgField GAME_CLIENT_0035[2] = {
-    {TYPE_MSG_HEADER, 35},
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0036[3] = {
+MsgField GAME_CLIENT_0032[3] = {
+    {TYPE_MSG_HEADER, 32},
+    {TYPE_AGENT_ID, 0},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0033[3] = {
+    {TYPE_MSG_HEADER, 33},
+    {TYPE_AGENT_ID, 0},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0034[3] = {
+    {TYPE_MSG_HEADER, 34},
+    {TYPE_BYTE, 0},
+    {TYPE_AGENT_ID, 0},
+};
+
+MsgField GAME_CLIENT_0035[3] = {
+    {TYPE_MSG_HEADER, 35},
+    {TYPE_AGENT_ID, 0},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0036[4] = {
     {TYPE_MSG_HEADER, 36},
     {TYPE_AGENT_ID, 0},
+    {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
 MsgField GAME_CLIENT_0037[3] = {
     {TYPE_MSG_HEADER, 37},
     {TYPE_AGENT_ID, 0},
-    {TYPE_DWORD, 0},
+    {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0038[3] = {
+MsgField GAME_CLIENT_0038[5] = {
     {TYPE_MSG_HEADER, 38},
-    {TYPE_BYTE, 0},
     {TYPE_AGENT_ID, 0},
+    {TYPE_DWORD, 0},
+    {TYPE_DWORD, 0},
+    {TYPE_BYTE, 0},
 };
 
 MsgField GAME_CLIENT_0039[1] = {
     {TYPE_MSG_HEADER, 39},
 };
 
-MsgField GAME_CLIENT_0040[1] = {
+MsgField GAME_CLIENT_0040[2] = {
     {TYPE_MSG_HEADER, 40},
+    {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0041[1] = {
+MsgField GAME_CLIENT_0041[2] = {
     {TYPE_MSG_HEADER, 41},
+    {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0042[1] = {
+MsgField GAME_CLIENT_0042[3] = {
     {TYPE_MSG_HEADER, 42},
+    {TYPE_DWORD, 0},
+    {TYPE_ARRAY_32, 16},
 };
 
 MsgField GAME_CLIENT_0043[3] = {
     {TYPE_MSG_HEADER, 43},
-    {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
+    {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0044[4] = {
+MsgField GAME_CLIENT_0044[1] = {
     {TYPE_MSG_HEADER, 44},
-    {TYPE_AGENT_ID, 0},
-    {TYPE_DWORD, 0},
-    {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0045[3] = {
+MsgField GAME_CLIENT_0045[1] = {
     {TYPE_MSG_HEADER, 45},
-    {TYPE_AGENT_ID, 0},
-    {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0046[5] = {
+MsgField GAME_CLIENT_0046[2] = {
     {TYPE_MSG_HEADER, 46},
-    {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
-    {TYPE_DWORD, 0},
-    {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0047[1] = {
+MsgField GAME_CLIENT_0047[2] = {
     {TYPE_MSG_HEADER, 47},
+    {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0048[2] = {
+MsgField GAME_CLIENT_0048[3] = {
     {TYPE_MSG_HEADER, 48},
+    {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
 };
 
 MsgField GAME_CLIENT_0049[2] = {
     {TYPE_MSG_HEADER, 49},
-    {TYPE_DWORD, 0},
+    {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0050[3] = {
+MsgField GAME_CLIENT_0050[2] = {
     {TYPE_MSG_HEADER, 50},
-    {TYPE_DWORD, 0},
-    {TYPE_ARRAY_32, 16},
+    {TYPE_AGENT_ID, 0},
 };
 
-MsgField GAME_CLIENT_0051[3] = {
+MsgField GAME_CLIENT_0051[4] = {
     {TYPE_MSG_HEADER, 51},
-    {TYPE_DWORD, 0},
-    {TYPE_BYTE, 0},
-};
-
-MsgField GAME_CLIENT_0052[1] = {
-    {TYPE_MSG_HEADER, 52},
-};
-
-MsgField GAME_CLIENT_0053[1] = {
-    {TYPE_MSG_HEADER, 53},
-};
-
-MsgField GAME_CLIENT_0054[2] = {
-    {TYPE_MSG_HEADER, 54},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0055[2] = {
-    {TYPE_MSG_HEADER, 55},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0056[3] = {
-    {TYPE_MSG_HEADER, 56},
-    {TYPE_AGENT_ID, 0},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0057[2] = {
-    {TYPE_MSG_HEADER, 57},
-    {TYPE_BYTE, 0},
-};
-
-MsgField GAME_CLIENT_0058[2] = {
-    {TYPE_MSG_HEADER, 58},
-    {TYPE_AGENT_ID, 0},
-};
-
-MsgField GAME_CLIENT_0059[4] = {
-    {TYPE_MSG_HEADER, 59},
     {TYPE_DWORD, 0},
     {TYPE_BYTE, 0},
     {TYPE_ARRAY_32, 4},
 };
 
-MsgField GAME_CLIENT_0060[4] = {
-    {TYPE_MSG_HEADER, 60},
+MsgField GAME_CLIENT_0052[4] = {
+    {TYPE_MSG_HEADER, 52},
     {TYPE_DWORD, 0},
     {TYPE_BYTE, 0},
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0061[4] = {
-    {TYPE_MSG_HEADER, 61},
+MsgField GAME_CLIENT_0053[4] = {
+    {TYPE_MSG_HEADER, 53},
     {TYPE_DWORD, 0},
     {TYPE_STRING_16, 32},
     {TYPE_STRING_16, 6},
 };
 
-MsgField GAME_CLIENT_0062[3] = {
-    {TYPE_MSG_HEADER, 62},
+MsgField GAME_CLIENT_0054[3] = {
+    {TYPE_MSG_HEADER, 54},
     {TYPE_DWORD, 0},
     {TYPE_ARRAY_32, 4},
 };
 
-MsgField GAME_CLIENT_0063[9] = {
-    {TYPE_MSG_HEADER, 63},
+MsgField GAME_CLIENT_0055[9] = {
+    {TYPE_MSG_HEADER, 55},
     {TYPE_DWORD, 0},
     {TYPE_BYTE, 0},
     {TYPE_BYTE, 0},
@@ -1114,6 +1082,54 @@ MsgField GAME_CLIENT_0063[9] = {
     {TYPE_BYTE, 0},
     {TYPE_WORD, 0},
     {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0056[3] = {
+    {TYPE_MSG_HEADER, 56},
+    {TYPE_AGENT_ID, 0},
+    {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0057[3] = {
+    {TYPE_MSG_HEADER, 57},
+    {TYPE_DWORD, 0},
+    {TYPE_ARRAY_32, 4},
+};
+
+MsgField GAME_CLIENT_0058[2] = {
+    {TYPE_MSG_HEADER, 58},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0059[2] = {
+    {TYPE_MSG_HEADER, 59},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0060[5] = {
+    {TYPE_MSG_HEADER, 60},
+    {TYPE_VECT2, 0},
+    {TYPE_DWORD, 0},
+    {TYPE_VECT2, 0},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0061[3] = {
+    {TYPE_MSG_HEADER, 61},
+    {TYPE_VECT2, 0},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0062[3] = {
+    {TYPE_MSG_HEADER, 62},
+    {TYPE_AGENT_ID, 0},
+    {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0063[3] = {
+    {TYPE_MSG_HEADER, 63},
+    {TYPE_DWORD, 0},
+    {TYPE_DWORD, 0},
 };
 
 MsgField GAME_CLIENT_0064[3] = {
@@ -1122,15 +1138,14 @@ MsgField GAME_CLIENT_0064[3] = {
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0065[3] = {
+MsgField GAME_CLIENT_0065[2] = {
     {TYPE_MSG_HEADER, 65},
-    {TYPE_DWORD, 0},
-    {TYPE_ARRAY_32, 4},
+    {TYPE_AGENT_ID, 0},
 };
 
 MsgField GAME_CLIENT_0066[2] = {
     {TYPE_MSG_HEADER, 66},
-    {TYPE_DWORD, 0},
+    {TYPE_BYTE, 0},
 };
 
 MsgField GAME_CLIENT_0067[2] = {
@@ -1138,41 +1153,43 @@ MsgField GAME_CLIENT_0067[2] = {
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0068[5] = {
+MsgField GAME_CLIENT_0068[2] = {
     {TYPE_MSG_HEADER, 68},
-    {TYPE_VECT2, 0},
-    {TYPE_DWORD, 0},
-    {TYPE_VECT2, 0},
-    {TYPE_DWORD, 0},
+    {TYPE_ARRAY_8, 256},
 };
 
-MsgField GAME_CLIENT_0069[3] = {
+MsgField GAME_CLIENT_0069[5] = {
     {TYPE_MSG_HEADER, 69},
-    {TYPE_VECT2, 0},
     {TYPE_DWORD, 0},
+    {TYPE_DWORD, 0},
+    {TYPE_AGENT_ID, 0},
+    {TYPE_BYTE, 0},
 };
 
 MsgField GAME_CLIENT_0070[3] = {
     {TYPE_MSG_HEADER, 70},
-    {TYPE_AGENT_ID, 0},
-    {TYPE_BYTE, 0},
+    {TYPE_VECT2, 0},
+    {TYPE_DWORD, 0},
 };
 
 MsgField GAME_CLIENT_0071[3] = {
     {TYPE_MSG_HEADER, 71},
-    {TYPE_DWORD, 0},
+    {TYPE_VECT2, 0},
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0072[3] = {
+MsgField GAME_CLIENT_0072[2] = {
     {TYPE_MSG_HEADER, 72},
     {TYPE_AGENT_ID, 0},
-    {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0073[2] = {
+MsgField GAME_CLIENT_0073[6] = {
     {TYPE_MSG_HEADER, 73},
-    {TYPE_AGENT_ID, 0},
+    {TYPE_BYTE, 0},
+    {TYPE_DWORD, 0},
+    {TYPE_ARRAY_32, 16},
+    {TYPE_DWORD, 0},
+    {TYPE_ARRAY_32, 16},
 };
 
 MsgField GAME_CLIENT_0074[2] = {
@@ -1180,107 +1197,104 @@ MsgField GAME_CLIENT_0074[2] = {
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0075[2] = {
+MsgField GAME_CLIENT_0075[7] = {
     {TYPE_MSG_HEADER, 75},
+    {TYPE_BYTE, 0},
+    {TYPE_BYTE, 0},
     {TYPE_DWORD, 0},
+    {TYPE_ARRAY_32, 16},
+    {TYPE_DWORD, 0},
+    {TYPE_ARRAY_32, 16},
 };
 
-MsgField GAME_CLIENT_0076[2] = {
+MsgField GAME_CLIENT_0076[8] = {
     {TYPE_MSG_HEADER, 76},
-    {TYPE_ARRAY_8, 256},
+    {TYPE_BYTE, 0},
+    {TYPE_DWORD, 0},
+    {TYPE_ARRAY_32, 16},
+    {TYPE_ARRAY_8, 16},
+    {TYPE_DWORD, 0},
+    {TYPE_ARRAY_32, 16},
+    {TYPE_ARRAY_8, 16},
 };
 
-MsgField GAME_CLIENT_0077[5] = {
+MsgField GAME_CLIENT_0077[3] = {
     {TYPE_MSG_HEADER, 77},
-    {TYPE_DWORD, 0},
-    {TYPE_DWORD, 0},
-    {TYPE_AGENT_ID, 0},
-    {TYPE_BYTE, 0},
-};
-
-MsgField GAME_CLIENT_0078[3] = {
-    {TYPE_MSG_HEADER, 78},
-    {TYPE_VECT2, 0},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0079[3] = {
-    {TYPE_MSG_HEADER, 79},
-    {TYPE_VECT2, 0},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0080[2] = {
-    {TYPE_MSG_HEADER, 80},
-    {TYPE_AGENT_ID, 0},
-};
-
-MsgField GAME_CLIENT_0081[6] = {
-    {TYPE_MSG_HEADER, 81},
-    {TYPE_BYTE, 0},
-    {TYPE_DWORD, 0},
-    {TYPE_ARRAY_32, 16},
-    {TYPE_DWORD, 0},
-    {TYPE_ARRAY_32, 16},
-};
-
-MsgField GAME_CLIENT_0082[2] = {
-    {TYPE_MSG_HEADER, 82},
-    {TYPE_BYTE, 0},
-};
-
-MsgField GAME_CLIENT_0083[7] = {
-    {TYPE_MSG_HEADER, 83},
-    {TYPE_BYTE, 0},
-    {TYPE_BYTE, 0},
-    {TYPE_DWORD, 0},
-    {TYPE_ARRAY_32, 16},
-    {TYPE_DWORD, 0},
-    {TYPE_ARRAY_32, 16},
-};
-
-MsgField GAME_CLIENT_0084[8] = {
-    {TYPE_MSG_HEADER, 84},
-    {TYPE_BYTE, 0},
-    {TYPE_DWORD, 0},
-    {TYPE_ARRAY_32, 16},
-    {TYPE_ARRAY_8, 16},
-    {TYPE_DWORD, 0},
-    {TYPE_ARRAY_32, 16},
-    {TYPE_ARRAY_8, 16},
-};
-
-MsgField GAME_CLIENT_0085[3] = {
-    {TYPE_MSG_HEADER, 85},
     {TYPE_BYTE, 0},
     {TYPE_STRING_16, 122},
 };
 
-MsgField GAME_CLIENT_0086[4] = {
-    {TYPE_MSG_HEADER, 86},
+MsgField GAME_CLIENT_0078[4] = {
+    {TYPE_MSG_HEADER, 78},
     {TYPE_BYTE, 0},
     {TYPE_WORD, 0},
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0087[5] = {
-    {TYPE_MSG_HEADER, 87},
+MsgField GAME_CLIENT_0079[5] = {
+    {TYPE_MSG_HEADER, 79},
     {TYPE_AGENT_ID, 0},
     {TYPE_BYTE, 0},
     {TYPE_WORD, 0},
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0088[3] = {
-    {TYPE_MSG_HEADER, 88},
+MsgField GAME_CLIENT_0080[3] = {
+    {TYPE_MSG_HEADER, 80},
     {TYPE_AGENT_ID, 0},
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0089[3] = {
-    {TYPE_MSG_HEADER, 89},
+MsgField GAME_CLIENT_0081[3] = {
+    {TYPE_MSG_HEADER, 81},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0082[2] = {
+    {TYPE_MSG_HEADER, 82},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0083[8] = {
+    {TYPE_MSG_HEADER, 83},
+    {TYPE_DWORD, 0},
+    {TYPE_DWORD, 0},
+    {TYPE_BYTE, 0},
+    {TYPE_BYTE, 0},
+    {TYPE_BYTE, 0},
+    {TYPE_BYTE, 0},
+    {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0084[2] = {
+    {TYPE_MSG_HEADER, 84},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0085[3] = {
+    {TYPE_MSG_HEADER, 85},
+    {TYPE_WORD, 0},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0086[3] = {
+    {TYPE_MSG_HEADER, 86},
+    {TYPE_DWORD, 0},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0087[2] = {
+    {TYPE_MSG_HEADER, 87},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0088[1] = {
+    {TYPE_MSG_HEADER, 88},
+};
+
+MsgField GAME_CLIENT_0089[1] = {
+    {TYPE_MSG_HEADER, 89},
 };
 
 MsgField GAME_CLIENT_0090[2] = {
@@ -1288,68 +1302,22 @@ MsgField GAME_CLIENT_0090[2] = {
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0091[8] = {
+MsgField GAME_CLIENT_0091[5] = {
     {TYPE_MSG_HEADER, 91},
-    {TYPE_DWORD, 0},
-    {TYPE_DWORD, 0},
-    {TYPE_BYTE, 0},
-    {TYPE_BYTE, 0},
-    {TYPE_BYTE, 0},
-    {TYPE_BYTE, 0},
-    {TYPE_BYTE, 0},
-};
-
-MsgField GAME_CLIENT_0092[2] = {
-    {TYPE_MSG_HEADER, 92},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0093[3] = {
-    {TYPE_MSG_HEADER, 93},
-    {TYPE_WORD, 0},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0094[3] = {
-    {TYPE_MSG_HEADER, 94},
-    {TYPE_DWORD, 0},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0095[2] = {
-    {TYPE_MSG_HEADER, 95},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0096[1] = {
-    {TYPE_MSG_HEADER, 96},
-};
-
-MsgField GAME_CLIENT_0097[1] = {
-    {TYPE_MSG_HEADER, 97},
-};
-
-MsgField GAME_CLIENT_0098[2] = {
-    {TYPE_MSG_HEADER, 98},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0099[5] = {
-    {TYPE_MSG_HEADER, 99},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0100[3] = {
-    {TYPE_MSG_HEADER, 100},
+MsgField GAME_CLIENT_0092[3] = {
+    {TYPE_MSG_HEADER, 92},
     {TYPE_AGENT_ID, 0},
     {TYPE_ARRAY_32, 8},
 };
 
-MsgField GAME_CLIENT_0101[6] = {
-    {TYPE_MSG_HEADER, 101},
+MsgField GAME_CLIENT_0093[6] = {
+    {TYPE_MSG_HEADER, 93},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
@@ -1357,159 +1325,202 @@ MsgField GAME_CLIENT_0101[6] = {
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0102[5] = {
-    {TYPE_MSG_HEADER, 102},
+MsgField GAME_CLIENT_0094[5] = {
+    {TYPE_MSG_HEADER, 94},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0103[3] = {
-    {TYPE_MSG_HEADER, 103},
+MsgField GAME_CLIENT_0095[3] = {
+    {TYPE_MSG_HEADER, 95},
     {TYPE_BYTE, 0},
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0104[2] = {
-    {TYPE_MSG_HEADER, 104},
+MsgField GAME_CLIENT_0096[2] = {
+    {TYPE_MSG_HEADER, 96},
     {TYPE_STRING_16, 32},
 };
 
-MsgField GAME_CLIENT_0105[3] = {
-    {TYPE_MSG_HEADER, 105},
+MsgField GAME_CLIENT_0097[3] = {
+    {TYPE_MSG_HEADER, 97},
     {TYPE_STRING_16, 32},
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0106[1] = {
-    {TYPE_MSG_HEADER, 106},
+MsgField GAME_CLIENT_0098[1] = {
+    {TYPE_MSG_HEADER, 98},
 };
 
-MsgField GAME_CLIENT_0107[3] = {
-    {TYPE_MSG_HEADER, 107},
+MsgField GAME_CLIENT_0099[3] = {
+    {TYPE_MSG_HEADER, 99},
     {TYPE_AGENT_ID, 0},
     {TYPE_STRING_16, 138},
 };
 
-MsgField GAME_CLIENT_0108[2] = {
-    {TYPE_MSG_HEADER, 108},
+MsgField GAME_CLIENT_0100[2] = {
+    {TYPE_MSG_HEADER, 100},
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0109[4] = {
-    {TYPE_MSG_HEADER, 109},
+MsgField GAME_CLIENT_0101[4] = {
+    {TYPE_MSG_HEADER, 101},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0110[5] = {
-    {TYPE_MSG_HEADER, 110},
+MsgField GAME_CLIENT_0102[5] = {
+    {TYPE_MSG_HEADER, 102},
     {TYPE_DWORD, 0},
     {TYPE_BYTE, 0},
     {TYPE_WORD, 0},
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0111[2] = {
-    {TYPE_MSG_HEADER, 111},
+MsgField GAME_CLIENT_0103[2] = {
+    {TYPE_MSG_HEADER, 103},
     {TYPE_WORD, 0},
 };
 
-MsgField GAME_CLIENT_0112[2] = {
-    {TYPE_MSG_HEADER, 112},
+MsgField GAME_CLIENT_0104[2] = {
+    {TYPE_MSG_HEADER, 104},
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0113[3] = {
-    {TYPE_MSG_HEADER, 113},
+MsgField GAME_CLIENT_0105[3] = {
+    {TYPE_MSG_HEADER, 105},
     {TYPE_DWORD, 0},
     {TYPE_ARRAY_32, 4},
 };
 
-MsgField GAME_CLIENT_0114[3] = {
-    {TYPE_MSG_HEADER, 114},
+MsgField GAME_CLIENT_0106[3] = {
+    {TYPE_MSG_HEADER, 106},
     {TYPE_DWORD, 0},
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0115[3] = {
-    {TYPE_MSG_HEADER, 115},
+MsgField GAME_CLIENT_0107[3] = {
+    {TYPE_MSG_HEADER, 107},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0116[3] = {
-    {TYPE_MSG_HEADER, 116},
+MsgField GAME_CLIENT_0108[3] = {
+    {TYPE_MSG_HEADER, 108},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0117[3] = {
-    {TYPE_MSG_HEADER, 117},
+MsgField GAME_CLIENT_0109[3] = {
+    {TYPE_MSG_HEADER, 109},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0118[3] = {
-    {TYPE_MSG_HEADER, 118},
+MsgField GAME_CLIENT_0110[3] = {
+    {TYPE_MSG_HEADER, 110},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0119[2] = {
-    {TYPE_MSG_HEADER, 119},
+MsgField GAME_CLIENT_0111[2] = {
+    {TYPE_MSG_HEADER, 111},
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0120[5] = {
-    {TYPE_MSG_HEADER, 120},
+MsgField GAME_CLIENT_0112[5] = {
+    {TYPE_MSG_HEADER, 112},
     {TYPE_BYTE, 0},
     {TYPE_NESTED_STRUCT, 6},
     {TYPE_BYTE, 0},
     {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0121[4] = {
-    {TYPE_MSG_HEADER, 121},
+MsgField GAME_CLIENT_0113[4] = {
+    {TYPE_MSG_HEADER, 113},
     {TYPE_DWORD, 0},
     {TYPE_WORD, 0},
     {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0114[2] = {
+    {TYPE_MSG_HEADER, 114},
+    {TYPE_WORD, 0},
+};
+
+MsgField GAME_CLIENT_0115[3] = {
+    {TYPE_MSG_HEADER, 115},
+    {TYPE_BYTE, 0},
+    {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0116[5] = {
+    {TYPE_MSG_HEADER, 116},
+    {TYPE_DWORD, 0},
+    {TYPE_DWORD, 0},
+    {TYPE_WORD, 0},
+    {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0117[1] = {
+    {TYPE_MSG_HEADER, 117},
+};
+
+MsgField GAME_CLIENT_0118[4] = {
+    {TYPE_MSG_HEADER, 118},
+    {TYPE_WORD, 0},
+    {TYPE_DWORD, 0},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0119[1] = {
+    {TYPE_MSG_HEADER, 119},
+};
+
+MsgField GAME_CLIENT_0120[1] = {
+    {TYPE_MSG_HEADER, 120},
+};
+
+MsgField GAME_CLIENT_0121[1] = {
+    {TYPE_MSG_HEADER, 121},
 };
 
 MsgField GAME_CLIENT_0122[2] = {
     {TYPE_MSG_HEADER, 122},
-    {TYPE_WORD, 0},
+    {TYPE_BYTE, 0},
 };
 
 MsgField GAME_CLIENT_0123[3] = {
     {TYPE_MSG_HEADER, 123},
-    {TYPE_BYTE, 0},
-    {TYPE_BYTE, 0},
+    {TYPE_DWORD, 0},
+    {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0124[5] = {
+MsgField GAME_CLIENT_0124[4] = {
     {TYPE_MSG_HEADER, 124},
     {TYPE_DWORD, 0},
-    {TYPE_DWORD, 0},
     {TYPE_WORD, 0},
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0125[1] = {
+MsgField GAME_CLIENT_0125[2] = {
     {TYPE_MSG_HEADER, 125},
+    {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0126[4] = {
+MsgField GAME_CLIENT_0126[3] = {
     {TYPE_MSG_HEADER, 126},
+    {TYPE_BYTE, 0},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0127[3] = {
+    {TYPE_MSG_HEADER, 127},
     {TYPE_WORD, 0},
     {TYPE_DWORD, 0},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0127[1] = {
-    {TYPE_MSG_HEADER, 127},
 };
 
 MsgField GAME_CLIENT_0128[1] = {
@@ -1527,32 +1538,34 @@ MsgField GAME_CLIENT_0130[2] = {
 
 MsgField GAME_CLIENT_0131[3] = {
     {TYPE_MSG_HEADER, 131},
-    {TYPE_DWORD, 0},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0132[4] = {
-    {TYPE_MSG_HEADER, 132},
-    {TYPE_DWORD, 0},
-    {TYPE_WORD, 0},
+    {TYPE_BYTE, 0},
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0133[2] = {
-    {TYPE_MSG_HEADER, 133},
-    {TYPE_DWORD, 0},
+MsgField GAME_CLIENT_0132[2] = {
+    {TYPE_MSG_HEADER, 132},
+    {TYPE_WORD, 0},
 };
 
-MsgField GAME_CLIENT_0134[3] = {
+MsgField GAME_CLIENT_0133[7] = {
+    {TYPE_MSG_HEADER, 133},
+    {TYPE_WORD, 0},
+    {TYPE_WORD, 0},
+    {TYPE_ARRAY_16, 4},
+    {TYPE_BYTE, 0},
+    {TYPE_BYTE, 0},
+    {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0134[4] = {
     {TYPE_MSG_HEADER, 134},
     {TYPE_BYTE, 0},
-    {TYPE_DWORD, 0},
+    {TYPE_BYTE, 0},
+    {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0135[3] = {
+MsgField GAME_CLIENT_0135[1] = {
     {TYPE_MSG_HEADER, 135},
-    {TYPE_WORD, 0},
-    {TYPE_DWORD, 0},
 };
 
 MsgField GAME_CLIENT_0136[1] = {
@@ -1563,70 +1576,67 @@ MsgField GAME_CLIENT_0137[1] = {
     {TYPE_MSG_HEADER, 137},
 };
 
-MsgField GAME_CLIENT_0138[2] = {
+MsgField GAME_CLIENT_0138[3] = {
     {TYPE_MSG_HEADER, 138},
-    {TYPE_BYTE, 0},
-};
-
-MsgField GAME_CLIENT_0139[3] = {
-    {TYPE_MSG_HEADER, 139},
-    {TYPE_BYTE, 0},
-    {TYPE_BYTE, 0},
-};
-
-MsgField GAME_CLIENT_0140[2] = {
-    {TYPE_MSG_HEADER, 140},
-    {TYPE_WORD, 0},
-};
-
-MsgField GAME_CLIENT_0141[7] = {
-    {TYPE_MSG_HEADER, 141},
-    {TYPE_WORD, 0},
-    {TYPE_WORD, 0},
-    {TYPE_ARRAY_16, 4},
-    {TYPE_BYTE, 0},
-    {TYPE_BYTE, 0},
-    {TYPE_BYTE, 0},
-};
-
-MsgField GAME_CLIENT_0142[4] = {
-    {TYPE_MSG_HEADER, 142},
-    {TYPE_BYTE, 0},
-    {TYPE_BYTE, 0},
-    {TYPE_BYTE, 0},
-};
-
-MsgField GAME_CLIENT_0143[1] = {
-    {TYPE_MSG_HEADER, 143},
-};
-
-MsgField GAME_CLIENT_0144[1] = {
-    {TYPE_MSG_HEADER, 144},
-};
-
-MsgField GAME_CLIENT_0145[1] = {
-    {TYPE_MSG_HEADER, 145},
-};
-
-MsgField GAME_CLIENT_0146[3] = {
-    {TYPE_MSG_HEADER, 146},
     {TYPE_STRING_16, 20},
     {TYPE_BLOB, 8},
 };
 
-MsgField GAME_CLIENT_0147[1] = {
-    {TYPE_MSG_HEADER, 147},
+MsgField GAME_CLIENT_0139[1] = {
+    {TYPE_MSG_HEADER, 139},
 };
 
-MsgField GAME_CLIENT_0148[3] = {
-    {TYPE_MSG_HEADER, 148},
+MsgField GAME_CLIENT_0140[3] = {
+    {TYPE_MSG_HEADER, 140},
     {TYPE_WORD, 0},
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0149[2] = {
+MsgField GAME_CLIENT_0141[2] = {
+    {TYPE_MSG_HEADER, 141},
+    {TYPE_DWORD, 0},
+};
+
+MsgField GAME_CLIENT_0142[1] = {
+    {TYPE_MSG_HEADER, 142},
+};
+
+MsgField GAME_CLIENT_0143[2] = {
+    {TYPE_MSG_HEADER, 143},
+    {TYPE_BLOB, 16},
+};
+
+MsgField GAME_CLIENT_0144[3] = {
+    {TYPE_MSG_HEADER, 144},
+    {TYPE_BYTE, 0},
+    {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0145[2] = {
+    {TYPE_MSG_HEADER, 145},
+    {TYPE_ARRAY_8, 112},
+};
+
+MsgField GAME_CLIENT_0146[2] = {
+    {TYPE_MSG_HEADER, 146},
+    {TYPE_WORD, 0},
+};
+
+MsgField GAME_CLIENT_0147[2] = {
+    {TYPE_MSG_HEADER, 147},
+    {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0148[2] = {
+    {TYPE_MSG_HEADER, 148},
+    {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0149[4] = {
     {TYPE_MSG_HEADER, 149},
     {TYPE_DWORD, 0},
+    {TYPE_WORD, 0},
+    {TYPE_BYTE, 0},
 };
 
 MsgField GAME_CLIENT_0150[1] = {
@@ -1637,20 +1647,17 @@ MsgField GAME_CLIENT_0151[1] = {
     {TYPE_MSG_HEADER, 151},
 };
 
-MsgField GAME_CLIENT_0152[2] = {
+MsgField GAME_CLIENT_0152[1] = {
     {TYPE_MSG_HEADER, 152},
-    {TYPE_BLOB, 16},
 };
 
-MsgField GAME_CLIENT_0153[3] = {
+MsgField GAME_CLIENT_0153[1] = {
     {TYPE_MSG_HEADER, 153},
-    {TYPE_BYTE, 0},
-    {TYPE_BYTE, 0},
 };
 
 MsgField GAME_CLIENT_0154[2] = {
     {TYPE_MSG_HEADER, 154},
-    {TYPE_ARRAY_8, 112},
+    {TYPE_BYTE, 0},
 };
 
 MsgField GAME_CLIENT_0155[2] = {
@@ -1660,27 +1667,27 @@ MsgField GAME_CLIENT_0155[2] = {
 
 MsgField GAME_CLIENT_0156[2] = {
     {TYPE_MSG_HEADER, 156},
-    {TYPE_BYTE, 0},
+    {TYPE_WORD, 0},
 };
 
 MsgField GAME_CLIENT_0157[2] = {
     {TYPE_MSG_HEADER, 157},
-    {TYPE_BYTE, 0},
-};
-
-MsgField GAME_CLIENT_0158[4] = {
-    {TYPE_MSG_HEADER, 158},
-    {TYPE_DWORD, 0},
     {TYPE_WORD, 0},
-    {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0159[1] = {
+MsgField GAME_CLIENT_0158[2] = {
+    {TYPE_MSG_HEADER, 158},
+    {TYPE_WORD, 0},
+};
+
+MsgField GAME_CLIENT_0159[2] = {
     {TYPE_MSG_HEADER, 159},
+    {TYPE_WORD, 0},
 };
 
-MsgField GAME_CLIENT_0160[1] = {
+MsgField GAME_CLIENT_0160[2] = {
     {TYPE_MSG_HEADER, 160},
+    {TYPE_STRING_16, 20},
 };
 
 MsgField GAME_CLIENT_0161[1] = {
@@ -1691,24 +1698,26 @@ MsgField GAME_CLIENT_0162[1] = {
     {TYPE_MSG_HEADER, 162},
 };
 
-MsgField GAME_CLIENT_0163[2] = {
+MsgField GAME_CLIENT_0163[3] = {
     {TYPE_MSG_HEADER, 163},
     {TYPE_BYTE, 0},
+    {TYPE_STRING_16, 64},
 };
 
 MsgField GAME_CLIENT_0164[2] = {
     {TYPE_MSG_HEADER, 164},
-    {TYPE_WORD, 0},
+    {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0165[2] = {
+MsgField GAME_CLIENT_0165[4] = {
     {TYPE_MSG_HEADER, 165},
     {TYPE_WORD, 0},
+    {TYPE_DWORD, 0},
+    {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0166[2] = {
+MsgField GAME_CLIENT_0166[1] = {
     {TYPE_MSG_HEADER, 166},
-    {TYPE_WORD, 0},
 };
 
 MsgField GAME_CLIENT_0167[2] = {
@@ -1721,23 +1730,25 @@ MsgField GAME_CLIENT_0168[2] = {
     {TYPE_WORD, 0},
 };
 
-MsgField GAME_CLIENT_0169[2] = {
+MsgField GAME_CLIENT_0169[4] = {
     {TYPE_MSG_HEADER, 169},
-    {TYPE_STRING_16, 20},
+    {TYPE_BYTE, 0},
+    {TYPE_STRING_16, 32},
+    {TYPE_WORD, 0},
 };
 
 MsgField GAME_CLIENT_0170[1] = {
     {TYPE_MSG_HEADER, 170},
 };
 
-MsgField GAME_CLIENT_0171[1] = {
+MsgField GAME_CLIENT_0171[2] = {
     {TYPE_MSG_HEADER, 171},
+    {TYPE_WORD, 0},
 };
 
-MsgField GAME_CLIENT_0172[3] = {
+MsgField GAME_CLIENT_0172[2] = {
     {TYPE_MSG_HEADER, 172},
-    {TYPE_BYTE, 0},
-    {TYPE_STRING_16, 64},
+    {TYPE_WORD, 0},
 };
 
 MsgField GAME_CLIENT_0173[2] = {
@@ -1745,82 +1756,90 @@ MsgField GAME_CLIENT_0173[2] = {
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0174[4] = {
+MsgField GAME_CLIENT_0174[2] = {
     {TYPE_MSG_HEADER, 174},
-    {TYPE_WORD, 0},
-    {TYPE_DWORD, 0},
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0175[1] = {
+MsgField GAME_CLIENT_0175[3] = {
     {TYPE_MSG_HEADER, 175},
-};
-
-MsgField GAME_CLIENT_0176[2] = {
-    {TYPE_MSG_HEADER, 176},
-    {TYPE_WORD, 0},
-};
-
-MsgField GAME_CLIENT_0177[2] = {
-    {TYPE_MSG_HEADER, 177},
-    {TYPE_WORD, 0},
-};
-
-MsgField GAME_CLIENT_0178[4] = {
-    {TYPE_MSG_HEADER, 178},
-    {TYPE_BYTE, 0},
-    {TYPE_STRING_16, 32},
-    {TYPE_WORD, 0},
-};
-
-MsgField GAME_CLIENT_0179[1] = {
-    {TYPE_MSG_HEADER, 179},
-};
-
-MsgField GAME_CLIENT_0180[2] = {
-    {TYPE_MSG_HEADER, 180},
-    {TYPE_WORD, 0},
-};
-
-MsgField GAME_CLIENT_0181[2] = {
-    {TYPE_MSG_HEADER, 181},
-    {TYPE_WORD, 0},
-};
-
-MsgField GAME_CLIENT_0182[2] = {
-    {TYPE_MSG_HEADER, 182},
-    {TYPE_BYTE, 0},
-};
-
-MsgField GAME_CLIENT_0183[2] = {
-    {TYPE_MSG_HEADER, 183},
-    {TYPE_BYTE, 0},
-};
-
-MsgField GAME_CLIENT_0184[3] = {
-    {TYPE_MSG_HEADER, 184},
     {TYPE_BLOB, 16},
     {TYPE_BYTE, 0},
 };
 
-MsgField GAME_CLIENT_0185[6] = {
+MsgField GAME_CLIENT_0176[6] = {
+    {TYPE_MSG_HEADER, 176},
+    {TYPE_WORD, 0},
+    {TYPE_BYTE, 0},
+    {TYPE_WORD, 0},
+    {TYPE_BYTE, 0},
+    {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0177[2] = {
+    {TYPE_MSG_HEADER, 177},
+    {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0178[3] = {
+    {TYPE_MSG_HEADER, 178},
+    {TYPE_DWORD, 0},
+    {TYPE_STRING_16, 20},
+};
+
+MsgField GAME_CLIENT_0179[3] = {
+    {TYPE_MSG_HEADER, 179},
+    {TYPE_DWORD, 0},
+    {TYPE_STRING_16, 20},
+};
+
+MsgField GAME_CLIENT_0180[4] = {
+    {TYPE_MSG_HEADER, 180},
+    {TYPE_DWORD, 0},
+    {TYPE_STRING_16, 32},
+    {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0181[4] = {
+    {TYPE_MSG_HEADER, 181},
+    {TYPE_DWORD, 0},
+    {TYPE_BLOB, 16},
+    {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0182[4] = {
+    {TYPE_MSG_HEADER, 182},
+    {TYPE_DWORD, 0},
+    {TYPE_BLOB, 16},
+    {TYPE_BYTE, 0},
+};
+
+MsgField GAME_CLIENT_0183[3] = {
+    {TYPE_MSG_HEADER, 183},
+    {TYPE_DWORD, 0},
+    {TYPE_STRING_16, 20},
+};
+
+MsgField GAME_CLIENT_0184[3] = {
+    {TYPE_MSG_HEADER, 184},
+    {TYPE_DWORD, 0},
+    {TYPE_WORD, 0},
+};
+
+MsgField GAME_CLIENT_0185[3] = {
     {TYPE_MSG_HEADER, 185},
-    {TYPE_WORD, 0},
-    {TYPE_BYTE, 0},
-    {TYPE_WORD, 0},
-    {TYPE_BYTE, 0},
-    {TYPE_BYTE, 0},
+    {TYPE_DWORD, 0},
+    {TYPE_STRING_16, 20},
 };
 
 MsgField GAME_CLIENT_0186[2] = {
     {TYPE_MSG_HEADER, 186},
-    {TYPE_BYTE, 0},
+    {TYPE_DWORD, 0},
 };
 
-MsgField GAME_CLIENT_0187[3] = {
+MsgField GAME_CLIENT_0187[2] = {
     {TYPE_MSG_HEADER, 187},
     {TYPE_DWORD, 0},
-    {TYPE_STRING_16, 20},
 };
 
 MsgField GAME_CLIENT_0188[3] = {
@@ -1829,76 +1848,21 @@ MsgField GAME_CLIENT_0188[3] = {
     {TYPE_STRING_16, 20},
 };
 
-MsgField GAME_CLIENT_0189[4] = {
+MsgField GAME_CLIENT_0189[3] = {
     {TYPE_MSG_HEADER, 189},
     {TYPE_DWORD, 0},
-    {TYPE_STRING_16, 32},
-    {TYPE_BYTE, 0},
+    {TYPE_STRING_16, 256},
 };
 
 MsgField GAME_CLIENT_0190[4] = {
     {TYPE_MSG_HEADER, 190},
     {TYPE_DWORD, 0},
-    {TYPE_BLOB, 16},
-    {TYPE_BYTE, 0},
-};
-
-MsgField GAME_CLIENT_0191[4] = {
-    {TYPE_MSG_HEADER, 191},
-    {TYPE_DWORD, 0},
-    {TYPE_BLOB, 16},
-    {TYPE_BYTE, 0},
-};
-
-MsgField GAME_CLIENT_0192[3] = {
-    {TYPE_MSG_HEADER, 192},
-    {TYPE_DWORD, 0},
-    {TYPE_STRING_16, 20},
-};
-
-MsgField GAME_CLIENT_0193[3] = {
-    {TYPE_MSG_HEADER, 193},
-    {TYPE_DWORD, 0},
-    {TYPE_WORD, 0},
-};
-
-MsgField GAME_CLIENT_0194[3] = {
-    {TYPE_MSG_HEADER, 194},
-    {TYPE_DWORD, 0},
-    {TYPE_STRING_16, 20},
-};
-
-MsgField GAME_CLIENT_0195[2] = {
-    {TYPE_MSG_HEADER, 195},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0196[2] = {
-    {TYPE_MSG_HEADER, 196},
-    {TYPE_DWORD, 0},
-};
-
-MsgField GAME_CLIENT_0197[3] = {
-    {TYPE_MSG_HEADER, 197},
-    {TYPE_DWORD, 0},
-    {TYPE_STRING_16, 20},
-};
-
-MsgField GAME_CLIENT_0198[3] = {
-    {TYPE_MSG_HEADER, 198},
-    {TYPE_DWORD, 0},
-    {TYPE_STRING_16, 256},
-};
-
-MsgField GAME_CLIENT_0199[4] = {
-    {TYPE_MSG_HEADER, 199},
-    {TYPE_DWORD, 0},
     {TYPE_BYTE, 0},
     {TYPE_STRING_16, 32},
 };
 
-MsgField GAME_CLIENT_0200[3] = {
-    {TYPE_MSG_HEADER, 200},
+MsgField GAME_CLIENT_0191[3] = {
+    {TYPE_MSG_HEADER, 191},
     {TYPE_STRING_16, 32},
     {TYPE_BYTE, 0},
 };
@@ -1961,31 +1925,31 @@ MsgField GAME_SERVER_0009[1] = {
     {TYPE_MSG_HEADER, 9},
 };
 
-// Handler Rva: 0008A8E0
+// Handler Rva: 0008A8D0
 MsgField GAME_SERVER_0010[3] = {
     {TYPE_MSG_HEADER, 10},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008A8C0
+// Handler Rva: 0008A8B0
 MsgField GAME_SERVER_0011[2] = {
     {TYPE_MSG_HEADER, 11},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008A900
+// Handler Rva: 0008A8F0
 MsgField GAME_SERVER_0012[1] = {
     {TYPE_MSG_HEADER, 12},
 };
 
-// Handler Rva: 0008A950
+// Handler Rva: 0008A940
 MsgField GAME_SERVER_0013[2] = {
     {TYPE_MSG_HEADER, 13},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 0008A970
+// Handler Rva: 0008A960
 MsgField GAME_SERVER_0014[5] = {
     {TYPE_MSG_HEADER, 14},
     {TYPE_DWORD, 0},
@@ -2254,7 +2218,7 @@ MsgField GAME_SERVER_0048[3] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004734C0
+// Handler Rva: 004732B0
 MsgField GAME_SERVER_0049[8] = {
     {TYPE_MSG_HEADER, 49},
     {TYPE_STRING_16, 32},
@@ -2266,13 +2230,13 @@ MsgField GAME_SERVER_0049[8] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004734F0
+// Handler Rva: 004732E0
 MsgField GAME_SERVER_0050[2] = {
     {TYPE_MSG_HEADER, 50},
     {TYPE_STRING_16, 32},
 };
 
-// Handler Rva: 00473510
+// Handler Rva: 00473300
 MsgField GAME_SERVER_0051[7] = {
     {TYPE_MSG_HEADER, 51},
     {TYPE_DWORD, 0},
@@ -2283,20 +2247,20 @@ MsgField GAME_SERVER_0051[7] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473540
+// Handler Rva: 00473330
 MsgField GAME_SERVER_0052[2] = {
     {TYPE_MSG_HEADER, 52},
     {TYPE_STRING_16, 64},
 };
 
-// Handler Rva: 00473560
+// Handler Rva: 00473350
 MsgField GAME_SERVER_0053[3] = {
     {TYPE_MSG_HEADER, 53},
     {TYPE_WORD, 0},
     {TYPE_AGENT_ID, 0},
 };
 
-// Handler Rva: 00473580
+// Handler Rva: 00473370
 MsgField GAME_SERVER_0054[4] = {
     {TYPE_MSG_HEADER, 54},
     {TYPE_AGENT_ID, 0},
@@ -2304,14 +2268,14 @@ MsgField GAME_SERVER_0054[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004735B0
+// Handler Rva: 004733A0
 MsgField GAME_SERVER_0055[3] = {
     {TYPE_MSG_HEADER, 55},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004735D0
+// Handler Rva: 004733C0
 MsgField GAME_SERVER_0056[4] = {
     {TYPE_MSG_HEADER, 56},
     {TYPE_AGENT_ID, 0},
@@ -2319,28 +2283,28 @@ MsgField GAME_SERVER_0056[4] = {
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 004735F0
+// Handler Rva: 004733E0
 MsgField GAME_SERVER_0057[3] = {
     {TYPE_MSG_HEADER, 57},
     {TYPE_AGENT_ID, 0},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00473610
+// Handler Rva: 00473400
 MsgField GAME_SERVER_0058[3] = {
     {TYPE_MSG_HEADER, 58},
     {TYPE_AGENT_ID, 0},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00473630
+// Handler Rva: 00473420
 MsgField GAME_SERVER_0059[3] = {
     {TYPE_MSG_HEADER, 59},
     {TYPE_AGENT_ID, 0},
     {TYPE_ARRAY_32, 48},
 };
 
-// Handler Rva: 00473670
+// Handler Rva: 00473460
 MsgField GAME_SERVER_0060[5] = {
     {TYPE_MSG_HEADER, 60},
     {TYPE_AGENT_ID, 0},
@@ -2349,7 +2313,7 @@ MsgField GAME_SERVER_0060[5] = {
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 004736A0
+// Handler Rva: 00473490
 MsgField GAME_SERVER_0061[5] = {
     {TYPE_MSG_HEADER, 61},
     {TYPE_STRING_16, 8},
@@ -2358,13 +2322,13 @@ MsgField GAME_SERVER_0061[5] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004736D0
+// Handler Rva: 004734C0
 MsgField GAME_SERVER_0062[2] = {
     {TYPE_MSG_HEADER, 62},
     {TYPE_AGENT_ID, 0},
 };
 
-// Handler Rva: 004736F0
+// Handler Rva: 004734E0
 MsgField GAME_SERVER_0063[6] = {
     {TYPE_MSG_HEADER, 63},
     {TYPE_AGENT_ID, 0},
@@ -2374,14 +2338,14 @@ MsgField GAME_SERVER_0063[6] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473720
+// Handler Rva: 00473510
 MsgField GAME_SERVER_0064[3] = {
     {TYPE_MSG_HEADER, 64},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473740
+// Handler Rva: 00473530
 MsgField GAME_SERVER_0065[6] = {
     {TYPE_MSG_HEADER, 65},
     {TYPE_AGENT_ID, 0},
@@ -2391,7 +2355,7 @@ MsgField GAME_SERVER_0065[6] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473770
+// Handler Rva: 00473560
 MsgField GAME_SERVER_0066[6] = {
     {TYPE_MSG_HEADER, 66},
     {TYPE_AGENT_ID, 0},
@@ -2401,7 +2365,7 @@ MsgField GAME_SERVER_0066[6] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004737A0
+// Handler Rva: 00473590
 MsgField GAME_SERVER_0067[5] = {
     {TYPE_MSG_HEADER, 67},
     {TYPE_AGENT_ID, 0},
@@ -2410,21 +2374,21 @@ MsgField GAME_SERVER_0067[5] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004737D0
+// Handler Rva: 004735C0
 MsgField GAME_SERVER_0068[3] = {
     {TYPE_MSG_HEADER, 68},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004737F0
+// Handler Rva: 004735E0
 MsgField GAME_SERVER_0069[3] = {
     {TYPE_MSG_HEADER, 69},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473820
+// Handler Rva: 00473610
 MsgField GAME_SERVER_0070[4] = {
     {TYPE_MSG_HEADER, 70},
     {TYPE_DWORD, 0},
@@ -2432,7 +2396,7 @@ MsgField GAME_SERVER_0070[4] = {
     {TYPE_AGENT_ID, 0},
 };
 
-// Handler Rva: 00473850
+// Handler Rva: 00473640
 MsgField GAME_SERVER_0071[5] = {
     {TYPE_MSG_HEADER, 71},
     {TYPE_DWORD, 0},
@@ -2441,14 +2405,14 @@ MsgField GAME_SERVER_0071[5] = {
     {TYPE_WORD, 0},
 };
 
-// Handler Rva: 004738A0
+// Handler Rva: 00473690
 MsgField GAME_SERVER_0072[3] = {
     {TYPE_MSG_HEADER, 72},
     {TYPE_AGENT_ID, 0},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 004738C0
+// Handler Rva: 004736B0
 MsgField GAME_SERVER_0073[10] = {
     {TYPE_MSG_HEADER, 73},
     {TYPE_DWORD, 0},
@@ -2462,19 +2426,19 @@ MsgField GAME_SERVER_0073[10] = {
     {TYPE_WORD, 0},
 };
 
-// Handler Rva: 00473910
+// Handler Rva: 00473700
 MsgField GAME_SERVER_0074[2] = {
     {TYPE_MSG_HEADER, 74},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473930
+// Handler Rva: 00473720
 MsgField GAME_SERVER_0075[2] = {
     {TYPE_MSG_HEADER, 75},
     {TYPE_ARRAY_32, 64},
 };
 
-// Handler Rva: 00473950
+// Handler Rva: 00473740
 MsgField GAME_SERVER_0076[4] = {
     {TYPE_MSG_HEADER, 76},
     {TYPE_DWORD, 0},
@@ -2482,7 +2446,7 @@ MsgField GAME_SERVER_0076[4] = {
     {TYPE_STRING_16, 128},
 };
 
-// Handler Rva: 00473980
+// Handler Rva: 00473770
 MsgField GAME_SERVER_0077[5] = {
     {TYPE_MSG_HEADER, 77},
     {TYPE_DWORD, 0},
@@ -2491,7 +2455,7 @@ MsgField GAME_SERVER_0077[5] = {
     {TYPE_WORD, 0},
 };
 
-// Handler Rva: 004739F0
+// Handler Rva: 004737E0
 MsgField GAME_SERVER_0078[4] = {
     {TYPE_MSG_HEADER, 78},
     {TYPE_DWORD, 0},
@@ -2504,7 +2468,7 @@ MsgField GAME_SERVER_0079[1] = {
     {TYPE_MSG_HEADER, 79},
 };
 
-// Handler Rva: 004739C0
+// Handler Rva: 004737B0
 MsgField GAME_SERVER_0080[7] = {
     {TYPE_MSG_HEADER, 80},
     {TYPE_DWORD, 0},
@@ -2515,7 +2479,7 @@ MsgField GAME_SERVER_0080[7] = {
     {TYPE_WORD, 0},
 };
 
-// Handler Rva: 00473A10
+// Handler Rva: 00473800
 MsgField GAME_SERVER_0081[5] = {
     {TYPE_MSG_HEADER, 81},
     {TYPE_DWORD, 0},
@@ -2524,13 +2488,13 @@ MsgField GAME_SERVER_0081[5] = {
     {TYPE_WORD, 0},
 };
 
-// Handler Rva: 00473A50
+// Handler Rva: 00473840
 MsgField GAME_SERVER_0082[2] = {
     {TYPE_MSG_HEADER, 82},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473A70
+// Handler Rva: 00473860
 MsgField GAME_SERVER_0083[5] = {
     {TYPE_MSG_HEADER, 83},
     {TYPE_DWORD, 0},
@@ -2539,7 +2503,7 @@ MsgField GAME_SERVER_0083[5] = {
     {TYPE_WORD, 0},
 };
 
-// Handler Rva: 00473AB0
+// Handler Rva: 004738A0
 MsgField GAME_SERVER_0084[3] = {
     {TYPE_MSG_HEADER, 84},
     {TYPE_DWORD, 0},
@@ -2551,7 +2515,7 @@ MsgField GAME_SERVER_0085[1] = {
     {TYPE_MSG_HEADER, 85},
 };
 
-// Handler Rva: 00473AD0
+// Handler Rva: 004738C0
 MsgField GAME_SERVER_0086[10] = {
     {TYPE_MSG_HEADER, 86},
     {TYPE_DWORD, 0},
@@ -2565,21 +2529,21 @@ MsgField GAME_SERVER_0086[10] = {
     {TYPE_STRING_16, 8},
 };
 
-// Handler Rva: 00473B50
+// Handler Rva: 00473940
 MsgField GAME_SERVER_0087[3] = {
     {TYPE_MSG_HEADER, 87},
     {TYPE_DWORD, 0},
     {TYPE_ARRAY_32, 8},
 };
 
-// Handler Rva: 00473BC0
+// Handler Rva: 004739B0
 MsgField GAME_SERVER_0088[3] = {
     {TYPE_MSG_HEADER, 88},
     {TYPE_DWORD, 0},
     {TYPE_STRING_16, 32},
 };
 
-// Handler Rva: 00473BE0
+// Handler Rva: 004739D0
 MsgField GAME_SERVER_0089[8] = {
     {TYPE_MSG_HEADER, 89},
     {TYPE_DWORD, 0},
@@ -2591,19 +2555,19 @@ MsgField GAME_SERVER_0089[8] = {
     {TYPE_STRING_16, 32},
 };
 
-// Handler Rva: 00473C50
+// Handler Rva: 00473A40
 MsgField GAME_SERVER_0090[2] = {
     {TYPE_MSG_HEADER, 90},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473C70
+// Handler Rva: 00473A60
 MsgField GAME_SERVER_0091[2] = {
     {TYPE_MSG_HEADER, 91},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473C90
+// Handler Rva: 00473A80
 MsgField GAME_SERVER_0092[4] = {
     {TYPE_MSG_HEADER, 92},
     {TYPE_AGENT_ID, 0},
@@ -2611,20 +2575,20 @@ MsgField GAME_SERVER_0092[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473CB0
+// Handler Rva: 00473AA0
 MsgField GAME_SERVER_0093[2] = {
     {TYPE_MSG_HEADER, 93},
     {TYPE_STRING_16, 122},
 };
 
-// Handler Rva: 00473CD0
+// Handler Rva: 00473AC0
 MsgField GAME_SERVER_0094[3] = {
     {TYPE_MSG_HEADER, 94},
     {TYPE_WORD, 0},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00473CF0
+// Handler Rva: 00473AE0
 MsgField GAME_SERVER_0095[4] = {
     {TYPE_MSG_HEADER, 95},
     {TYPE_AGENT_ID, 0},
@@ -2632,7 +2596,7 @@ MsgField GAME_SERVER_0095[4] = {
     {TYPE_STRING_16, 8},
 };
 
-// Handler Rva: 00473D10
+// Handler Rva: 00473B00
 MsgField GAME_SERVER_0096[4] = {
     {TYPE_MSG_HEADER, 96},
     {TYPE_BYTE, 0},
@@ -2640,28 +2604,28 @@ MsgField GAME_SERVER_0096[4] = {
     {TYPE_STRING_16, 6},
 };
 
-// Handler Rva: 00473D30
+// Handler Rva: 00473B20
 MsgField GAME_SERVER_0097[3] = {
     {TYPE_MSG_HEADER, 97},
     {TYPE_WORD, 0},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00473D50
+// Handler Rva: 00473B40
 MsgField GAME_SERVER_0098[3] = {
     {TYPE_MSG_HEADER, 98},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473D70
+// Handler Rva: 00473B60
 MsgField GAME_SERVER_0099[3] = {
     {TYPE_MSG_HEADER, 99},
     {TYPE_AGENT_ID, 0},
     {TYPE_AGENT_ID, 0},
 };
 
-// Handler Rva: 00473D90
+// Handler Rva: 00473B80
 MsgField GAME_SERVER_0100[4] = {
     {TYPE_MSG_HEADER, 100},
     {TYPE_AGENT_ID, 0},
@@ -2669,14 +2633,14 @@ MsgField GAME_SERVER_0100[4] = {
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00473DB0
+// Handler Rva: 00473BA0
 MsgField GAME_SERVER_0101[3] = {
     {TYPE_MSG_HEADER, 101},
     {TYPE_AGENT_ID, 0},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00473DD0
+// Handler Rva: 00473BC0
 MsgField GAME_SERVER_0102[4] = {
     {TYPE_MSG_HEADER, 102},
     {TYPE_AGENT_ID, 0},
@@ -2684,14 +2648,14 @@ MsgField GAME_SERVER_0102[4] = {
     {TYPE_WORD, 0},
 };
 
-// Handler Rva: 00473E10
+// Handler Rva: 00473C00
 MsgField GAME_SERVER_0103[3] = {
     {TYPE_MSG_HEADER, 103},
     {TYPE_VECT2, 0},
     {TYPE_WORD, 0},
 };
 
-// Handler Rva: 00473E50
+// Handler Rva: 00473C40
 MsgField GAME_SERVER_0104[4] = {
     {TYPE_MSG_HEADER, 104},
     {TYPE_AGENT_ID, 0},
@@ -2699,26 +2663,26 @@ MsgField GAME_SERVER_0104[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473E70
+// Handler Rva: 00473C60
 MsgField GAME_SERVER_0105[2] = {
     {TYPE_MSG_HEADER, 105},
     {TYPE_AGENT_ID, 0},
 };
 
-// Handler Rva: 00473E90
+// Handler Rva: 00473C80
 MsgField GAME_SERVER_0106[2] = {
     {TYPE_MSG_HEADER, 106},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473EB0
+// Handler Rva: 00473CA0
 MsgField GAME_SERVER_0107[3] = {
     {TYPE_MSG_HEADER, 107},
     {TYPE_BYTE, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473ED0
+// Handler Rva: 00473CC0
 MsgField GAME_SERVER_0108[4] = {
     {TYPE_MSG_HEADER, 108},
     {TYPE_DWORD, 0},
@@ -2726,7 +2690,7 @@ MsgField GAME_SERVER_0108[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473EF0
+// Handler Rva: 00473CE0
 MsgField GAME_SERVER_0109[4] = {
     {TYPE_MSG_HEADER, 109},
     {TYPE_AGENT_ID, 0},
@@ -2734,7 +2698,7 @@ MsgField GAME_SERVER_0109[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473F10
+// Handler Rva: 00473D00
 MsgField GAME_SERVER_0110[11] = {
     {TYPE_MSG_HEADER, 110},
     {TYPE_AGENT_ID, 0},
@@ -2749,7 +2713,7 @@ MsgField GAME_SERVER_0110[11] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473F30
+// Handler Rva: 00473D20
 MsgField GAME_SERVER_0111[4] = {
     {TYPE_MSG_HEADER, 111},
     {TYPE_AGENT_ID, 0},
@@ -2757,19 +2721,19 @@ MsgField GAME_SERVER_0111[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473F50
+// Handler Rva: 00473D40
 MsgField GAME_SERVER_0112[2] = {
     {TYPE_MSG_HEADER, 112},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00473F70
+// Handler Rva: 00473D60
 MsgField GAME_SERVER_0113[2] = {
     {TYPE_MSG_HEADER, 113},
     {TYPE_AGENT_ID, 0},
 };
 
-// Handler Rva: 00473F90
+// Handler Rva: 00473D80
 MsgField GAME_SERVER_0114[5] = {
     {TYPE_MSG_HEADER, 114},
     {TYPE_WORD, 0},
@@ -2778,7 +2742,7 @@ MsgField GAME_SERVER_0114[5] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00473FC0
+// Handler Rva: 00473DB0
 MsgField GAME_SERVER_0115[9] = {
     {TYPE_MSG_HEADER, 115},
     {TYPE_WORD, 0},
@@ -2791,7 +2755,7 @@ MsgField GAME_SERVER_0115[9] = {
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00474040
+// Handler Rva: 00473E30
 MsgField GAME_SERVER_0116[21] = {
     {TYPE_MSG_HEADER, 116},
     {TYPE_WORD, 0},
@@ -2816,25 +2780,25 @@ MsgField GAME_SERVER_0116[21] = {
     {TYPE_STRING_16, 32},
 };
 
-// Handler Rva: 004740E0
+// Handler Rva: 00473ED0
 MsgField GAME_SERVER_0117[2] = {
     {TYPE_MSG_HEADER, 117},
     {TYPE_AGENT_ID, 0},
 };
 
-// Handler Rva: 00474100
+// Handler Rva: 00473EF0
 MsgField GAME_SERVER_0118[2] = {
     {TYPE_MSG_HEADER, 118},
     {TYPE_WORD, 0},
 };
 
-// Handler Rva: 00474120
+// Handler Rva: 00473F10
 MsgField GAME_SERVER_0119[2] = {
     {TYPE_MSG_HEADER, 119},
     {TYPE_WORD, 0},
 };
 
-// Handler Rva: 00474140
+// Handler Rva: 00473F30
 MsgField GAME_SERVER_0120[8] = {
     {TYPE_MSG_HEADER, 120},
     {TYPE_BYTE, 0},
@@ -2846,14 +2810,14 @@ MsgField GAME_SERVER_0120[8] = {
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 004743A0
+// Handler Rva: 00474190
 MsgField GAME_SERVER_0121[3] = {
     {TYPE_MSG_HEADER, 121},
     {TYPE_WORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004743C0
+// Handler Rva: 004741B0
 MsgField GAME_SERVER_0122[6] = {
     {TYPE_MSG_HEADER, 122},
     {TYPE_DWORD, 0},
@@ -2863,25 +2827,25 @@ MsgField GAME_SERVER_0122[6] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004743F0
+// Handler Rva: 004741E0
 MsgField GAME_SERVER_0123[2] = {
     {TYPE_MSG_HEADER, 123},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474410
+// Handler Rva: 00474200
 MsgField GAME_SERVER_0124[2] = {
     {TYPE_MSG_HEADER, 124},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474520
+// Handler Rva: 00474310
 MsgField GAME_SERVER_0125[2] = {
     {TYPE_MSG_HEADER, 125},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474430
+// Handler Rva: 00474220
 MsgField GAME_SERVER_0126[5] = {
     {TYPE_MSG_HEADER, 126},
     {TYPE_BYTE, 0},
@@ -2895,26 +2859,26 @@ MsgField GAME_SERVER_0127[1] = {
     {TYPE_MSG_HEADER, 127},
 };
 
-// Handler Rva: 00474470
+// Handler Rva: 00474260
 MsgField GAME_SERVER_0128[2] = {
     {TYPE_MSG_HEADER, 128},
     {TYPE_STRING_16, 122},
 };
 
-// Handler Rva: 00474490
+// Handler Rva: 00474280
 MsgField GAME_SERVER_0129[2] = {
     {TYPE_MSG_HEADER, 129},
     {TYPE_AGENT_ID, 0},
 };
 
-// Handler Rva: 004744B0
+// Handler Rva: 004742A0
 MsgField GAME_SERVER_0130[3] = {
     {TYPE_MSG_HEADER, 130},
     {TYPE_AGENT_ID, 0},
     {TYPE_WORD, 0},
 };
 
-// Handler Rva: 004744D0
+// Handler Rva: 004742C0
 MsgField GAME_SERVER_0131[4] = {
     {TYPE_MSG_HEADER, 131},
     {TYPE_AGENT_ID, 0},
@@ -2922,25 +2886,25 @@ MsgField GAME_SERVER_0131[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474540
+// Handler Rva: 00474330
 MsgField GAME_SERVER_0132[2] = {
     {TYPE_MSG_HEADER, 132},
     {TYPE_ARRAY_32, 16},
 };
 
-// Handler Rva: 00474560
+// Handler Rva: 00474350
 MsgField GAME_SERVER_0133[2] = {
     {TYPE_MSG_HEADER, 133},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00474580
+// Handler Rva: 00474370
 MsgField GAME_SERVER_0134[2] = {
     {TYPE_MSG_HEADER, 134},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 004745A0
+// Handler Rva: 00474390
 MsgField GAME_SERVER_0135[19] = {
     {TYPE_MSG_HEADER, 135},
     {TYPE_BYTE, 0},
@@ -2963,13 +2927,13 @@ MsgField GAME_SERVER_0135[19] = {
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 004745D0
+// Handler Rva: 004743C0
 MsgField GAME_SERVER_0136[2] = {
     {TYPE_MSG_HEADER, 136},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 004745F0
+// Handler Rva: 004743E0
 MsgField GAME_SERVER_0137[4] = {
     {TYPE_MSG_HEADER, 137},
     {TYPE_BYTE, 0},
@@ -2977,13 +2941,13 @@ MsgField GAME_SERVER_0137[4] = {
     {TYPE_VECT2, 0},
 };
 
-// Handler Rva: 00474610
+// Handler Rva: 00474400
 MsgField GAME_SERVER_0138[2] = {
     {TYPE_MSG_HEADER, 138},
     {TYPE_ARRAY_32, 64},
 };
 
-// Handler Rva: 00474630
+// Handler Rva: 00474420
 MsgField GAME_SERVER_0139[4] = {
     {TYPE_MSG_HEADER, 139},
     {TYPE_DWORD, 0},
@@ -2991,14 +2955,14 @@ MsgField GAME_SERVER_0139[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474660
+// Handler Rva: 00474450
 MsgField GAME_SERVER_0140[3] = {
     {TYPE_MSG_HEADER, 140},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474690
+// Handler Rva: 00474480
 MsgField GAME_SERVER_0141[8] = {
     {TYPE_MSG_HEADER, 141},
     {TYPE_DWORD, 0},
@@ -3015,27 +2979,27 @@ MsgField GAME_SERVER_0142[1] = {
     {TYPE_MSG_HEADER, 142},
 };
 
-// Handler Rva: 004746E0
+// Handler Rva: 004744D0
 MsgField GAME_SERVER_0143[2] = {
     {TYPE_MSG_HEADER, 143},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474700
+// Handler Rva: 004744F0
 MsgField GAME_SERVER_0144[3] = {
     {TYPE_MSG_HEADER, 144},
     {TYPE_DWORD, 0},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00474720
+// Handler Rva: 00474510
 MsgField GAME_SERVER_0145[3] = {
     {TYPE_MSG_HEADER, 145},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474740
+// Handler Rva: 00474530
 MsgField GAME_SERVER_0146[4] = {
     {TYPE_MSG_HEADER, 146},
     {TYPE_WORD, 0},
@@ -3043,21 +3007,21 @@ MsgField GAME_SERVER_0146[4] = {
     {TYPE_ARRAY_32, 16},
 };
 
-// Handler Rva: 004747E0
+// Handler Rva: 004745D0
 MsgField GAME_SERVER_0147[3] = {
     {TYPE_MSG_HEADER, 147},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474810
+// Handler Rva: 00474600
 MsgField GAME_SERVER_0148[3] = {
     {TYPE_MSG_HEADER, 148},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474830
+// Handler Rva: 00474620
 MsgField GAME_SERVER_0149[6] = {
     {TYPE_MSG_HEADER, 149},
     {TYPE_ARRAY_32, 32},
@@ -3067,14 +3031,14 @@ MsgField GAME_SERVER_0149[6] = {
     {TYPE_ARRAY_32, 32},
 };
 
-// Handler Rva: 004748A0
+// Handler Rva: 00474690
 MsgField GAME_SERVER_0150[3] = {
     {TYPE_MSG_HEADER, 150},
     {TYPE_WORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004748C0
+// Handler Rva: 004746B0
 MsgField GAME_SERVER_0151[6] = {
     {TYPE_MSG_HEADER, 151},
     {TYPE_DWORD, 0},
@@ -3084,14 +3048,14 @@ MsgField GAME_SERVER_0151[6] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004748F0
+// Handler Rva: 004746E0
 MsgField GAME_SERVER_0152[3] = {
     {TYPE_MSG_HEADER, 152},
     {TYPE_BYTE, 0},
     {TYPE_STRING_16, 128},
 };
 
-// Handler Rva: 00474910
+// Handler Rva: 00474700
 MsgField GAME_SERVER_0153[5] = {
     {TYPE_MSG_HEADER, 153},
     {TYPE_BYTE, 0},
@@ -3100,35 +3064,35 @@ MsgField GAME_SERVER_0153[5] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474940
+// Handler Rva: 00474730
 MsgField GAME_SERVER_0154[3] = {
     {TYPE_MSG_HEADER, 154},
     {TYPE_WORD, 0},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00474960
+// Handler Rva: 00474750
 MsgField GAME_SERVER_0155[3] = {
     {TYPE_MSG_HEADER, 155},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474980
+// Handler Rva: 00474770
 MsgField GAME_SERVER_0156[3] = {
     {TYPE_MSG_HEADER, 156},
     {TYPE_AGENT_ID, 0},
     {TYPE_STRING_16, 32},
 };
 
-// Handler Rva: 004749A0
+// Handler Rva: 00474790
 MsgField GAME_SERVER_0157[3] = {
     {TYPE_MSG_HEADER, 157},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004749C0
+// Handler Rva: 004747B0
 MsgField GAME_SERVER_0158[4] = {
     {TYPE_MSG_HEADER, 158},
     {TYPE_AGENT_ID, 0},
@@ -3136,7 +3100,7 @@ MsgField GAME_SERVER_0158[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004749F0
+// Handler Rva: 004747E0
 MsgField GAME_SERVER_0159[5] = {
     {TYPE_MSG_HEADER, 159},
     {TYPE_AGENT_ID, 0},
@@ -3145,7 +3109,7 @@ MsgField GAME_SERVER_0159[5] = {
     {TYPE_STRING_16, 122},
 };
 
-// Handler Rva: 00474A20
+// Handler Rva: 00474810
 MsgField GAME_SERVER_0160[4] = {
     {TYPE_MSG_HEADER, 160},
     {TYPE_DWORD, 0},
@@ -3153,7 +3117,7 @@ MsgField GAME_SERVER_0160[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474A40
+// Handler Rva: 00474830
 MsgField GAME_SERVER_0161[5] = {
     {TYPE_MSG_HEADER, 161},
     {TYPE_DWORD, 0},
@@ -3162,7 +3126,7 @@ MsgField GAME_SERVER_0161[5] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474A70
+// Handler Rva: 00474860
 MsgField GAME_SERVER_0162[7] = {
     {TYPE_MSG_HEADER, 162},
     {TYPE_VECT2, 0},
@@ -3173,7 +3137,7 @@ MsgField GAME_SERVER_0162[7] = {
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00474AC0
+// Handler Rva: 004748B0
 MsgField GAME_SERVER_0163[4] = {
     {TYPE_MSG_HEADER, 163},
     {TYPE_DWORD, 0},
@@ -3181,7 +3145,7 @@ MsgField GAME_SERVER_0163[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474AF0
+// Handler Rva: 004748E0
 MsgField GAME_SERVER_0164[5] = {
     {TYPE_MSG_HEADER, 164},
     {TYPE_DWORD, 0},
@@ -3190,7 +3154,7 @@ MsgField GAME_SERVER_0164[5] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474B20
+// Handler Rva: 00474910
 MsgField GAME_SERVER_0165[8] = {
     {TYPE_MSG_HEADER, 165},
     {TYPE_AGENT_ID, 0},
@@ -3202,14 +3166,14 @@ MsgField GAME_SERVER_0165[8] = {
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00474B70
+// Handler Rva: 00474960
 MsgField GAME_SERVER_0166[3] = {
     {TYPE_MSG_HEADER, 166},
     {TYPE_AGENT_ID, 0},
     {TYPE_STRING_16, 122},
 };
 
-// Handler Rva: 00474B90
+// Handler Rva: 00474980
 MsgField GAME_SERVER_0167[4] = {
     {TYPE_MSG_HEADER, 167},
     {TYPE_AGENT_ID, 0},
@@ -3217,7 +3181,7 @@ MsgField GAME_SERVER_0167[4] = {
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00474BB0
+// Handler Rva: 004749A0
 MsgField GAME_SERVER_0168[4] = {
     {TYPE_MSG_HEADER, 168},
     {TYPE_AGENT_ID, 0},
@@ -3225,7 +3189,7 @@ MsgField GAME_SERVER_0168[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474BD0
+// Handler Rva: 004749C0
 MsgField GAME_SERVER_0169[4] = {
     {TYPE_MSG_HEADER, 169},
     {TYPE_VECT2, 0},
@@ -3233,14 +3197,14 @@ MsgField GAME_SERVER_0169[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474C10
+// Handler Rva: 00474A00
 MsgField GAME_SERVER_0170[3] = {
     {TYPE_MSG_HEADER, 170},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474C30
+// Handler Rva: 00474A20
 MsgField GAME_SERVER_0171[4] = {
     {TYPE_MSG_HEADER, 171},
     {TYPE_AGENT_ID, 0},
@@ -3248,53 +3212,53 @@ MsgField GAME_SERVER_0171[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474C50
+// Handler Rva: 00474A40
 MsgField GAME_SERVER_0172[1] = {
     {TYPE_MSG_HEADER, 172},
 };
 
-// Handler Rva: 00474C60
+// Handler Rva: 00474A50
 MsgField GAME_SERVER_0173[3] = {
     {TYPE_MSG_HEADER, 173},
     {TYPE_AGENT_ID, 0},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00474C80
+// Handler Rva: 00474A70
 MsgField GAME_SERVER_0174[3] = {
     {TYPE_MSG_HEADER, 174},
     {TYPE_DWORD, 0},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00474CA0
+// Handler Rva: 00474A90
 MsgField GAME_SERVER_0175[3] = {
     {TYPE_MSG_HEADER, 175},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474CC0
+// Handler Rva: 00474AB0
 MsgField GAME_SERVER_0176[2] = {
     {TYPE_MSG_HEADER, 176},
     {TYPE_STRING_16, 32},
 };
 
-// Handler Rva: 00474CE0
+// Handler Rva: 00474AD0
 MsgField GAME_SERVER_0177[3] = {
     {TYPE_MSG_HEADER, 177},
     {TYPE_WORD, 0},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00474D70
+// Handler Rva: 00474B60
 MsgField GAME_SERVER_0178[3] = {
     {TYPE_MSG_HEADER, 178},
     {TYPE_WORD, 0},
     {TYPE_WORD, 0},
 };
 
-// Handler Rva: 00474D00
+// Handler Rva: 00474AF0
 MsgField GAME_SERVER_0179[7] = {
     {TYPE_MSG_HEADER, 179},
     {TYPE_AGENT_ID, 0},
@@ -3305,33 +3269,33 @@ MsgField GAME_SERVER_0179[7] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474D30
+// Handler Rva: 00474B20
 MsgField GAME_SERVER_0180[2] = {
     {TYPE_MSG_HEADER, 180},
     {TYPE_AGENT_ID, 0},
 };
 
-// Handler Rva: 00474D50
+// Handler Rva: 00474B40
 MsgField GAME_SERVER_0181[3] = {
     {TYPE_MSG_HEADER, 181},
     {TYPE_AGENT_ID, 0},
     {TYPE_STRING_16, 32},
 };
 
-// Handler Rva: 00474D90
+// Handler Rva: 00474B80
 MsgField GAME_SERVER_0182[2] = {
     {TYPE_MSG_HEADER, 182},
     {TYPE_ARRAY_8, 256},
 };
 
-// Handler Rva: 00474DB0
+// Handler Rva: 00474BA0
 MsgField GAME_SERVER_0183[3] = {
     {TYPE_MSG_HEADER, 183},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474DD0
+// Handler Rva: 00474BC0
 MsgField GAME_SERVER_0184[5] = {
     {TYPE_MSG_HEADER, 184},
     {TYPE_AGENT_ID, 0},
@@ -3340,24 +3304,24 @@ MsgField GAME_SERVER_0184[5] = {
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00474E00
+// Handler Rva: 00474BF0
 MsgField GAME_SERVER_0185[1] = {
     {TYPE_MSG_HEADER, 185},
 };
 
-// Handler Rva: 00474E10
+// Handler Rva: 00474C00
 MsgField GAME_SERVER_0186[3] = {
     {TYPE_MSG_HEADER, 186},
     {TYPE_STRING_16, 128},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474E30
+// Handler Rva: 00474C20
 MsgField GAME_SERVER_0187[1] = {
     {TYPE_MSG_HEADER, 187},
 };
 
-// Handler Rva: 00474E40
+// Handler Rva: 00474C30
 MsgField GAME_SERVER_0188[4] = {
     {TYPE_MSG_HEADER, 188},
     {TYPE_DWORD, 0},
@@ -3365,32 +3329,32 @@ MsgField GAME_SERVER_0188[4] = {
     {TYPE_STRING_16, 128},
 };
 
-// Handler Rva: 00474E60
+// Handler Rva: 00474C50
 MsgField GAME_SERVER_0189[2] = {
     {TYPE_MSG_HEADER, 189},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474E80
+// Handler Rva: 00474C70
 MsgField GAME_SERVER_0190[3] = {
     {TYPE_MSG_HEADER, 190},
     {TYPE_DWORD, 0},
     {TYPE_STRING_16, 128},
 };
 
-// Handler Rva: 00474EA0
+// Handler Rva: 00474C90
 MsgField GAME_SERVER_0191[2] = {
     {TYPE_MSG_HEADER, 191},
     {TYPE_AGENT_ID, 0},
 };
 
-// Handler Rva: 00474EC0
+// Handler Rva: 00474CB0
 MsgField GAME_SERVER_0192[2] = {
     {TYPE_MSG_HEADER, 192},
     {TYPE_ARRAY_32, 64},
 };
 
-// Handler Rva: 00474EE0
+// Handler Rva: 00474CD0
 MsgField GAME_SERVER_0193[6] = {
     {TYPE_MSG_HEADER, 193},
     {TYPE_DWORD, 0},
@@ -3400,48 +3364,48 @@ MsgField GAME_SERVER_0193[6] = {
     {TYPE_STRING_16, 128},
 };
 
-// Handler Rva: 00474F10
+// Handler Rva: 00474D00
 MsgField GAME_SERVER_0194[3] = {
     {TYPE_MSG_HEADER, 194},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474F30
+// Handler Rva: 00474D20
 MsgField GAME_SERVER_0195[3] = {
     {TYPE_MSG_HEADER, 195},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474F50
+// Handler Rva: 00474D40
 MsgField GAME_SERVER_0196[3] = {
     {TYPE_MSG_HEADER, 196},
     {TYPE_BYTE, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474F70
+// Handler Rva: 00474D60
 MsgField GAME_SERVER_0197[2] = {
     {TYPE_MSG_HEADER, 197},
     {TYPE_AGENT_ID, 0},
 };
 
-// Handler Rva: 00474F90
+// Handler Rva: 00474D80
 MsgField GAME_SERVER_0198[3] = {
     {TYPE_MSG_HEADER, 198},
     {TYPE_BYTE, 0},
     {TYPE_STRING_16, 122},
 };
 
-// Handler Rva: 00474FB0
+// Handler Rva: 00474DA0
 MsgField GAME_SERVER_0199[3] = {
     {TYPE_MSG_HEADER, 199},
     {TYPE_BYTE, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475010
+// Handler Rva: 00474E00
 MsgField GAME_SERVER_0200[4] = {
     {TYPE_MSG_HEADER, 200},
     {TYPE_BYTE, 0},
@@ -3449,7 +3413,7 @@ MsgField GAME_SERVER_0200[4] = {
     {TYPE_ARRAY_32, 16},
 };
 
-// Handler Rva: 00474FD0
+// Handler Rva: 00474DC0
 MsgField GAME_SERVER_0201[4] = {
     {TYPE_MSG_HEADER, 201},
     {TYPE_BYTE, 0},
@@ -3457,33 +3421,33 @@ MsgField GAME_SERVER_0201[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474FF0
+// Handler Rva: 00474DE0
 MsgField GAME_SERVER_0202[3] = {
     {TYPE_MSG_HEADER, 202},
     {TYPE_BYTE, 0},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00475060
+// Handler Rva: 00474E50
 MsgField GAME_SERVER_0203[3] = {
     {TYPE_MSG_HEADER, 203},
     {TYPE_BYTE, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475080
+// Handler Rva: 00474E70
 MsgField GAME_SERVER_0204[2] = {
     {TYPE_MSG_HEADER, 204},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 004750A0
+// Handler Rva: 00474E90
 MsgField GAME_SERVER_0205[2] = {
     {TYPE_MSG_HEADER, 205},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 004750C0
+// Handler Rva: 00474EB0
 MsgField GAME_SERVER_0206[5] = {
     {TYPE_MSG_HEADER, 206},
     {TYPE_BYTE, 0},
@@ -3492,27 +3456,27 @@ MsgField GAME_SERVER_0206[5] = {
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 004750F0
+// Handler Rva: 00474EE0
 MsgField GAME_SERVER_0207[3] = {
     {TYPE_MSG_HEADER, 207},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475110
+// Handler Rva: 00474F00
 MsgField GAME_SERVER_0208[3] = {
     {TYPE_MSG_HEADER, 208},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475130
+// Handler Rva: 00474F20
 MsgField GAME_SERVER_0209[2] = {
     {TYPE_MSG_HEADER, 209},
     {TYPE_AGENT_ID, 0},
 };
 
-// Handler Rva: 00475150
+// Handler Rva: 00474F40
 MsgField GAME_SERVER_0210[5] = {
     {TYPE_MSG_HEADER, 210},
     {TYPE_AGENT_ID, 0},
@@ -3521,7 +3485,7 @@ MsgField GAME_SERVER_0210[5] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475180
+// Handler Rva: 00474F70
 MsgField GAME_SERVER_0211[4] = {
     {TYPE_MSG_HEADER, 211},
     {TYPE_AGENT_ID, 0},
@@ -3529,23 +3493,23 @@ MsgField GAME_SERVER_0211[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004751A0
+// Handler Rva: 00474F90
 MsgField GAME_SERVER_0212[2] = {
     {TYPE_MSG_HEADER, 212},
     {TYPE_ARRAY_32, 128},
 };
 
-// Handler Rva: 004751C0
+// Handler Rva: 00474FB0
 MsgField GAME_SERVER_0213[1] = {
     {TYPE_MSG_HEADER, 213},
 };
 
-// Handler Rva: 004751F0
+// Handler Rva: 00474FE0
 MsgField GAME_SERVER_0214[1] = {
     {TYPE_MSG_HEADER, 214},
 };
 
-// Handler Rva: 00475200
+// Handler Rva: 00474FF0
 MsgField GAME_SERVER_0215[4] = {
     {TYPE_MSG_HEADER, 215},
     {TYPE_WORD, 0},
@@ -3553,19 +3517,19 @@ MsgField GAME_SERVER_0215[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00474540
+// Handler Rva: 00474330
 MsgField GAME_SERVER_0216[2] = {
     {TYPE_MSG_HEADER, 216},
     {TYPE_ARRAY_32, 8},
 };
 
-// Handler Rva: 004751D0
+// Handler Rva: 00474FC0
 MsgField GAME_SERVER_0217[2] = {
     {TYPE_MSG_HEADER, 217},
     {TYPE_ARRAY_32, 4},
 };
 
-// Handler Rva: 00475220
+// Handler Rva: 00475010
 MsgField GAME_SERVER_0218[5] = {
     {TYPE_MSG_HEADER, 218},
     {TYPE_AGENT_ID, 0},
@@ -3574,7 +3538,7 @@ MsgField GAME_SERVER_0218[5] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475250
+// Handler Rva: 00475040
 MsgField GAME_SERVER_0219[5] = {
     {TYPE_MSG_HEADER, 219},
     {TYPE_AGENT_ID, 0},
@@ -3583,53 +3547,53 @@ MsgField GAME_SERVER_0219[5] = {
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00475280
+// Handler Rva: 00475070
 MsgField GAME_SERVER_0220[2] = {
     {TYPE_MSG_HEADER, 220},
     {TYPE_ARRAY_32, 128},
 };
 
-// Handler Rva: 004752A0
+// Handler Rva: 00475090
 MsgField GAME_SERVER_0221[3] = {
     {TYPE_MSG_HEADER, 221},
     {TYPE_WORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004752C0
+// Handler Rva: 004750B0
 MsgField GAME_SERVER_0222[3] = {
     {TYPE_MSG_HEADER, 222},
     {TYPE_WORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004752E0
+// Handler Rva: 004750D0
 MsgField GAME_SERVER_0223[2] = {
     {TYPE_MSG_HEADER, 223},
     {TYPE_WORD, 0},
 };
 
-// Handler Rva: 00475300
+// Handler Rva: 004750F0
 MsgField GAME_SERVER_0224[3] = {
     {TYPE_MSG_HEADER, 224},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475320
+// Handler Rva: 00475110
 MsgField GAME_SERVER_0225[3] = {
     {TYPE_MSG_HEADER, 225},
     {TYPE_BYTE, 0},
     {TYPE_ARRAY_32, 16},
 };
 
-// Handler Rva: 00475350
+// Handler Rva: 00475140
 MsgField GAME_SERVER_0226[2] = {
     {TYPE_MSG_HEADER, 226},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00475370
+// Handler Rva: 00475160
 MsgField GAME_SERVER_0227[4] = {
     {TYPE_MSG_HEADER, 227},
     {TYPE_AGENT_ID, 0},
@@ -3637,7 +3601,7 @@ MsgField GAME_SERVER_0227[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475370
+// Handler Rva: 00475160
 MsgField GAME_SERVER_0228[4] = {
     {TYPE_MSG_HEADER, 228},
     {TYPE_AGENT_ID, 0},
@@ -3645,7 +3609,7 @@ MsgField GAME_SERVER_0228[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475390
+// Handler Rva: 00475180
 MsgField GAME_SERVER_0229[4] = {
     {TYPE_MSG_HEADER, 229},
     {TYPE_AGENT_ID, 0},
@@ -3653,7 +3617,7 @@ MsgField GAME_SERVER_0229[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004753B0
+// Handler Rva: 004751A0
 MsgField GAME_SERVER_0230[5] = {
     {TYPE_MSG_HEADER, 230},
     {TYPE_AGENT_ID, 0},
@@ -3662,7 +3626,7 @@ MsgField GAME_SERVER_0230[5] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004753E0
+// Handler Rva: 004751D0
 MsgField GAME_SERVER_0231[4] = {
     {TYPE_MSG_HEADER, 231},
     {TYPE_AGENT_ID, 0},
@@ -3670,7 +3634,7 @@ MsgField GAME_SERVER_0231[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475400
+// Handler Rva: 004751F0
 MsgField GAME_SERVER_0232[4] = {
     {TYPE_MSG_HEADER, 232},
     {TYPE_AGENT_ID, 0},
@@ -3678,7 +3642,7 @@ MsgField GAME_SERVER_0232[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475420
+// Handler Rva: 00475210
 MsgField GAME_SERVER_0233[6] = {
     {TYPE_MSG_HEADER, 233},
     {TYPE_AGENT_ID, 0},
@@ -3688,7 +3652,7 @@ MsgField GAME_SERVER_0233[6] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475450
+// Handler Rva: 00475240
 MsgField GAME_SERVER_0234[16] = {
     {TYPE_MSG_HEADER, 234},
     {TYPE_DWORD, 0},
@@ -3708,65 +3672,65 @@ MsgField GAME_SERVER_0234[16] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475470
+// Handler Rva: 00475260
 MsgField GAME_SERVER_0235[2] = {
     {TYPE_MSG_HEADER, 235},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475490
+// Handler Rva: 00475280
 MsgField GAME_SERVER_0236[2] = {
     {TYPE_MSG_HEADER, 236},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004754B0
+// Handler Rva: 004752A0
 MsgField GAME_SERVER_0237[2] = {
     {TYPE_MSG_HEADER, 237},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004754D0
+// Handler Rva: 004752C0
 MsgField GAME_SERVER_0238[2] = {
     {TYPE_MSG_HEADER, 238},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004754F0
+// Handler Rva: 004752E0
 MsgField GAME_SERVER_0239[3] = {
     {TYPE_MSG_HEADER, 239},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475510
+// Handler Rva: 00475300
 MsgField GAME_SERVER_0240[3] = {
     {TYPE_MSG_HEADER, 240},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475530
+// Handler Rva: 00475320
 MsgField GAME_SERVER_0241[3] = {
     {TYPE_MSG_HEADER, 241},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475550
+// Handler Rva: 00475340
 MsgField GAME_SERVER_0242[3] = {
     {TYPE_MSG_HEADER, 242},
     {TYPE_AGENT_ID, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475570
+// Handler Rva: 00475360
 MsgField GAME_SERVER_0243[2] = {
     {TYPE_MSG_HEADER, 243},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475590
+// Handler Rva: 00475380
 MsgField GAME_SERVER_0244[5] = {
     {TYPE_MSG_HEADER, 244},
     {TYPE_DWORD, 0},
@@ -3775,21 +3739,21 @@ MsgField GAME_SERVER_0244[5] = {
     {TYPE_STRING_16, 8},
 };
 
-// Handler Rva: 004755D0
+// Handler Rva: 004753C0
 MsgField GAME_SERVER_0245[3] = {
     {TYPE_MSG_HEADER, 245},
     {TYPE_WORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004755F0
+// Handler Rva: 004753E0
 MsgField GAME_SERVER_0246[3] = {
     {TYPE_MSG_HEADER, 246},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475610
+// Handler Rva: 00475400
 MsgField GAME_SERVER_0247[12] = {
     {TYPE_MSG_HEADER, 247},
     {TYPE_DWORD, 0},
@@ -3805,32 +3769,32 @@ MsgField GAME_SERVER_0247[12] = {
     {TYPE_STRING_16, 8},
 };
 
-// Handler Rva: 00475680
+// Handler Rva: 00475470
 MsgField GAME_SERVER_0248[3] = {
     {TYPE_MSG_HEADER, 248},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004756A0
+// Handler Rva: 00475490
 MsgField GAME_SERVER_0249[2] = {
     {TYPE_MSG_HEADER, 249},
     {TYPE_AGENT_ID, 0},
 };
 
-// Handler Rva: 004751D0
+// Handler Rva: 00474FC0
 MsgField GAME_SERVER_0250[2] = {
     {TYPE_MSG_HEADER, 250},
     {TYPE_ARRAY_32, 16},
 };
 
-// Handler Rva: 004756C0
+// Handler Rva: 004754B0
 MsgField GAME_SERVER_0251[2] = {
     {TYPE_MSG_HEADER, 251},
     {TYPE_ARRAY_32, 32},
 };
 
-// Handler Rva: 004756E0
+// Handler Rva: 004754D0
 MsgField GAME_SERVER_0252[4] = {
     {TYPE_MSG_HEADER, 252},
     {TYPE_WORD, 0},
@@ -3838,14 +3802,14 @@ MsgField GAME_SERVER_0252[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475700
+// Handler Rva: 004754F0
 MsgField GAME_SERVER_0253[3] = {
     {TYPE_MSG_HEADER, 253},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00475720
+// Handler Rva: 00475510
 MsgField GAME_SERVER_0254[3] = {
     {TYPE_MSG_HEADER, 254},
     {TYPE_STRING_16, 32},
@@ -3857,31 +3821,31 @@ MsgField GAME_SERVER_0255[1] = {
     {TYPE_MSG_HEADER, 255},
 };
 
-// Handler Rva: 00477520
+// Handler Rva: 00477310
 MsgField GAME_SERVER_0256[1] = {
     {TYPE_MSG_HEADER, 256},
 };
 
-// Handler Rva: 00477530
+// Handler Rva: 00477320
 MsgField GAME_SERVER_0257[3] = {
     {TYPE_MSG_HEADER, 257},
     {TYPE_BYTE, 0},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00477550
+// Handler Rva: 00477340
 MsgField GAME_SERVER_0258[2] = {
     {TYPE_MSG_HEADER, 258},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00477570
+// Handler Rva: 00477360
 MsgField GAME_SERVER_0259[2] = {
     {TYPE_MSG_HEADER, 259},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00477590
+// Handler Rva: 00477380
 MsgField GAME_SERVER_0260[4] = {
     {TYPE_MSG_HEADER, 260},
     {TYPE_DWORD, 0},
@@ -3889,18 +3853,18 @@ MsgField GAME_SERVER_0260[4] = {
     {TYPE_STRING_16, 80},
 };
 
-// Handler Rva: 004775B0
+// Handler Rva: 004773A0
 MsgField GAME_SERVER_0261[1] = {
     {TYPE_MSG_HEADER, 261},
 };
 
-// Handler Rva: 004775C0
+// Handler Rva: 004773B0
 MsgField GAME_SERVER_0262[2] = {
     {TYPE_MSG_HEADER, 262},
     {TYPE_ARRAY_8, 1024},
 };
 
-// Handler Rva: 004775E0
+// Handler Rva: 004773D0
 MsgField GAME_SERVER_0263[1] = {
     {TYPE_MSG_HEADER, 263},
 };
@@ -3916,7 +3880,7 @@ MsgField GAME_SERVER_0265[2] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00477690
+// Handler Rva: 00477480
 MsgField GAME_SERVER_0266[6] = {
     {TYPE_MSG_HEADER, 266},
     {TYPE_AGENT_ID, 0},
@@ -3926,20 +3890,20 @@ MsgField GAME_SERVER_0266[6] = {
     {TYPE_STRING_16, 32},
 };
 
-// Handler Rva: 004776E0
+// Handler Rva: 004774D0
 MsgField GAME_SERVER_0267[2] = {
     {TYPE_MSG_HEADER, 267},
     {TYPE_AGENT_ID, 0},
 };
 
-// Handler Rva: 00477700
+// Handler Rva: 004774F0
 MsgField GAME_SERVER_0268[3] = {
     {TYPE_MSG_HEADER, 268},
     {TYPE_DWORD, 0},
     {TYPE_STRING_16, 122},
 };
 
-// Handler Rva: 00477720
+// Handler Rva: 00477510
 MsgField GAME_SERVER_0269[5] = {
     {TYPE_MSG_HEADER, 269},
     {TYPE_BYTE, 0},
@@ -3948,25 +3912,25 @@ MsgField GAME_SERVER_0269[5] = {
     {TYPE_WORD, 0},
 };
 
-// Handler Rva: 00477760
+// Handler Rva: 00477550
 MsgField GAME_SERVER_0270[2] = {
     {TYPE_MSG_HEADER, 270},
     {TYPE_STRING_16, 122},
 };
 
-// Handler Rva: 004778B0
+// Handler Rva: 004776A0
 MsgField GAME_SERVER_0271[2] = {
     {TYPE_MSG_HEADER, 271},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00477910
+// Handler Rva: 00477700
 MsgField GAME_SERVER_0272[2] = {
     {TYPE_MSG_HEADER, 272},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00477930
+// Handler Rva: 00477720
 MsgField GAME_SERVER_0273[4] = {
     {TYPE_MSG_HEADER, 273},
     {TYPE_WORD, 0},
@@ -3974,21 +3938,21 @@ MsgField GAME_SERVER_0273[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00477950
+// Handler Rva: 00477740
 MsgField GAME_SERVER_0274[3] = {
     {TYPE_MSG_HEADER, 274},
     {TYPE_WORD, 0},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 00477970
+// Handler Rva: 00477760
 MsgField GAME_SERVER_0275[3] = {
     {TYPE_MSG_HEADER, 275},
     {TYPE_WORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00477990
+// Handler Rva: 00477780
 MsgField GAME_SERVER_0276[4] = {
     {TYPE_MSG_HEADER, 276},
     {TYPE_WORD, 0},
@@ -3996,28 +3960,28 @@ MsgField GAME_SERVER_0276[4] = {
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 004779B0
+// Handler Rva: 004777A0
 MsgField GAME_SERVER_0277[3] = {
     {TYPE_MSG_HEADER, 277},
     {TYPE_DWORD, 0},
     {TYPE_BYTE, 0},
 };
 
-// Handler Rva: 004779D0
+// Handler Rva: 004777C0
 MsgField GAME_SERVER_0278[3] = {
     {TYPE_MSG_HEADER, 278},
     {TYPE_DWORD, 0},
     {TYPE_STRING_16, 32},
 };
 
-// Handler Rva: 004779F0
+// Handler Rva: 004777E0
 MsgField GAME_SERVER_0279[3] = {
     {TYPE_MSG_HEADER, 279},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
 };
 
-// Handler Rva: 00477A10
+// Handler Rva: 00477800
 MsgField GAME_SERVER_0280[3] = {
     {TYPE_MSG_HEADER, 280},
     {TYPE_DWORD, 0},
@@ -5816,7 +5780,7 @@ MsgFormat AUTH_SERVER_FORMATS[39] = {
     {38 , 3  , AUTH_SERVER_0038, 10 , 0},
 };
 
-MsgFormat GAME_CLIENT_FORMATS[201] = {
+MsgFormat GAME_CLIENT_FORMATS[192] = {
 // header | field_count | fields | max_size | name
     {0  , 2  , GAME_CLIENT_0000, 6  , 0},
     {1  , 1  , GAME_CLIENT_0001, 2  , 0},
@@ -5828,197 +5792,188 @@ MsgFormat GAME_CLIENT_FORMATS[201] = {
     {7  , 1  , GAME_CLIENT_0007, 2  , 0},
     {8  , 1  , GAME_CLIENT_0008, 2  , 0},
     {9  , 1  , GAME_CLIENT_0009, 2  , 0},
-    {10 , 1  , GAME_CLIENT_0010, 2  , 0},
-    {11 , 2  , GAME_CLIENT_0011, 6  , 0},
+    {10 , 2  , GAME_CLIENT_0010, 6  , 0},
+    {11 , 1  , GAME_CLIENT_0011, 2  , 0},
     {12 , 1  , GAME_CLIENT_0012, 2  , 0},
-    {13 , 1  , GAME_CLIENT_0013, 2  , 0},
+    {13 , 4  , GAME_CLIENT_0013, 14 , 0},
     {14 , 4  , GAME_CLIENT_0014, 14 , 0},
-    {15 , 1  , GAME_CLIENT_0015, 2  , 0},
-    {16 , 4  , GAME_CLIENT_0016, 14 , 0},
-    {17 , 4  , GAME_CLIENT_0017, 142, 0},
-    {18 , 2  , GAME_CLIENT_0018, 6  , 0},
-    {19 , 2  , GAME_CLIENT_0019, 6  , 0},
-    {20 , 1  , GAME_CLIENT_0020, 2  , 0},
-    {21 , 1  , GAME_CLIENT_0021, 2  , 0},
-    {22 , 3  , GAME_CLIENT_0022, 7  , 0},
-    {23 , 3  , GAME_CLIENT_0023, 10 , 0},
+    {15 , 4  , GAME_CLIENT_0015, 142, 0},
+    {16 , 2  , GAME_CLIENT_0016, 6  , 0},
+    {17 , 2  , GAME_CLIENT_0017, 6  , 0},
+    {18 , 1  , GAME_CLIENT_0018, 2  , 0},
+    {19 , 3  , GAME_CLIENT_0019, 7  , 0},
+    {20 , 3  , GAME_CLIENT_0020, 10 , 0},
+    {21 , 3  , GAME_CLIENT_0021, 10 , 0},
+    {22 , 2  , GAME_CLIENT_0022, 6  , 0},
+    {23 , 2  , GAME_CLIENT_0023, 6  , 0},
     {24 , 3  , GAME_CLIENT_0024, 10 , 0},
-    {25 , 2  , GAME_CLIENT_0025, 6  , 0},
-    {26 , 2  , GAME_CLIENT_0026, 6  , 0},
-    {27 , 3  , GAME_CLIENT_0027, 10 , 0},
-    {28 , 1  , GAME_CLIENT_0028, 2  , 0},
-    {29 , 4  , GAME_CLIENT_0029, 18 , 0},
-    {30 , 3  , GAME_CLIENT_0030, 14 , 0},
-    {31 , 5  , GAME_CLIENT_0031, 18 , 0},
-    {32 , 4  , GAME_CLIENT_0032, 14 , 0},
-    {33 , 2  , GAME_CLIENT_0033, 4  , 0},
-    {34 , 2  , GAME_CLIENT_0034, 4  , 0},
-    {35 , 2  , GAME_CLIENT_0035, 3  , 0},
-    {36 , 3  , GAME_CLIENT_0036, 10 , 0},
-    {37 , 3  , GAME_CLIENT_0037, 10 , 0},
-    {38 , 3  , GAME_CLIENT_0038, 7  , 0},
+    {25 , 4  , GAME_CLIENT_0025, 18 , 0},
+    {26 , 3  , GAME_CLIENT_0026, 14 , 0},
+    {27 , 5  , GAME_CLIENT_0027, 18 , 0},
+    {28 , 4  , GAME_CLIENT_0028, 14 , 0},
+    {29 , 2  , GAME_CLIENT_0029, 4  , 0},
+    {30 , 2  , GAME_CLIENT_0030, 4  , 0},
+    {31 , 2  , GAME_CLIENT_0031, 3  , 0},
+    {32 , 3  , GAME_CLIENT_0032, 10 , 0},
+    {33 , 3  , GAME_CLIENT_0033, 10 , 0},
+    {34 , 3  , GAME_CLIENT_0034, 7  , 0},
+    {35 , 3  , GAME_CLIENT_0035, 10 , 0},
+    {36 , 4  , GAME_CLIENT_0036, 14 , 0},
+    {37 , 3  , GAME_CLIENT_0037, 7  , 0},
+    {38 , 5  , GAME_CLIENT_0038, 15 , 0},
     {39 , 1  , GAME_CLIENT_0039, 2  , 0},
-    {40 , 1  , GAME_CLIENT_0040, 2  , 0},
-    {41 , 1  , GAME_CLIENT_0041, 2  , 0},
-    {42 , 1  , GAME_CLIENT_0042, 2  , 0},
-    {43 , 3  , GAME_CLIENT_0043, 10 , 0},
-    {44 , 4  , GAME_CLIENT_0044, 14 , 0},
-    {45 , 3  , GAME_CLIENT_0045, 7  , 0},
-    {46 , 5  , GAME_CLIENT_0046, 15 , 0},
-    {47 , 1  , GAME_CLIENT_0047, 2  , 0},
-    {48 , 2  , GAME_CLIENT_0048, 6  , 0},
-    {49 , 2  , GAME_CLIENT_0049, 6  , 0},
-    {50 , 3  , GAME_CLIENT_0050, 74 , 0},
-    {51 , 3  , GAME_CLIENT_0051, 7  , 0},
-    {52 , 1  , GAME_CLIENT_0052, 2  , 0},
-    {53 , 1  , GAME_CLIENT_0053, 2  , 0},
-    {54 , 2  , GAME_CLIENT_0054, 6  , 0},
-    {55 , 2  , GAME_CLIENT_0055, 6  , 0},
-    {56 , 3  , GAME_CLIENT_0056, 10 , 0},
-    {57 , 2  , GAME_CLIENT_0057, 3  , 0},
+    {40 , 2  , GAME_CLIENT_0040, 6  , 0},
+    {41 , 2  , GAME_CLIENT_0041, 6  , 0},
+    {42 , 3  , GAME_CLIENT_0042, 74 , 0},
+    {43 , 3  , GAME_CLIENT_0043, 7  , 0},
+    {44 , 1  , GAME_CLIENT_0044, 2  , 0},
+    {45 , 1  , GAME_CLIENT_0045, 2  , 0},
+    {46 , 2  , GAME_CLIENT_0046, 6  , 0},
+    {47 , 2  , GAME_CLIENT_0047, 6  , 0},
+    {48 , 3  , GAME_CLIENT_0048, 10 , 0},
+    {49 , 2  , GAME_CLIENT_0049, 3  , 0},
+    {50 , 2  , GAME_CLIENT_0050, 6  , 0},
+    {51 , 4  , GAME_CLIENT_0051, 27 , 0},
+    {52 , 4  , GAME_CLIENT_0052, 11 , 0},
+    {53 , 4  , GAME_CLIENT_0053, 82 , 0},
+    {54 , 3  , GAME_CLIENT_0054, 26 , 0},
+    {55 , 9  , GAME_CLIENT_0055, 14 , 0},
+    {56 , 3  , GAME_CLIENT_0056, 7  , 0},
+    {57 , 3  , GAME_CLIENT_0057, 26 , 0},
     {58 , 2  , GAME_CLIENT_0058, 6  , 0},
-    {59 , 4  , GAME_CLIENT_0059, 27 , 0},
-    {60 , 4  , GAME_CLIENT_0060, 11 , 0},
-    {61 , 4  , GAME_CLIENT_0061, 82 , 0},
-    {62 , 3  , GAME_CLIENT_0062, 26 , 0},
-    {63 , 9  , GAME_CLIENT_0063, 14 , 0},
+    {59 , 2  , GAME_CLIENT_0059, 6  , 0},
+    {60 , 5  , GAME_CLIENT_0060, 26 , 0},
+    {61 , 3  , GAME_CLIENT_0061, 14 , 0},
+    {62 , 3  , GAME_CLIENT_0062, 7  , 0},
+    {63 , 3  , GAME_CLIENT_0063, 10 , 0},
     {64 , 3  , GAME_CLIENT_0064, 7  , 0},
-    {65 , 3  , GAME_CLIENT_0065, 26 , 0},
-    {66 , 2  , GAME_CLIENT_0066, 6  , 0},
+    {65 , 2  , GAME_CLIENT_0065, 6  , 0},
+    {66 , 2  , GAME_CLIENT_0066, 3  , 0},
     {67 , 2  , GAME_CLIENT_0067, 6  , 0},
-    {68 , 5  , GAME_CLIENT_0068, 26 , 0},
-    {69 , 3  , GAME_CLIENT_0069, 14 , 0},
-    {70 , 3  , GAME_CLIENT_0070, 7  , 0},
-    {71 , 3  , GAME_CLIENT_0071, 10 , 0},
-    {72 , 3  , GAME_CLIENT_0072, 7  , 0},
-    {73 , 2  , GAME_CLIENT_0073, 6  , 0},
+    {68 , 2  , GAME_CLIENT_0068, 262, 0},
+    {69 , 5  , GAME_CLIENT_0069, 15 , 0},
+    {70 , 3  , GAME_CLIENT_0070, 14 , 0},
+    {71 , 3  , GAME_CLIENT_0071, 14 , 0},
+    {72 , 2  , GAME_CLIENT_0072, 6  , 0},
+    {73 , 6  , GAME_CLIENT_0073, 147, 0},
     {74 , 2  , GAME_CLIENT_0074, 3  , 0},
-    {75 , 2  , GAME_CLIENT_0075, 6  , 0},
-    {76 , 2  , GAME_CLIENT_0076, 262, 0},
-    {77 , 5  , GAME_CLIENT_0077, 15 , 0},
-    {78 , 3  , GAME_CLIENT_0078, 14 , 0},
-    {79 , 3  , GAME_CLIENT_0079, 14 , 0},
-    {80 , 2  , GAME_CLIENT_0080, 6  , 0},
-    {81 , 6  , GAME_CLIENT_0081, 147, 0},
-    {82 , 2  , GAME_CLIENT_0082, 3  , 0},
-    {83 , 7  , GAME_CLIENT_0083, 148, 0},
-    {84 , 8  , GAME_CLIENT_0084, 187, 0},
-    {85 , 3  , GAME_CLIENT_0085, 247, 0},
-    {86 , 4  , GAME_CLIENT_0086, 6  , 0},
-    {87 , 5  , GAME_CLIENT_0087, 10 , 0},
-    {88 , 3  , GAME_CLIENT_0088, 7  , 0},
-    {89 , 3  , GAME_CLIENT_0089, 10 , 0},
+    {75 , 7  , GAME_CLIENT_0075, 148, 0},
+    {76 , 8  , GAME_CLIENT_0076, 187, 0},
+    {77 , 3  , GAME_CLIENT_0077, 247, 0},
+    {78 , 4  , GAME_CLIENT_0078, 6  , 0},
+    {79 , 5  , GAME_CLIENT_0079, 10 , 0},
+    {80 , 3  , GAME_CLIENT_0080, 7  , 0},
+    {81 , 3  , GAME_CLIENT_0081, 10 , 0},
+    {82 , 2  , GAME_CLIENT_0082, 6  , 0},
+    {83 , 8  , GAME_CLIENT_0083, 15 , 0},
+    {84 , 2  , GAME_CLIENT_0084, 6  , 0},
+    {85 , 3  , GAME_CLIENT_0085, 8  , 0},
+    {86 , 3  , GAME_CLIENT_0086, 10 , 0},
+    {87 , 2  , GAME_CLIENT_0087, 6  , 0},
+    {88 , 1  , GAME_CLIENT_0088, 2  , 0},
+    {89 , 1  , GAME_CLIENT_0089, 2  , 0},
     {90 , 2  , GAME_CLIENT_0090, 6  , 0},
-    {91 , 8  , GAME_CLIENT_0091, 15 , 0},
-    {92 , 2  , GAME_CLIENT_0092, 6  , 0},
-    {93 , 3  , GAME_CLIENT_0093, 8  , 0},
-    {94 , 3  , GAME_CLIENT_0094, 10 , 0},
-    {95 , 2  , GAME_CLIENT_0095, 6  , 0},
-    {96 , 1  , GAME_CLIENT_0096, 2  , 0},
-    {97 , 1  , GAME_CLIENT_0097, 2  , 0},
-    {98 , 2  , GAME_CLIENT_0098, 6  , 0},
-    {99 , 5  , GAME_CLIENT_0099, 18 , 0},
-    {100, 3  , GAME_CLIENT_0100, 42 , 0},
-    {101, 6  , GAME_CLIENT_0101, 22 , 0},
-    {102, 5  , GAME_CLIENT_0102, 18 , 0},
-    {103, 3  , GAME_CLIENT_0103, 4  , 0},
-    {104, 2  , GAME_CLIENT_0104, 66 , 0},
-    {105, 3  , GAME_CLIENT_0105, 67 , 0},
-    {106, 1  , GAME_CLIENT_0106, 2  , 0},
-    {107, 3  , GAME_CLIENT_0107, 282, 0},
-    {108, 2  , GAME_CLIENT_0108, 6  , 0},
-    {109, 4  , GAME_CLIENT_0109, 11 , 0},
-    {110, 5  , GAME_CLIENT_0110, 10 , 0},
-    {111, 2  , GAME_CLIENT_0111, 4  , 0},
-    {112, 2  , GAME_CLIENT_0112, 6  , 0},
-    {113, 3  , GAME_CLIENT_0113, 26 , 0},
-    {114, 3  , GAME_CLIENT_0114, 7  , 0},
-    {115, 3  , GAME_CLIENT_0115, 10 , 0},
-    {116, 3  , GAME_CLIENT_0116, 10 , 0},
-    {117, 3  , GAME_CLIENT_0117, 10 , 0},
-    {118, 3  , GAME_CLIENT_0118, 10 , 0},
-    {119, 2  , GAME_CLIENT_0119, 6  , 0},
-    {120, 5  , GAME_CLIENT_0120, 37 , 0},
-    {121, 4  , GAME_CLIENT_0121, 9  , 0},
-    {122, 2  , GAME_CLIENT_0122, 4  , 0},
-    {123, 3  , GAME_CLIENT_0123, 4  , 0},
-    {124, 5  , GAME_CLIENT_0124, 13 , 0},
-    {125, 1  , GAME_CLIENT_0125, 2  , 0},
-    {126, 4  , GAME_CLIENT_0126, 12 , 0},
-    {127, 1  , GAME_CLIENT_0127, 2  , 0},
+    {91 , 5  , GAME_CLIENT_0091, 18 , 0},
+    {92 , 3  , GAME_CLIENT_0092, 42 , 0},
+    {93 , 6  , GAME_CLIENT_0093, 22 , 0},
+    {94 , 5  , GAME_CLIENT_0094, 18 , 0},
+    {95 , 3  , GAME_CLIENT_0095, 4  , 0},
+    {96 , 2  , GAME_CLIENT_0096, 66 , 0},
+    {97 , 3  , GAME_CLIENT_0097, 67 , 0},
+    {98 , 1  , GAME_CLIENT_0098, 2  , 0},
+    {99 , 3  , GAME_CLIENT_0099, 282, 0},
+    {100, 2  , GAME_CLIENT_0100, 6  , 0},
+    {101, 4  , GAME_CLIENT_0101, 11 , 0},
+    {102, 5  , GAME_CLIENT_0102, 10 , 0},
+    {103, 2  , GAME_CLIENT_0103, 4  , 0},
+    {104, 2  , GAME_CLIENT_0104, 6  , 0},
+    {105, 3  , GAME_CLIENT_0105, 26 , 0},
+    {106, 3  , GAME_CLIENT_0106, 7  , 0},
+    {107, 3  , GAME_CLIENT_0107, 10 , 0},
+    {108, 3  , GAME_CLIENT_0108, 10 , 0},
+    {109, 3  , GAME_CLIENT_0109, 10 , 0},
+    {110, 3  , GAME_CLIENT_0110, 10 , 0},
+    {111, 2  , GAME_CLIENT_0111, 6  , 0},
+    {112, 5  , GAME_CLIENT_0112, 37 , 0},
+    {113, 4  , GAME_CLIENT_0113, 9  , 0},
+    {114, 2  , GAME_CLIENT_0114, 4  , 0},
+    {115, 3  , GAME_CLIENT_0115, 4  , 0},
+    {116, 5  , GAME_CLIENT_0116, 13 , 0},
+    {117, 1  , GAME_CLIENT_0117, 2  , 0},
+    {118, 4  , GAME_CLIENT_0118, 12 , 0},
+    {119, 1  , GAME_CLIENT_0119, 2  , 0},
+    {120, 1  , GAME_CLIENT_0120, 2  , 0},
+    {121, 1  , GAME_CLIENT_0121, 2  , 0},
+    {122, 2  , GAME_CLIENT_0122, 3  , 0},
+    {123, 3  , GAME_CLIENT_0123, 10 , 0},
+    {124, 4  , GAME_CLIENT_0124, 9  , 0},
+    {125, 2  , GAME_CLIENT_0125, 6  , 0},
+    {126, 3  , GAME_CLIENT_0126, 7  , 0},
+    {127, 3  , GAME_CLIENT_0127, 8  , 0},
     {128, 1  , GAME_CLIENT_0128, 2  , 0},
     {129, 1  , GAME_CLIENT_0129, 2  , 0},
     {130, 2  , GAME_CLIENT_0130, 3  , 0},
-    {131, 3  , GAME_CLIENT_0131, 10 , 0},
-    {132, 4  , GAME_CLIENT_0132, 9  , 0},
-    {133, 2  , GAME_CLIENT_0133, 6  , 0},
-    {134, 3  , GAME_CLIENT_0134, 7  , 0},
-    {135, 3  , GAME_CLIENT_0135, 8  , 0},
+    {131, 3  , GAME_CLIENT_0131, 4  , 0},
+    {132, 2  , GAME_CLIENT_0132, 4  , 0},
+    {133, 7  , GAME_CLIENT_0133, 21 , 0},
+    {134, 4  , GAME_CLIENT_0134, 5  , 0},
+    {135, 1  , GAME_CLIENT_0135, 2  , 0},
     {136, 1  , GAME_CLIENT_0136, 2  , 0},
     {137, 1  , GAME_CLIENT_0137, 2  , 0},
-    {138, 2  , GAME_CLIENT_0138, 3  , 0},
-    {139, 3  , GAME_CLIENT_0139, 4  , 0},
-    {140, 2  , GAME_CLIENT_0140, 4  , 0},
-    {141, 7  , GAME_CLIENT_0141, 21 , 0},
-    {142, 4  , GAME_CLIENT_0142, 5  , 0},
-    {143, 1  , GAME_CLIENT_0143, 2  , 0},
-    {144, 1  , GAME_CLIENT_0144, 2  , 0},
-    {145, 1  , GAME_CLIENT_0145, 2  , 0},
-    {146, 3  , GAME_CLIENT_0146, 50 , 0},
-    {147, 1  , GAME_CLIENT_0147, 2  , 0},
-    {148, 3  , GAME_CLIENT_0148, 5  , 0},
-    {149, 2  , GAME_CLIENT_0149, 6  , 0},
+    {138, 3  , GAME_CLIENT_0138, 50 , 0},
+    {139, 1  , GAME_CLIENT_0139, 2  , 0},
+    {140, 3  , GAME_CLIENT_0140, 5  , 0},
+    {141, 2  , GAME_CLIENT_0141, 6  , 0},
+    {142, 1  , GAME_CLIENT_0142, 2  , 0},
+    {143, 2  , GAME_CLIENT_0143, 18 , 0},
+    {144, 3  , GAME_CLIENT_0144, 4  , 0},
+    {145, 2  , GAME_CLIENT_0145, 118, 0},
+    {146, 2  , GAME_CLIENT_0146, 4  , 0},
+    {147, 2  , GAME_CLIENT_0147, 3  , 0},
+    {148, 2  , GAME_CLIENT_0148, 3  , 0},
+    {149, 4  , GAME_CLIENT_0149, 9  , 0},
     {150, 1  , GAME_CLIENT_0150, 2  , 0},
     {151, 1  , GAME_CLIENT_0151, 2  , 0},
-    {152, 2  , GAME_CLIENT_0152, 18 , 0},
-    {153, 3  , GAME_CLIENT_0153, 4  , 0},
-    {154, 2  , GAME_CLIENT_0154, 118, 0},
+    {152, 1  , GAME_CLIENT_0152, 2  , 0},
+    {153, 1  , GAME_CLIENT_0153, 2  , 0},
+    {154, 2  , GAME_CLIENT_0154, 3  , 0},
     {155, 2  , GAME_CLIENT_0155, 4  , 0},
-    {156, 2  , GAME_CLIENT_0156, 3  , 0},
-    {157, 2  , GAME_CLIENT_0157, 3  , 0},
-    {158, 4  , GAME_CLIENT_0158, 9  , 0},
-    {159, 1  , GAME_CLIENT_0159, 2  , 0},
-    {160, 1  , GAME_CLIENT_0160, 2  , 0},
+    {156, 2  , GAME_CLIENT_0156, 4  , 0},
+    {157, 2  , GAME_CLIENT_0157, 4  , 0},
+    {158, 2  , GAME_CLIENT_0158, 4  , 0},
+    {159, 2  , GAME_CLIENT_0159, 4  , 0},
+    {160, 2  , GAME_CLIENT_0160, 42 , 0},
     {161, 1  , GAME_CLIENT_0161, 2  , 0},
     {162, 1  , GAME_CLIENT_0162, 2  , 0},
-    {163, 2  , GAME_CLIENT_0163, 3  , 0},
-    {164, 2  , GAME_CLIENT_0164, 4  , 0},
-    {165, 2  , GAME_CLIENT_0165, 4  , 0},
-    {166, 2  , GAME_CLIENT_0166, 4  , 0},
+    {163, 3  , GAME_CLIENT_0163, 131, 0},
+    {164, 2  , GAME_CLIENT_0164, 3  , 0},
+    {165, 4  , GAME_CLIENT_0165, 9  , 0},
+    {166, 1  , GAME_CLIENT_0166, 2  , 0},
     {167, 2  , GAME_CLIENT_0167, 4  , 0},
     {168, 2  , GAME_CLIENT_0168, 4  , 0},
-    {169, 2  , GAME_CLIENT_0169, 42 , 0},
+    {169, 4  , GAME_CLIENT_0169, 69 , 0},
     {170, 1  , GAME_CLIENT_0170, 2  , 0},
-    {171, 1  , GAME_CLIENT_0171, 2  , 0},
-    {172, 3  , GAME_CLIENT_0172, 131, 0},
+    {171, 2  , GAME_CLIENT_0171, 4  , 0},
+    {172, 2  , GAME_CLIENT_0172, 4  , 0},
     {173, 2  , GAME_CLIENT_0173, 3  , 0},
-    {174, 4  , GAME_CLIENT_0174, 9  , 0},
-    {175, 1  , GAME_CLIENT_0175, 2  , 0},
-    {176, 2  , GAME_CLIENT_0176, 4  , 0},
-    {177, 2  , GAME_CLIENT_0177, 4  , 0},
-    {178, 4  , GAME_CLIENT_0178, 69 , 0},
-    {179, 1  , GAME_CLIENT_0179, 2  , 0},
-    {180, 2  , GAME_CLIENT_0180, 4  , 0},
-    {181, 2  , GAME_CLIENT_0181, 4  , 0},
-    {182, 2  , GAME_CLIENT_0182, 3  , 0},
-    {183, 2  , GAME_CLIENT_0183, 3  , 0},
-    {184, 3  , GAME_CLIENT_0184, 19 , 0},
-    {185, 6  , GAME_CLIENT_0185, 9  , 0},
-    {186, 2  , GAME_CLIENT_0186, 3  , 0},
-    {187, 3  , GAME_CLIENT_0187, 46 , 0},
+    {174, 2  , GAME_CLIENT_0174, 3  , 0},
+    {175, 3  , GAME_CLIENT_0175, 19 , 0},
+    {176, 6  , GAME_CLIENT_0176, 9  , 0},
+    {177, 2  , GAME_CLIENT_0177, 3  , 0},
+    {178, 3  , GAME_CLIENT_0178, 46 , 0},
+    {179, 3  , GAME_CLIENT_0179, 46 , 0},
+    {180, 4  , GAME_CLIENT_0180, 71 , 0},
+    {181, 4  , GAME_CLIENT_0181, 23 , 0},
+    {182, 4  , GAME_CLIENT_0182, 23 , 0},
+    {183, 3  , GAME_CLIENT_0183, 46 , 0},
+    {184, 3  , GAME_CLIENT_0184, 8  , 0},
+    {185, 3  , GAME_CLIENT_0185, 46 , 0},
+    {186, 2  , GAME_CLIENT_0186, 6  , 0},
+    {187, 2  , GAME_CLIENT_0187, 6  , 0},
     {188, 3  , GAME_CLIENT_0188, 46 , 0},
-    {189, 4  , GAME_CLIENT_0189, 71 , 0},
-    {190, 4  , GAME_CLIENT_0190, 23 , 0},
-    {191, 4  , GAME_CLIENT_0191, 23 , 0},
-    {192, 3  , GAME_CLIENT_0192, 46 , 0},
-    {193, 3  , GAME_CLIENT_0193, 8  , 0},
-    {194, 3  , GAME_CLIENT_0194, 46 , 0},
-    {195, 2  , GAME_CLIENT_0195, 6  , 0},
-    {196, 2  , GAME_CLIENT_0196, 6  , 0},
-    {197, 3  , GAME_CLIENT_0197, 46 , 0},
-    {198, 3  , GAME_CLIENT_0198, 518, 0},
-    {199, 4  , GAME_CLIENT_0199, 71 , 0},
-    {200, 3  , GAME_CLIENT_0200, 67 , 0},
+    {189, 3  , GAME_CLIENT_0189, 518, 0},
+    {190, 4  , GAME_CLIENT_0190, 71 , 0},
+    {191, 3  , GAME_CLIENT_0191, 67 , 0},
 };
 
 MsgFormat GAME_SERVER_FORMATS[493] = {
