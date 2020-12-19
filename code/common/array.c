@@ -1,7 +1,7 @@
-#ifdef ARRAY_C
-#error "array.c included more than once"
-#endif
-#define ARRAY_C
+#include <assert.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "array.h"
 

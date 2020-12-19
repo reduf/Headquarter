@@ -1,9 +1,11 @@
-#ifdef CORE_LOG_C
-#error "log.c included more than once"
-#endif
-#define CORE_LOG_C
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
 
 #include "log.h"
+#include "process.h"
+#include "thread.h"
 
 #define LOG_MSG_SIZE    (1024)
 #define LOG_BUFFER_SIZE (16 * LOG_MSG_SIZE)
@@ -56,8 +58,10 @@ void log_init(void)
 
     char timestamp[64];
     time_t t = time(NULL);
-    struct tm *ts = localtime(&t);
-    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d_%H-%M-%S", ts);
+    struct tm ts;
+    // @Robustness: Deal with the error?
+    localtime_s(&ts, &t);
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d_%H-%M-%S", &ts);
 
     char file_path[1024];
     int length = 0;
@@ -76,27 +80,14 @@ void log_init(void)
     }
     assert(log_file);
     printf("Logging to %s\n",file_path);
-    /*
-    snprintf(file_path, sizeof(file_path), "logs/%s_%d.txt", timestamp, getpid());
-
-    log_file = fopen(file_path, "w");
-    if (!log_file) {
-        length = dlldir(NULL, file_path, sizeof(file_path));
-        snprintf(&file_path[length], sizeof(file_path) - length, "../../logs/%s_%d.txt", timestamp, getpid());
-        log_file = fopen(file_path, "w");
-        if (!log_file) {
-            printf("Failed to open log file at %s\n", file_path);
-            assert(!"log_init: fopen");
-            return;
-        }
-    }*/
 }
 
 static int log_time(char *buffer, size_t size)
 {
     time_t t = time(NULL);
-    struct tm *ts = localtime(&t);
-    return (int)strftime(buffer, size, "%Y-%m-%d %H:%M:%S", ts);
+    struct tm ts;
+    localtime_s(&ts, &t);
+    return strftime(buffer, size, "%Y-%m-%d %H:%M:%S", &ts);
 }
 
 int log_vmsg(unsigned int level, const char *format, va_list ap);

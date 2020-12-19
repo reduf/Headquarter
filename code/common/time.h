@@ -2,6 +2,7 @@
 #define COMMON_TIME_H
 
 #include <time.h>
+#include <stdint.h>
 
 typedef uint64_t msec_t;
 

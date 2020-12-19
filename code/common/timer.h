@@ -1,6 +1,8 @@
 #ifndef COMMON_TIMER_H
 #define COMMON_TIMER_H
 
+#include <stdbool.h>
+
 #include "rbtree.h"
 
 struct timer;

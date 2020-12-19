@@ -3,7 +3,9 @@
 #endif
 #define TIMER_C
 
+#include "time.h"
 #include "timer.h"
+#include "macro.h"
 
 static struct rbtree timer_rbtree;
 static struct rbnode timer_sentinel;

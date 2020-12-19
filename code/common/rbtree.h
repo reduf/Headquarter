@@ -1,6 +1,8 @@
 #ifndef COMMON_RBTREE_H
 #define COMMON_RBTREE_H
 
+#include <stdint.h>
+
 typedef uint64_t rbtree_key_t;
 
 #define rbtree_set_red(n)   ((n)->color = 1)

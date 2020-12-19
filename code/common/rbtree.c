@@ -1,7 +1,5 @@
-#ifdef RBTREE_C
-#error "rbtree.c included more than once"
-#endif
-#define RBTREE_C
+#include <assert.h>
+#include <stddef.h>
 
 #include "rbtree.h"
 

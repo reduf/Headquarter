@@ -59,7 +59,7 @@ int thread_detach(struct thread *thread)
     }
 }
 
-int thread_join(struct thread *thread, int *retval_out)
+int thread_join(struct thread *thread, int *retval)
 {
     void *rv;
     int retval = pthread_join(thread->handle, &rv);
@@ -68,7 +68,7 @@ int thread_join(struct thread *thread, int *retval_out)
         return retval;
     } else {
         thread->handle = NULL;
-        *retval_out = (int)((intptr_t)rv);
+        *retval = (int)((intptr_t)rv);
         return 0;
     }
 }
