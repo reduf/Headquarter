@@ -709,6 +709,8 @@ void HandleCantEnterOutpost(Connection *conn, size_t psize, Packet *packet)
 
 void GameSrv_HeartBeat(Connection *conn)
 {
+    GameSrv_PingRequest(conn);
+    return;
     Packet packet = NewPacket(GAME_CMSG_HEARTBEAT);
     SendPacket(conn, sizeof(packet), &packet);
 }
