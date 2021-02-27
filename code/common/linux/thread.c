@@ -3,98 +3,83 @@
 #endif
 #define OS_THREAD_C
 
+#include "../log.h"
 #include "../thread.h"
 
-struct start_info {
-    void *param;
-    thread_start_t start;
-};
-
-static bool create_start_info(struct start_info **outinfo, thread_start_t start, void *param)
+static void *start_routine(void *param)
 {
-    struct start_info *info = (struct start_info*)malloc(sizeof(*info));
-    if (!info)
-        return false;
-    info->param = param;
-    info->start = start;
-    *outinfo = info;
-    return true;
+    struct thread *thread = param;
+    int ret = thread->start(thread->param);
+    return (void *)((intptr_t)ret);
 }
 
-static void *thread_entry(void *param)
+int thread_create(struct thread *thread, thread_start_t start, void *param)
 {
-    struct start_info *info = (struct start_info*)param;
-    param = info->param;
-    thread_start_t start = info->start;
-    free(info);
-    int retval = start(param);
-    return (void *)((intptr_t)retval);
-}
-
-int thread_create(thread_t *thread, thread_start_t start, void *param)
-{
-    pthread_t handle;
+    int ret;
     pthread_attr_t attr;
 
-    struct start_info *info;
-    if (!create_start_info(&info, start, param)) {
-        return 1;
-    }
-    if (pthread_attr_init(&attr) != 0) {
-        // @Enhancement: log?
-        return 1;
-    }
-    if (pthread_create(&handle, &attr, thread_entry, info) != 0) {
-        // @Enhancement: log?
+    thread->start = start;
+    thread->param = param;
+
+    if ((ret = pthread_attr_init(&attr)) != 0) {
+        log_error("pthread_attr_init failed: %d", ret);
         return 1;
     }
 
-    thread->handle = handle;
+    if ((ret = pthread_create(&thread->handle, &attr, start_routine, thread)) != 0) {
+        log_error("pthread_create failed: %d", ret);
+        return 1;
+    }
+
     pthread_attr_destroy(&attr);
     return 0;
 }
 
-void thread_exit(int retval)
+_Noreturn void thread_exit(int retval)
 {
     pthread_exit((void *)((intptr_t)retval));
 }
 
-thread_t thread_self(void)
+struct thread thread_self(void)
 {
-    thread_t thread;
+    struct thread thread;
     thread.handle = pthread_self();
     return thread;
 }
 
-int thread_detach(thread_t thread)
+int thread_detach(struct thread *thread)
 {
-    pthread_t handle = thread.handle;
-    int retval = pthread_detach(handle);
-    return retval;
+    int retval = pthread_detach(thread->handle);
+    if (retval != 0) {
+        log_error("pthread_detach failed: %d", retval);
+        return retval;
+    } else {
+        thread->handle = NULL;
+        return 0;
+    }
 }
 
-int thread_join(thread_t thread, int *retval)
+int thread_join(struct thread *thread, int *retval_out)
 {
-    // @Cleanup:
-    // It would seem that on linux, pthread_join will release the
-    // ressources, if the thread is joined.
-    // Need to confirm.
     void *rv;
-    pthread_t handle = thread.handle;
-    int error = pthread_join(handle, &rv);
-    if (error == 0)
-        *retval = (int)((intptr_t)rv);
-    return error;
+    int retval = pthread_join(thread->handle, &rv);
+    if (retval != 0) {
+        log_error("pthread_join failed: %d", retval);
+        return retval;
+    } else {
+        thread->handle = NULL;
+        *retval_out = (int)((intptr_t)rv);
+        return 0;
+    }
 }
 
-int thread_sleep(thread_t thread, const struct timespec *ts)
+int thread_sleep(struct thread *thread, const struct timespec *ts)
 {
-    pthread_t handle = thread.handle;
     struct timespec rem;
-    int error = nanosleep(ts, &rem);
+    int retval = nanosleep(ts, &rem);
     // @Cleanup:
-    // Deal with the error + logging?
-    return error;
+    // Deal with the retval + logging?
+    return retval;
 }
 
 void thread_yield(void)
@@ -113,7 +98,6 @@ int thread_mutex_init(thread_mutex_t *mutex)
     pthread_mutexattr_t mutexattr;
     pthread_mutexattr_init(&mutexattr);
     pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
-
     int error = pthread_mutex_init(&mtx->pmtx, &mutexattr);
     pthread_mutexattr_destroy(&mutexattr);
     return error;

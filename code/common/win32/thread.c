@@ -4,81 +4,74 @@
 #define OS_THREAD_C
 
 // #include "win32.h"
+#include "../log.h"
 #include "../thread.h"
 
-struct start_info {
-    void *param;
-    thread_start_t start;
-};
-
-static bool create_start_info(struct start_info **outinfo, thread_start_t start, void *param)
+static DWORD WINAPI ThreadProc(LPVOID lpParam)
 {
-    struct start_info *info = (struct start_info* )malloc(sizeof(*info));
-    if (!info)
-        return false;
-    info->param = param;
-    info->start = start;
-    *outinfo = info;
-    return true;
-}
-
-static DWORD WINAPI thread_entry(LPVOID lpParam)
-{
-    struct start_info *info = (struct start_info* )lpParam;
-    void *param = info->param;
-    thread_start_t start = info->start;
-    free(info);
-    int retval = start(param);
+    assert(lpParam != NULL);
+    struct thread *thread = lpParam;
+    int retval = thread->start(thread->param);
     return (DWORD)retval;
 }
 
-int thread_create(thread_t *thread, thread_start_t start, void *arg)
+int thread_create(struct thread *thread, thread_start_t start, void *param)
 {
-    struct start_info *info;
-    if (!create_start_info(&info, start, arg)) {
-        // @Enhancement:
-        // We should probably return STATUS_NO_MEMORY or whatever equivalent there is.
-        return 1;
+    thread->start = start;
+    thread->param = param;
+    thread->handle = CreateThread(NULL, 0, ThreadProc, thread, 0, 0);
+
+    if (!thread->handle) {
+        log_error("CreateThread failed (%lu)", GetLastError());
+        return -1;
     }
-    thread->handle = CreateThread(NULL, 0, thread_entry, info, 0, 0);
-    int error = 0;
-    if (!thread->handle)
-        error = GetLastError();
-    return error;
+
+    return 0;
 }
 
-void thread_exit(int retval)
+_Noreturn void thread_exit(int retval)
 {
     ExitThread((DWORD)retval);
 }
 
-thread_t thread_self(void)
+struct thread thread_self(void)
 {
-    thread_t thread;
+    struct thread thread = {0};
     thread.handle = GetCurrentThread();
     return thread;
 }
 
-int thread_detach(thread_t thread)
+int thread_detach(struct thread *thread)
 {
-    CloseHandle(thread.handle);
+    CloseHandle(thread->handle);
+    thread->handle = 0;
     return 0;
 }
 
-int thread_join(thread_t thread, int *retval)
+int thread_join(struct thread *thread, int *retval)
 {
-    DWORD reason = WaitForSingleObject(thread.handle, INFINITE);
-    if (reason != WAIT_OBJECT_0)
-        return GetLastError();
-    if (retval) {
-        DWORD rv;
-        GetExitCodeThread(thread.handle, &rv);
-        *retval = (int)rv;
+    DWORD reason = WaitForSingleObject(thread->handle, INFINITE);
+    if (reason != WAIT_OBJECT_0) {
+        log_error("WaitForSingleObject failed {reason: %lu, error: %lu",
+            reason, GetLastError());
+        return -1;
     }
+
+    DWORD rv;
+    if (!GetExitCodeThread(thread->handle, &rv)) {
+        log_error("GetExitCodeThread failed (%lu)", GetLastError());
+        CloseHandle(thread->handle);
+        return -1;
+    }
+
+    CloseHandle(thread->handle);
+    thread->handle = NULL;
+
+    *retval = (int)rv;
     return 0;
 }
 
-int thread_sleep(thread_t thread, const struct timespec *ts)
+int thread_sleep(struct thread *thread, const struct timespec *ts)
 {
     DWORD sleep_time_ms;
     sleep_time_ms =  (DWORD)ts->tv_sec * 1000;
@@ -135,25 +128,28 @@ int thread_mutex_unlock(thread_mutex_t *mutex)
 
 int thread_event_init(thread_event_t *event)
 {
-    int error = 0;
-    event->handle = CreateEvent(NULL, TRUE, FALSE, NULL);
-    if (!event->handle)
-        error = GetLastError();
-    return error;
+    event->handle = CreateEventW(NULL, FALSE, FALSE, NULL);
+    if (!event->handle) {
+        log_error("CreateEventW failed (%lu)", GetLastError());
+        return -1;
+    }
+    return 0;
 }
 
 int thread_event_destroy(thread_event_t *event)
 {
     CloseHandle(event->handle);
+    event->handle = NULL;
     return 0;
 }
 
 int thread_event_signal(thread_event_t *event)
 {
-    int error = 0;
-    if (SetEvent(event->handle) != TRUE)
-        error = GetLastError();
-    return error;
+    if (SetEvent(event->handle) != TRUE) {
+        log_error("SetEvent failed (%lu)", GetLastError());
+        return -1;
+    }
+    return 0;
 }
 
 int thread_event_reset(thread_event_t *event)
@@ -164,16 +160,18 @@ int thread_event_reset(thread_event_t *event)
 
 int thread_event_wait(thread_event_t *event)
 {
-    int error = 0;
-    if (WaitForSingleObject(event->handle, INFINITE) == WAIT_FAILED)
-        error = GetLastError();
-    return error;
+    if (WaitForSingleObject(event->handle, INFINITE) == WAIT_FAILED) {
+        log_error("WaitForSingleObject failed (%lu)", GetLastError());
+        return -1;
+    }
+    return 0;
 }
 
 int thread_event_timedwait(thread_event_t *event, uint32_t ms)
 {
-    int error = 0;
-    if (WaitForSingleObject(event->handle, ms) == WAIT_FAILED)
-        error = GetLastError();
-    return error;
+    if (WaitForSingleObject(event->handle, ms) == WAIT_FAILED) {
+        log_error("WaitForSingleObject failed (%lu)", GetLastError());
+        return -1;
+    }
+    return 0;
 }

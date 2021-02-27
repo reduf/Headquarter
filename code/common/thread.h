@@ -2,6 +2,7 @@
 #define COMMON_THREAD_H
 
 #include <time.h>
+#include <stdint.h>
 
 #include "align.h"
 #include "noreturn.h"
@@ -27,22 +28,24 @@
 # define _mtx_internal_imp_alignment    8
 #endif
 
-typedef struct thread {
+typedef int (*thread_start_t)(void*);
+struct thread {
 #ifdef _WIN32
-    void *handle;
+    void* handle;
 #else
     unsigned long int handle;
 #endif
-} thread_t;
-typedef int (*thread_start_t)(void *);
+    thread_start_t start;
+    void* param;
+};
 
-int thread_create(thread_t *thread, thread_start_t start, void *param);
-void thread_exit(int retval);
-thread_t thread_self(void);
+int thread_create(struct thread* thread, thread_start_t start, void* param);
+_Noreturn void thread_exit(int retval);
+struct thread thread_self(void);
 
-int  thread_detach(thread_t thread);
-int  thread_join(thread_t thread, int *retval);
-int  thread_sleep(thread_t thread, const struct timespec *ts);
+int thread_detach(struct thread* thread);
+int thread_join(struct thread* thread, int* retval);
+int thread_sleep(struct thread* thread, const struct timespec* ts);
 void thread_yield(void);
 
 typedef struct thread_mutex {
@@ -50,21 +53,21 @@ typedef struct thread_mutex {
         unsigned char storage[_mtx_internal_imp_size];
 } thread_mutex_t;
 
-int thread_mutex_init(thread_mutex_t *mutex);
-int thread_mutex_destroy(thread_mutex_t *mutex);
-int thread_mutex_lock(thread_mutex_t *mutex);
-int thread_mutex_trylock(thread_mutex_t *mutex);
-int thread_mutex_unlock(thread_mutex_t *mutex);
+int thread_mutex_init(thread_mutex_t* mutex);
+int thread_mutex_destroy(thread_mutex_t* mutex);
+int thread_mutex_lock(thread_mutex_t* mutex);
+int thread_mutex_trylock(thread_mutex_t* mutex);
+int thread_mutex_unlock(thread_mutex_t* mutex);
 
 typedef struct thread_event {
-    void *handle;
+    void* handle;
 } thread_event_t;
 
-int thread_event_init(thread_event_t *event);
-int thread_event_destroy(thread_event_t *event);
-int thread_event_signal(thread_event_t *event);
-int thread_event_reset(thread_event_t *event);
-int thread_event_wait(thread_event_t *event);
-int thread_event_timedwait(thread_event_t *event, uint32_t ms);
+int thread_event_init(thread_event_t* event);
+int thread_event_destroy(thread_event_t* event);
+int thread_event_signal(thread_event_t* event);
+int thread_event_reset(thread_event_t* event);
+int thread_event_wait(thread_event_t* event);
+int thread_event_timedwait(thread_event_t* event, uint32_t ms);
 
 #endif // COMMON_THREAD_H

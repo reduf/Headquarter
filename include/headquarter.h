@@ -53,97 +53,97 @@ typedef struct Vec3f {
 #ifdef HEADQUARTER_RUNTIME_LINKING
 
 typedef void(__cdecl* Log_pt)(const char* fmt, ...);
-Log_pt LogError, LogDebug, LogFatal, LogInfo, LogWarn;
+static Log_pt LogError, LogDebug, LogFatal, LogInfo, LogWarn;
 
 typedef void(__cdecl* FreePluginAndExitThread_pt)(void* module, int retval);
-FreePluginAndExitThread_pt FreePluginAndExitThread;
+static FreePluginAndExitThread_pt FreePluginAndExitThread;
 
 HQAPI uint32_t            GetPlugins(ApiPlugin* buffer, size_t length);
 HQAPI bool              LoadPlugin(const char* path);
 
 typedef bool(__cdecl* RegisterEvent_pt)(EventType event, CallbackEntry* entry);
-RegisterEvent_pt RegisterEvent;
+static RegisterEvent_pt RegisterEvent;
 typedef bool(__cdecl* UnRegisterEvent_pt)(CallbackEntry* entry);
-UnRegisterEvent_pt UnRegisterEvent;
+static UnRegisterEvent_pt UnRegisterEvent;
 
 typedef int(__cdecl* HQMSEC_pt)(void);
-HQMSEC_pt GetPing, GetPvPTimer, GetWorldTime;
+static HQMSEC_pt GetPing, GetPvPTimer, GetWorldTime;
 
 typedef bool(__cdecl* HQBOOL_pt)(void);
-HQBOOL_pt GetIsIngame, GetIsConnected;
+static HQBOOL_pt GetIsIngame, GetIsConnected;
 
 typedef void(__cdecl* HQVOID_pt)(void);
-HQVOID_pt LeaveHall, ReturnToOutpost;
+static HQVOID_pt LeaveHall, ReturnToOutpost;
 
 typedef void(__cdecl* InteractAgent_pt)(uint32_t guild_id);
-InteractAgent_pt InteractAgent, TravelHall;
+static InteractAgent_pt InteractAgent, TravelHall;
 
 typedef void(__cdecl* MoveToPoint_pt)(Vec2f pos);
-MoveToPoint_pt MoveToPoint;
+static MoveToPoint_pt MoveToPoint;
 typedef void(__cdecl* MoveToCoord_pt)(float x, float y);
-MoveToCoord_pt MoveToCoord;
+static MoveToCoord_pt MoveToCoord;
 typedef void(__cdecl* RotateToAngle_pt)(float angle);
-RotateToAngle_pt RotateToAngle;
+static RotateToAngle_pt RotateToAngle;
 
 typedef Difficulty(__cdecl* GetDifficulty_pt)(void);
-GetDifficulty_pt GetDifficulty;
+static GetDifficulty_pt GetDifficulty;
 typedef void(__cdecl* SetDifficulty_pt)(Difficulty mode);
-SetDifficulty_pt SetDifficulty;
+static SetDifficulty_pt SetDifficulty;
 
 typedef void(__cdecl* RedirectMap_pt)(uint32_t map_id, uint32_t type, District district, int district_number);
-RedirectMap_pt RedirectMap;
+static RedirectMap_pt RedirectMap;
 
 typedef int(__cdecl* HQINT_pt)(void);
-HQINT_pt GetMapId, GetDistrict, GetDistrictNumber, GetMyAgentId, GetMyGuildId, GetMyPlayerId;
+static HQINT_pt GetMapId, GetDistrict, GetDistrictNumber, GetMyAgentId, GetMyGuildId, GetMyPlayerId;
 
 typedef Vec2f(__cdecl* GetAgentPos_pt)(AgentId agent);
-GetAgentPos_pt GetAgentPos;
+static GetAgentPos_pt GetAgentPos;
 typedef void(__cdecl* Travel_pt)(uint32_t map_id, District district, int district_number);
-Travel_pt Travel;
+static Travel_pt Travel;
 
 typedef bool(__cdecl* GetObject_pt)(void* object, uint32_t object_id);
-GetObject_pt GetAgent, GetGuildInfo;
+static GetObject_pt GetAgent, GetGuildInfo;
 
 typedef bool(__cdecl* GetFriend_pt)(ApiFriend* gwfriend, const void* name);
-GetFriend_pt GetFriend, GetFriendByUuid;
+static GetFriend_pt GetFriend, GetFriendByUuid;
 
 typedef AgentEffect(__cdecl* GetAgentEffects_pt)(AgentId agent_id);
-GetAgentEffects_pt GetAgentEffects;
+static GetAgentEffects_pt GetAgentEffects;
 typedef uint32_t(__cdecl* GetNpcIdOfAgent_pt)(AgentId agent_id);
-GetNpcIdOfAgent_pt GetNpcIdOfAgent;
+static GetNpcIdOfAgent_pt GetNpcIdOfAgent;
 typedef uint32_t(__cdecl* GetBagItems_pt)(BagEnum bag, ApiItem* buffer, size_t length);
-GetBagItems_pt GetBagItems;
+static GetBagItems_pt GetBagItems;
 typedef uint32_t(__cdecl* GetBagCapacity_pt)(BagEnum bag);
-GetBagCapacity_pt GetBagCapacity;
+static GetBagCapacity_pt GetBagCapacity;
 
 typedef uint32_t(__cdecl* GetBuffer_pt)(void* buffer, size_t length);
-GetBuffer_pt GetQuests, GetPlayers, GetAgents, GetFriends, GetMerchantItems, GetCharacterName, GetGuildMembers;
+static GetBuffer_pt GetQuests, GetPlayers, GetAgents, GetFriends, GetMerchantItems, GetCharacterName, GetGuildMembers;
 
 typedef uint32_t(__cdecl* GetObjectName_pt)(uint32_t object_id, void* buffer, size_t length);
-GetObjectName_pt GetPlayerName, GetItemName, GetItemModStruct;
+static GetObjectName_pt GetPlayerName, GetItemName, GetItemModStruct;
 
 typedef void(__cdecl* GetSkillbar_pt)(uint32_t* skills, AgentId agent_id);
-GetSkillbar_pt GetSkillbar;
+static GetSkillbar_pt GetSkillbar;
 typedef void(__cdecl* UseSkill_pt)(uint32_t skill_id, AgentId target_id);
-UseSkill_pt UseSkill;
+static UseSkill_pt UseSkill;
 typedef bool(__cdecl* GetSkillCasting_pt)(int pos, AgentId* target_id);
-GetSkillCasting_pt GetSkillCasting;
+static GetSkillCasting_pt GetSkillCasting;
 
 typedef uint32_t(__cdecl* GetGuildFaction_pt)(uint32_t guild_id, FactionType* type);
-GetGuildFaction_pt GetGuildFaction;
+static GetGuildFaction_pt GetGuildFaction;
 
 typedef void(__cdecl* SendChat_pt)(Channel channel, const char* msg);
-SendChat_pt SendChat;
+static SendChat_pt SendChat;
 typedef void(__cdecl* SendWhisper_pt)(const char* target, const char* msg);
-SendWhisper_pt SendWhisper;
+static SendWhisper_pt SendWhisper;
 
 
 typedef bool(__cdecl* GetItem_pt)(ApiItem* item, uint32_t item_id);
-GetItem_pt GetItem;
+static GetItem_pt GetItem;
 typedef BagEnum(__cdecl* GetItemLocation_pt)(uint32_t item_id, unsigned int* slot);
-GetItemLocation_pt GetItemLocation;
+static GetItemLocation_pt GetItemLocation;
 typedef bool(__cdecl* RequestItemQuote_pt)(uint32_t item_id);
-RequestItemQuote_pt RequestItemQuote;
+static RequestItemQuote_pt RequestItemQuote;
 
 static bool hq_init() {
     void* hnd = dllopen(NULL);
@@ -151,8 +151,9 @@ static bool hq_init() {
         //printf("ERROR Loading current process module: %d", GetLastError());
         return false;
     }
-    assert(FreePluginAndExitThread = (FreePluginAndExitThread_pt)dllsym(hnd, "FreePluginAndExitThread"));
 
+    assert(FreePluginAndExitThread = (FreePluginAndExitThread_pt)dllsym(hnd, "FreePluginAndExitThread"));
+    //return false;
     assert(GetPing = (HQMSEC_pt)dllsym(hnd, "GetPing"));
     assert(GetPvPTimer = (HQMSEC_pt)dllsym(hnd, "GetPvPTimer"));
     assert(GetWorldTime = (HQMSEC_pt)dllsym(hnd, "GetWorldTime"));
