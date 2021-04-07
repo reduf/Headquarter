@@ -27,6 +27,7 @@ def main(args):
         # We conserve empty lines
         if len(line) == 0:
             print('')
+            offset = 0
             continue
 
         if line.startswith('//'):
