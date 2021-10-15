@@ -99,6 +99,11 @@ static void api_make_agent(ApiAgent *dest, Agent *src)
     dest->position  = src->position;
     dest->velocity  = src->velocity;
     dest->rotation  = src->rotation;
+
+    dest->health = src->health;
+    dest->energy = src->energy;
+    dest->health_max = src->health_max;
+    dest->energy_max = src->energy_max;
 }
 
 static Agent *get_agent_safe(GwClient *client, AgentId id);

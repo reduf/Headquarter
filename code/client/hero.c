@@ -21,7 +21,7 @@ void GameSrv_HeroUseSkill(GwClient *client, AgentId hero_id,
     ArrayAgent *agents = &client->world.agents;
     Agent *caster = get_agent_safe(client, hero_id);
     if (!caster) {
-        LogError("Can't get player agent '%d'", client->player_agent_id);
+        LogError("Can't get hero agent '%d' when using skill %u", hero_id, skill_id);
         return;
     }
 
@@ -36,6 +36,39 @@ void GameSrv_HeroUseSkill(GwClient *client, AgentId hero_id,
     packet.target   = target_id;
 
     SendPacket(&client->game_srv, sizeof(packet), &packet);
+}
+
+void GameSrv_HeroLoadSkills(GwClient* client, uint32_t hero_index, uint32_t skill_ids[8]) {
+    assert(client && client->game_srv.secured);
+
+    ArrayPartyHero heroes = client->player->party->heroes;
+    if (!array_inside(heroes, hero_index))
+        return;
+    AgentId agent_id = heroes.data[hero_index].agent_id;
+
+    GameSrv_LoadSkills(client, agent_id, skill_ids);
+}
+
+void GameSrv_HeroLoadAttributes(GwClient* client, uint32_t hero_index, ArrayAttribute attributes) {
+    assert(client && client->game_srv.secured);
+
+    ArrayPartyHero heroes = client->player->party->heroes;
+    if (!array_inside(heroes, hero_index))
+        return;
+    AgentId agent_id = heroes.data[hero_index].agent_id;
+
+    GameSrv_LoadAttributes(client, agent_id, attributes);
+}
+
+void GameSrv_HeroChangeSecondary(GwClient* client, uint32_t hero_index, Profession profession) {
+    assert(client && client->game_srv.secured);
+
+    ArrayPartyHero heroes = client->player->party->heroes;
+    if (!array_inside(heroes, hero_index))
+        return;
+    AgentId agent_id = heroes.data[hero_index].agent_id;
+
+    GameSrv_ChangeSecondary(client, agent_id, profession);
 }
 
 void GameSrv_HeroSetBehavior(GwClient *client, AgentId agent_id, HeroBehavior behavior)

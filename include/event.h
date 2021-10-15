@@ -44,6 +44,8 @@ typedef enum EventType {
     TRADE_ACCEPT_UPDATE,
     TRADE_OFFER_RECEIVED,
 
+    SALVAGE_SESSION_START,
+
     PLAYER_DEAD,
     PLAYER_ALIVE,
 

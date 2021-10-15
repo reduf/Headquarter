@@ -3,6 +3,18 @@
 #endif
 #define CORE_ITEM_C
 
+uint32_t item_mod_identifier(ItemModifier mod) {
+    return mod >> 16;
+}
+
+uint32_t item_mod_arg1(ItemModifier mod) {
+    return (mod & 0x0000FF00) >> 8;
+}
+
+uint32_t item_mod_arg2(ItemModifier mod) {
+    return (mod & 0x000000FF);
+}
+
 void remove_item_from_bag(Item *item)
 {
     if (!item->bag) return;
@@ -86,8 +98,8 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
         /* +h0019 */ int32_t model;
         /* +h001D */ int32_t quantity;
         /* +h0021 */ uint16_t name[64];
-        /* +h009D */ uint32_t mod_struct_size;
-        /* +h00A1 */ uint32_t mod_struct[64];
+        /* +h009D */ uint32_t n_modifier;
+        /* +h00A1 */ uint32_t modifier[64];
     } ItemInfo;
 
 #pragma pack(pop)
@@ -107,19 +119,21 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
     }
 
     Item *new_item = cast(Item *)game_object_alloc(&client->object_mgr, ObjectType_Item);
-    init_item(new_item);
+    memset(new_item, 0, sizeof(Item));
     new_item->item_id = pack->item_id;
     new_item->flags = pack->flags;
+    new_item->value = pack->value;
     new_item->model_id = pack->model;
     new_item->quantity = pack->quantity;
     new_item->type = pack->type;
     new_item->value = pack->value;
     kstr_read(&new_item->name, pack->name, ARRAY_SIZE(pack->name));
-    size_t i = 0;
-    for (i = 0; i < pack->mod_struct_size; i++) {
-        new_item->mod_struct[i] = pack->mod_struct[i];
+    
+    for (uint32_t i = 0; i < pack->n_modifier; i++) {
+        uint32_t mod = pack->modifier[i];
+        if (mod == 0) continue;
+        array_add(new_item->mods, mod);
     }
-    new_item->mod_struct[i] = 0;
 
     array_set(*items, pack->item_id, new_item);
 }
@@ -243,7 +257,9 @@ void HandleInventoryItemLocation(Connection *conn, size_t psize, Packet *packet)
 
     assert(bag->bag_id == pack->bag_id);
     assert(array_inside(bag->items, pack->slot));
+#if 0 // we sometimes receive this
     assert(array_at(bag->items, pack->slot) == NULL);
+#endif
 
     item->bag = bag;
     item->slot = pack->slot;
@@ -577,11 +593,13 @@ void GameSrv_StartSalvage(GwClient *client, Item *kit, Item *item)
     SalvageSession *session = &client->salvage_session;
 
     SalvagePacket packet = NewPacket(GAME_CMSG_ITEM_SALVAGE_SESSION_OPEN);
-    packet.session_id = session->salvage_session_id++;
+    packet.session_id = session->salvage_session_id = 21; // @fixme only true for first player in guild hall - client will get disconnected if it's wrong
     packet.kit_item_id = kit->item_id;
     packet.item_id = item->item_id;
 
     SendPacket(&client->game_srv, sizeof(packet), &packet);
+
+    LogDebug("SendPacket Salvage { session: %u, item: %u, kit: %u }", packet.session_id, packet.item_id, packet.kit_item_id);
 }
 
 void GameSrv_CancelSalvage(GwClient *client)
@@ -661,6 +679,8 @@ void HandleSalvageSessionStart(Connection *conn, size_t psize, Packet *packet)
         session->upgrades[i] = get_item_safe(client, item_id);
     }
     session->is_open = true;
+
+    broadcast_event(&client->event_mgr, SALVAGE_SESSION_START, &pack->item_id); // @todo pass possible salvage options
 }
 
 void HandleSalvageSessionCancel(Connection *conn, size_t psize, Packet *packet)
@@ -676,17 +696,29 @@ void HandleSalvageSessionCancel(Connection *conn, size_t psize, Packet *packet)
     session->n_upgrades = 0;
 }
 
-void HandleSalvageSessionDone(Connection *conn, size_t psize, Packet *packet)
+void HandleSalvageSessionDone(Connection* conn, size_t psize, Packet* packet)
 {
     assert(packet->header == GAME_SMSG_ITEM_SALVAGE_SESSION_DONE);
     assert(sizeof(Packet) == psize);
 
-    GwClient *client = cast(GwClient *)conn->data;
+    GwClient* client = cast(GwClient*)conn->data;
     assert(client && client->game_srv.secured);
-    SalvageSession *session = &client->salvage_session;
+    SalvageSession* session = &client->salvage_session;
 
     session->is_open = false;
     session->n_upgrades = 0;
+}
+
+void HandleSalvageSessionSuccess(Connection* conn, size_t psize, Packet* packet)
+{
+    assert(packet->header == GAME_SMSG_ITEM_SALVAGE_SESSION_SUCCESS);
+    assert(sizeof(Packet) == psize);
+
+    GwClient* client = cast(GwClient*)conn->data;
+    assert(client && client->game_srv.secured);
+    SalvageSession* session = &client->salvage_session;
+
+    GameSrv_SalvageDone(client);
 }
 
 void HandleSalvageSessionItemKept(Connection *conn, size_t psize, Packet *packet)
@@ -726,4 +758,22 @@ void GameSrv_UnequipItem(GwClient *client, EquipedItemSlot equip_slot, Bag *bag,
     packet.bag_slot = slot;
 
     SendPacket(&client->game_srv, sizeof(packet), &packet);    
+}
+
+void GameSrv_Identify(GwClient* client, Item* kit, Item* item)
+{
+#pragma pack(push, 1)
+    typedef struct {
+        Header  header;
+        int32_t kit_item_id;
+        int32_t item_id;
+    } IdentifyPacket;
+#pragma pack(pop)
+
+    assert(client && client->game_srv.secured);
+    IdentifyPacket packet = NewPacket(GAME_CMSG_ITEM_IDENTIFY);
+    packet.kit_item_id = kit->item_id;
+    packet.item_id = item->item_id;
+
+    SendPacket(&client->game_srv, sizeof(packet), &packet);
 }

@@ -368,7 +368,7 @@ void HandleAgentUpdateDirection(Connection *conn, size_t psize, Packet *packet)
 
     Agent *agent = get_agent_safe(client, pack->agent_id);
     if (!agent) {
-        LogError("AgentUpdateDirection received before then agent %d spawn.", pack->agent_id);
+        LogError("AgentUpdateDirection received before the agent %d spawned.", pack->agent_id);
         return;
     }
 
@@ -395,7 +395,7 @@ void HandleAgentUpdateSpeedBase(Connection *conn, size_t psize, Packet *packet)
 
     Agent *agent = get_agent_safe(client, pack->agent_id);
     if (!agent) {
-        LogError("AgentUpdateSpeedBase received before then agent %d spawn.", pack->agent_id);
+        LogError("AgentUpdateSpeedBase received before the agent %d spawned.", pack->agent_id);
         return;
     }
 
@@ -422,7 +422,7 @@ void HandleAgentUpdateSpeedModifier(Connection *conn, size_t psize, Packet *pack
 
     Agent *agent = get_agent_safe(client, pack->agent_id);
     if (!agent) {
-        LogError("AgentUpdateSpeedModifier received before then agent %d spawn.", pack->agent_id);
+        LogError("AgentUpdateSpeedModifier received before the agent %d spawned.", pack->agent_id);
         return;
     }
 
@@ -449,7 +449,7 @@ void HandleAgentUpdatePosition(Connection *conn, size_t psize, Packet *packet)
 
     Agent *agent = get_agent_safe(client, pack->agent_id);
     if (!agent) {
-        LogError("AgentUpdatePosition received before then agent %d spawn.", pack->agent_id);
+        LogError("AgentUpdatePosition received before the agent %d spawn.", pack->agent_id);
         return;
     }
 
@@ -544,7 +544,7 @@ void HandleAgentUpdateDestination(Connection *conn, size_t psize, Packet *packet
 
     Agent *agent = get_agent_safe(client, pack->agent_id);
     if (!agent) {
-        LogError("AgentUpdateDestination received before then agent %d spawn.", pack->agent_id);
+        LogError("AgentUpdateDestination received before the agent %d spawned.", pack->agent_id);
         return;
     }
 
@@ -814,7 +814,7 @@ void HandleAgentAttrUpdateFloatTarget(Connection *conn, size_t psize, Packet *pa
 
     ArrayAgent *agents = &client->world.agents;
     if (!array_inside(*agents, pack->target_id)) {
-        LogError("HandleAgentAttrUpdateFloatTarget: received for targer '%d' not spawned", pack->target_id);
+        LogError("HandleAgentAttrUpdateFloatTarget: received for target '%d' not spawned", pack->target_id);
         return;
     }
 

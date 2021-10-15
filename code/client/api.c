@@ -1251,8 +1251,8 @@ leave:
 // to deposit put negative number, to withdraw put positive
 static bool compute_gold_character(GwClient *client, int diff, int *gold_character, int *gold_storage)
 {
-    int gold_stor_after = client->inventory.gold_character - diff;
-    int gold_char_after = client->inventory.gold_storage + diff;
+    int gold_stor_after = client->inventory.gold_storage - diff;
+    int gold_char_after = client->inventory.gold_character + diff;
 
     if (gold_stor_after < 0 || (1000*1000) < gold_stor_after) return false;
     if (gold_char_after < 0 || (100*1000)  < gold_char_after) return false;
@@ -1386,23 +1386,155 @@ leave:
     thread_mutex_unlock(&client->mutex);
 }
 
+HQAPI void Attack(AgentId target_id)
+{
+    assert(client != NULL);
+    thread_mutex_lock(&client->mutex);
+    if (!client->ingame)
+        goto leave;
+    GameSrv_Attack(client, target_id, false);
+leave:
+    thread_mutex_unlock(&client->mutex);
+}
+
+HQAPI void LoadPlayerSkillTemplate(const char* temp)
+{
+    assert(client != NULL);
+    thread_mutex_lock(&client->mutex);
+    if (!client->ingame)
+        goto leave;
+
+    SkillTemplate* skillTemplate = template_decode(temp);
+    if (!skillTemplate) {
+        LogDebug("Unable to decode");
+        goto leave;
+    }
+
+    Skillbar* sb = get_skillbar_safe(client, GetMyAgentId());
+    if (!sb) goto leave;
+
+    if (sb->prof1 != skillTemplate->primary) {
+        LogDebug("Invalid primary profession %u / %u", sb->prof1, skillTemplate->primary);
+        goto leave;
+    }
+
+    if (sb->prof2 != skillTemplate->secondary && sb->prof2 != Profession_None) {
+        GameSrv_PlayerChangeSecondary(client, skillTemplate->secondary);
+    }
+
+    GameSrv_PlayerLoadSkills(client, skillTemplate->skills);
+    GameSrv_PlayerLoadAttributes(client, skillTemplate->attributes);
+leave:
+    thread_mutex_unlock(&client->mutex);
+}
+
+HQAPI void LoadHeroSkillTemplate(const char* temp, uint32_t hero_index)
+{
+    assert(client != NULL);
+    thread_mutex_lock(&client->mutex);
+    if (!client->ingame)
+        goto leave;
+
+    ArrayPartyHero heroes = client->player->party->heroes;
+    if (!array_inside(heroes, hero_index)) {
+        goto leave;
+    }
+    AgentId hero_agent_id = heroes.data[hero_index].agent_id;
+
+    SkillTemplate* skillTemplate = template_decode(temp);
+    if (!skillTemplate) {
+        goto leave;
+    }
+
+    Skillbar* sb = get_skillbar_safe(client, hero_agent_id);
+    if (!sb) {
+        goto leave;
+    }
+
+    if (sb->prof1 != skillTemplate->primary) {
+        goto leave;
+    }
+
+    if (sb->prof2 != skillTemplate->secondary && sb->prof2 != Profession_None) {
+        GameSrv_ChangeSecondary(client, hero_agent_id, skillTemplate->secondary);
+    }
+
+    GameSrv_LoadSkills(client, hero_agent_id, skillTemplate->skills);
+    GameSrv_LoadAttributes(client, hero_agent_id, skillTemplate->attributes);
+leave:
+    thread_mutex_unlock(&client->mutex);
+}
+
+HQAPI void HeroAdd(HeroID hero_id)
+{
+    assert(client != NULL);
+    thread_mutex_lock(&client->mutex);
+    if (!client->ingame)
+        goto leave;
+
+    GameSrv_AddHero(client, hero_id);
+leave:
+    thread_mutex_unlock(&client->mutex);
+}
+
+HQAPI void HeroKick(HeroID hero_id)
+{
+    assert(client != NULL);
+    thread_mutex_lock(&client->mutex);
+    if (!client->ingame)
+        goto leave;
+
+    GameSrv_KickHero(client, hero_id);
+leave:
+    thread_mutex_unlock(&client->mutex);
+}
+
+HQAPI void HeroKickAll()
+{
+    assert(client != NULL);
+    thread_mutex_lock(&client->mutex);
+    if (!client->ingame)
+        goto leave;
+
+    GameSrv_KickHero(client, HeroID_Count);
+leave:
+    thread_mutex_unlock(&client->mutex);
+}
+
+HQAPI void HeroFlagCancel(uint32_t hero_index)
+{
+    HeroFlag((Vec2f) { INFINITY, INFINITY }, hero_index);
+}
+
 HQAPI void HeroFlag(Vec2f pos, uint32_t hero_index)
 {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     if (!client->ingame)
         goto leave;
-    if (hero_index == 0) {
-        if (!(client->player && client->player->party))
-            goto leave;
-        ArrayPartyHero heroes = client->player->party->heroes;
-        if (!array_inside(heroes, hero_index))
-            goto leave;
-        AgentId hero_id = heroes.data[hero_index].agent_id;
-        GameSrv_FlagHero(client, pos, hero_id);
-    } else {
-        GameSrv_FlagAllHero(client, pos);
-    }
+    if (!(client->player && client->player->party))
+        goto leave;
+    ArrayPartyHero heroes = client->player->party->heroes;
+    if (!array_inside(heroes, hero_index))
+        goto leave;
+    AgentId hero_id = heroes.data[hero_index].agent_id;
+    GameSrv_FlagHero(client, pos, hero_id);
+leave:
+    thread_mutex_unlock(&client->mutex);
+}
+
+HQAPI void HeroFlagCancelAll()
+{
+    HeroFlagAll((Vec2f) { INFINITY, INFINITY });
+}
+
+HQAPI void HeroFlagAll(Vec2f pos)
+{
+    assert(client != NULL);
+    thread_mutex_lock(&client->mutex);
+    if (!client->ingame)
+        goto leave;
+    GameSrv_FlagAllHero(client, pos);
 leave:
     thread_mutex_unlock(&client->mutex);
 }
@@ -1435,7 +1567,7 @@ HQAPI void HeroEnableSkill(uint32_t hero_index, uint32_t skill_id)
     Skillbar *sb = get_skillbar_safe(client, hero_id);
     if (!sb) goto leave;
     Skill *skill = skillbar_get_skill_by_id(sb, skill_id);
-    if (!skill || skill->disable)
+    if (!skill || !skill->disable)
         goto leave;
     int pos = indexof(sb->skills, skill);
     GameSrv_HeroSkillToggle(client, hero_id, pos);
@@ -1456,7 +1588,7 @@ HQAPI void HeroDisableSkill(uint32_t hero_index, uint32_t skill_id)
     Skillbar *sb = get_skillbar_safe(client, hero_id);
     if (!sb) goto leave;
     Skill *skill = skillbar_get_skill_by_id(sb, skill_id);
-    if (!(skill && skill->disable))
+    if (!skill || skill->disable)
         goto leave;
     int pos = indexof(sb->skills, skill);
     GameSrv_HeroSkillToggle(client, hero_id, pos);
@@ -1723,6 +1855,140 @@ HQAPI void TradeCancel(void)
     if (!client->ingame)
         goto leave;
     GameSrv_TradeCancel(client);
+leave:
+    thread_mutex_unlock(&client->mutex);
+}
+
+HQAPI bool ItemSalvage(ApiItem* apiItem, ApiItem *apiKit) {
+    assert(client != NULL);
+    thread_mutex_lock(&client->mutex);
+    bool attempt = false;
+    if (!client->ingame)
+        goto leave;
+
+    if (!apiItem || !apiKit)
+        goto leave;
+
+    if (apiItem->item_id == apiKit->item_id)
+        goto leave;
+
+    Item* item = get_item_safe(client, apiItem->item_id);
+    if (!item)
+        goto leave;
+
+    if (item->bag == BagEnum_EquipmentPack)
+        goto leave;
+#if 0
+    if (!(item->value)) // in toolbox no value is considered most likely not salvageable, we're probably missing something here though as this doesn't work as intended
+        goto leave;
+#endif
+
+    if (item->flags) {
+        if ((item->flags & 0x1000000) != 0) // usable
+            goto leave;
+        if ((item->flags & 0x10) != 0) // green
+            goto leave;
+        // @fixme blue && unidentified
+    }
+
+    if (apiKit->type != ItemType_Kit)
+        goto leave;
+
+    if (apiKit->model_id != 2991 && apiKit->model_id != 2992 && apiKit->model_id != 5900) //
+        goto leave;
+
+    Item* kit = get_item_safe(client, apiKit->item_id);
+    if (!kit)
+        goto leave;
+
+    attempt = true;
+    GameSrv_StartSalvage(client, kit, item);
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return attempt;
+}
+
+HQAPI void SalvageMaterials() {
+    assert(client != NULL);
+    thread_mutex_lock(&client->mutex);
+    GameSrv_SalvageMaterials(client);
+leave:
+    thread_mutex_unlock(&client->mutex);
+}
+
+HQAPI bool ItemIdentify(ApiItem* apiItem, ApiItem *apiKit) {
+    assert(client != NULL);
+    thread_mutex_lock(&client->mutex);
+    bool attempt = false;
+    if (!client->ingame)
+        goto leave;
+    if (!apiItem || !apiKit)
+        goto leave;
+
+    Item* item = get_item_safe(client, apiItem->item_id);
+    if (!item)
+        goto leave;
+    if ((item->flags & 1) != 0) // identified
+        goto leave;
+
+    if (apiKit->type != ItemType_Kit)
+        goto leave;
+    if (apiKit->model_id != 2989 && apiKit->model_id != 5899)
+        goto leave;
+
+    Item* kit = get_item_safe(client, apiKit->item_id);
+    if (!kit)
+        goto leave;
+
+    GameSrv_Identify(client, kit, item);
+    attempt = true;
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return attempt;
+}
+
+HQAPI void MerchantBuyItem(uint32_t model_id, uint32_t gold_value) {
+    assert(client != NULL);
+    thread_mutex_lock(&client->mutex);
+    Item* item = NULL;
+    ArrayItem items = client->merchant_items;
+    for (size_t i = 0; (i < items.size); i++) {
+        if (!items.data[i]) continue;
+        if (items.data[i]->model_id == model_id) {
+            item = items.data[i];
+            break;
+        }
+    }
+    if (!item)
+        goto leave;
+
+    TransactionInfo item_send = { 0 };
+    uint32_t gold_recv = 0;
+    TransactionInfo item_recv = { 0 };
+    item_recv.item_count = 1;
+    item_recv.item_ids[0] = item->item_id;
+    item_recv.item_quants[0] = 1;
+
+    GameSrv_TransactItems(client, TransactionType_MerchantBuy, gold_value, &item_send, 0, &item_recv);
+leave:
+    thread_mutex_unlock(&client->mutex);
+}
+
+HQAPI void MerchantSellItem(ApiItem* apiItem) {
+    assert(client != NULL);
+    thread_mutex_lock(&client->mutex);
+
+    Item* item = get_item_safe(client, apiItem->item_id);
+    if (!item)
+        goto leave;
+
+    TransactionInfo item_recv = { 0 };
+    TransactionInfo item_send = { 0 };
+    item_send.item_count = 1;
+    item_send.item_ids[0] = item->item_id;
+    item_send.item_quants[0] = item->quantity;
+
+    GameSrv_BuyMaterials(client, TransactionType_MerchantSell, 0, &item_send, item->value * item->quantity, &item_recv);
 leave:
     thread_mutex_unlock(&client->mutex);
 }

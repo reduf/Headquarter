@@ -38,11 +38,19 @@ typedef enum ItemType {
     ItemType_CostumeHead   = 45,
 } ItemType;
 
+typedef struct ApiItemModifier {
+    uint32_t identifier;
+    uint32_t arg1;
+    uint32_t arg2;
+} ApiItemModifier;
+typedef array(ApiItemModifier) ArrayApiItemModifier;
+
 typedef struct ApiItem {
     uint32_t    item_id;
     uint32_t    model_id;
     uint32_t    quantity;
     uint32_t    value;
     ItemType    type;
+    ArrayApiItemModifier mods;
 } ApiItem;
 typedef array(ApiItem) ArrayApiItem;

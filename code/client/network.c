@@ -712,6 +712,7 @@ void NetConn_Recv(Connection *conn)
         if (!socket_would_block(err)) {
             LogError("WSARecv failed. (%d)", err);
             NetConn_HardShutdown(conn);
+            client->ingame = false;
         }
         thread_mutex_unlock(&conn->mutex);
         return;

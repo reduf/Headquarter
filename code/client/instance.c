@@ -41,6 +41,8 @@ void TransferGameServer(GwClient *client)
     // @Cleanup:
     // We might need to reset all the world state here.
     init_world(&client->world, transfer->world_id);
+    client->inventory.gold_character = 0;
+    client->inventory.gold_storage = 0;
     client->game_srv.host = transfer->host;
 
     if (!GameSrv_Connect(&client->game_srv, client->uuid, cc->uuid,
@@ -52,7 +54,6 @@ void TransferGameServer(GwClient *client)
         client->state = AwaitNothing;
         return;
     }
-
 }
 
 void HandleGameServerInfo(Connection *conn, size_t psize, Packet *packet)

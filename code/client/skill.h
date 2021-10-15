@@ -126,3 +126,12 @@ static Skillbar *get_skillbar_safe(GwClient *client, AgentId agent_id);
 static void skillbar_done_cast(Skillbar *sb,  uint32_t skill_id);
 static void skillbar_start_cast(Skillbar *sb, uint32_t skill_id,
     struct Agent *caster, struct Agent *target);
+
+typedef struct SkillTemplate {
+    Profession primary;
+    Profession secondary;
+    uint32_t skills[8];
+    ArrayAttribute attributes;
+} SkillTemplate;
+
+static SkillTemplate* template_decode(const char* template);

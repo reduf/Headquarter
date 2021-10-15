@@ -52,5 +52,10 @@ typedef struct ApiAgent {
     Vec2f           position;
     Vec2f           velocity;
     float           rotation;
+
+    float           health;
+    float           energy;
+    int32_t         health_max;
+    int32_t         energy_max;
 } ApiAgent;
 typedef array(ApiAgent) ArrayApiAgent;

@@ -546,7 +546,7 @@ void GameSrv_KickHero(GwClient *client, HeroID hero_id)
 #pragma pack(pop)
 
     assert(client && client->game_srv.secured);
-    HeroPacket packet = NewPacket(GAME_CMSG_HERO_ADD);
+    HeroPacket packet = NewPacket(GAME_CMSG_HERO_KICK);
     packet.hero_id = hero_id;
 
     SendPacket(&client->game_srv, sizeof(packet), &packet);

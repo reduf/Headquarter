@@ -538,6 +538,7 @@ void GameSrv_RegisterCallbacks(Connection *conn)
     handlers[GAME_SMSG_ITEM_SALVAGE_SESSION_START]      = HandleSalvageSessionStart;
     handlers[GAME_SMSG_ITEM_SALVAGE_SESSION_CANCEL]     = HandleSalvageSessionCancel;
     handlers[GAME_SMSG_ITEM_SALVAGE_SESSION_DONE]       = HandleSalvageSessionDone;
+    handlers[GAME_SMSG_ITEM_SALVAGE_SESSION_SUCCESS]    = HandleSalvageSessionSuccess;
     handlers[GAME_SMSG_ITEM_SALVAGE_SESSION_ITEM_KEPT]  = HandleSalvageSessionItemKept;
 
     // agents

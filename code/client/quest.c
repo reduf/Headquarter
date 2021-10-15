@@ -115,7 +115,9 @@ void HandleQuestRemove(Connection *conn, size_t psize, Packet *packet)
     ArrayQuest *quests = &client->world.quests;
     Quest *quest = find_quest_by_id(quests, pack->quest_id);
     if (!quest) {
+#if 0 // this happens when e.g. entering fow - all the quests are getting removed first
         LogInfo("We were asked to remove a quest that we didn't have. (id: %d)", pack->quest_id);
+#endif
         return;
     }
 

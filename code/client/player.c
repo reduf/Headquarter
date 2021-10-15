@@ -12,7 +12,7 @@ void player_is_created(GwClient *client, AgentId agent_id)
         assert(array_inside(world->agents, agent_id));
         assert(array_at(world->agents, agent_id));
 
-        Agent *me = array_at(world->agents, agent_id);
+        Agent* me = array_at(world->agents, agent_id);
         if (!me->player_id)
             return;
 
@@ -208,4 +208,42 @@ void GameSrv_DonateFaction(GwClient *client, FactionType faction, int amount)
     packet.faction = (int8_t)faction;
 
     SendPacket(&client->game_srv, sizeof(packet), &packet);
+}
+
+void GameSrv_PlayerLoadSkills(GwClient* client, uint32_t* skill_ids) {
+    assert(client && client->game_srv.secured);
+
+    Agent* agent = get_agent_safe(client, client->player_agent_id);
+    if (!agent) {
+        LogError("Can't get player agent '%d'", client->player_agent_id);
+        return;
+    }
+
+    GameSrv_LoadSkills(client, agent->agent_id, skill_ids);
+}
+
+void GameSrv_PlayerLoadAttributes(GwClient* client, ArrayAttribute attributes)
+{
+    assert(client && client->game_srv.secured);
+
+    Agent* agent = get_agent_safe(client, client->player_agent_id);
+    if (!agent) {
+        LogError("Can't get player agent '%d'", client->player_agent_id);
+        return;
+    }
+
+    GameSrv_LoadAttributes(client, agent->agent_id, attributes);
+}
+
+void GameSrv_PlayerChangeSecondary(GwClient* client, Profession profession)
+{
+    assert(client && client->game_srv.secured);
+
+    Agent* agent = get_agent_safe(client, client->player_agent_id);
+    if (!agent) {
+        LogError("Can't get player agent '%d'", client->player_agent_id);
+        return;
+    }
+
+    GameSrv_ChangeSecondary(client, agent->agent_id, profession);
 }
