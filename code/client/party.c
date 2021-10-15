@@ -68,7 +68,7 @@ void HandlePartySetDifficulty(Connection *conn, size_t psize, Packet *packet)
     }
 
     Party *party = client->player->party;
-    party->difficulty = (Difficulty)1;
+    party->difficulty = (Difficulty)pack->mode;
 }
 
 void HandlePartyHeroAdd(Connection *conn, size_t psize, Packet *packet)
