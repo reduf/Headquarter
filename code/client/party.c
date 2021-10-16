@@ -68,6 +68,15 @@ void HandlePartySetDifficulty(Connection *conn, size_t psize, Packet *packet)
     }
 
     Party *party = client->player->party;
+    switch ((Difficulty)pack->mode) {
+        case Difficulty_Normal:
+        case Difficulty_Hard:
+            break;
+        default:
+            LogError("Invalid 'Difficulty' value %hhu", pack->mode);
+            return;
+    }
+
     party->difficulty = (Difficulty)pack->mode;
 }
 
