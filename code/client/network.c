@@ -629,18 +629,6 @@ void SendPacket(Connection *conn, size_t size, void *p)
     assert(header == format.header);
     assert(size == format.unpack_size);
 
-#if 0
-    // @Remark:
-    // If we are using IO completion port, we can't expect `NetConn_Send` to empty.
-    // the buffer, so we have to make sure the buffer is big enough or return `EAGAIN`.
-    ByteBuffer *out = &conn->out;
-    size_t availaible_length = out->capacity - out->size;
-    assert(availaible_length >= sizeof(Header));
-    if (availaible_length < sizeof(Header)) {
-        LogError("Packet '%d' dropped: Buffer not big enough", header);
-        goto leave;
-    }
-#else
     ByteBuffer *out = &conn->out;
     size_t availaible_length = out->capacity - out->size;
     if (availaible_length < sizeof(Header)) {
@@ -648,7 +636,6 @@ void SendPacket(Connection *conn, size_t size, void *p)
         NetConn_Send(conn);
         availaible_length = out->capacity - out->size;
     }
-#endif
     
     assert(sizeof(Header) <= availaible_length);
     uint8_t *buffer = out->data + out->size;
@@ -886,7 +873,7 @@ static int pack(const uint8_t *data, size_t data_size,
 #pragma pack(pop)
 
     int readed = 0;
-    int written = 0;
+    size_t written = 0;
 
     for (size_t i = 0; i < fields_count; i++)
     {

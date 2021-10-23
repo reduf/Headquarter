@@ -1344,7 +1344,7 @@ leave:
     thread_mutex_unlock(&client->mutex);
 }
 
-HQAPI bool GetSkillCasting(int pos, AgentId *target_id)
+HQAPI bool GetSkillCasting(size_t pos, AgentId *target_id)
 {
     assert(client != NULL);
     assert(1 <= pos && pos <= 8);

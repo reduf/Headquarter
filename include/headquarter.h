@@ -338,7 +338,7 @@ HQAPI int               GetGoldCharacter(void);
 HQAPI const SkillInfo  *GetSkillInfo(uint32_t skill_id);
 HQAPI void              GetSkillbar(uint32_t *skills, AgentId agent_id);
 HQAPI int               GetSkillbarPos(uint32_t skill_id, AgentId agent_id);
-HQAPI bool              GetSkillCasting(int pos, AgentId *target_id);
+HQAPI bool              GetSkillCasting(size_t pos, AgentId *target_id);
 HQAPI msec_t            GetSkillRecharge(int pos);
 HQAPI void              UseSkill(uint32_t skill_id, AgentId target_id);
 HQAPI void              Attack(AgentId target_id);
