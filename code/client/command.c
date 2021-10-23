@@ -32,6 +32,12 @@ void print_help(bool terminate)
     if (terminate) exit(0);
 }
 
+void check_for_more_arguments(int argc, int i, int nargs)
+{
+    if (argc <= i + nargs)
+        print_help(true);
+}
+
 void parse_command_args(int argc, const char **argv)
 {
     // @Remark: Currently, if the format is not valid, for instance -email with no
@@ -55,25 +61,25 @@ void parse_command_args(int argc, const char **argv)
         } else if (!strcmp(arg, "-authsrv")) {
             options.auth_srv = argv[++i];
         } else if (!strcmp(arg, "-account")) {
-            if (i + 1 >= argc) print_help(true);
+            check_for_more_arguments(argc, i, 1);
             safe_strcpy(options.account, ARRAY_SIZE(options.account), argv[++i]);
         } else if (!strcmp(arg, "-email")) {
-            if (i + 1 >= argc) print_help(true);
+            check_for_more_arguments(argc, i, 1);
 
             // @Remark: We need the email to be in lower cases, because
             // it is user to compute the static hash of the password.
             safe_strcpy(options.email, ARRAY_SIZE(options.email), argv[++i]);
             strlwc(options.email, ARRAY_SIZE(options.email));
         } else if (!strcmp(arg, "-password")) {
-            if (i + 1 >= argc) print_help(true);
+            check_for_more_arguments(argc, i, 1);
             safe_strcpy(options.password, ARRAY_SIZE(options.password), argv[++i]);
         } else if (!strcmp(arg, "-character")) {
-            if (i + 1 >= argc) print_help(true);
+            check_for_more_arguments(argc, i, 1);
             safe_strcpy(options.charname, ARRAY_SIZE(options.charname), argv[++i]);
         } else if (!strcmp(arg, "-newauth")) {
             options.newauth = true;
         } else if (!strcmp(arg, "-mapid")) {
-            if (i + 1 >= argc) print_help(true);
+            check_for_more_arguments(argc, i, 1);
             options.mapid = atoi(argv[++i]);
         } else if (!strcmp(arg, "-maptype")) {
             options.maptype = atoi(argv[++i]);
