@@ -13,6 +13,7 @@ void print_help(bool terminate)
             "    -c <config_file>           use config_file as configuration file\n"
             "    -h, --help                 print this help\n\n"
 
+            "    -account   <string>        Name of the account to use\n"
             "    -email     <string>        Sets the client's email\n"
             "    -password  <string>        Enable auto-loging. use with -email and -charname\n"
             "    -character <string>        Sets the client's security question\n"
@@ -53,6 +54,9 @@ void parse_command_args(int argc, const char **argv)
             options.trace = true;
         } else if (!strcmp(arg, "-authsrv")) {
             options.auth_srv = argv[++i];
+        } else if (!strcmp(arg, "-account")) {
+            if (i + 1 >= argc) print_help(true);
+            safe_strcpy(options.account, ARRAY_SIZE(options.account), argv[++i]);
         } else if (!strcmp(arg, "-email")) {
             if (i + 1 >= argc) print_help(true);
 
