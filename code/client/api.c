@@ -19,11 +19,11 @@ HQAPI void LogDebug(const char *fmt, ...)
     va_end(args);
 }
 
-HQAPI void LogFatal(const char *fmt, ...)
+HQAPI void LogCritical(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    log_vmsg(LOG_FATAL, fmt, args);
+    log_vmsg(LOG_CRITICAL, fmt, args);
     va_end(args);
 }
 
@@ -39,7 +39,15 @@ HQAPI void LogWarn(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    log_vwarning(fmt, args);
+    log_vwarn(fmt, args);
+    va_end(args);
+}
+
+HQAPI void LogTrace(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    log_vtrace(fmt, args);
     va_end(args);
 }
 

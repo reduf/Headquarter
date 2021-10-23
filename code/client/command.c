@@ -16,11 +16,13 @@ void print_help(bool terminate)
             "    -email     <string>        Sets the client's email\n"
             "    -password  <string>        Enable auto-loging. use with -email and -charname\n"
             "    -character <string>        Sets the client's security question\n"
-            "    -authsrv                   Specify authserver IP to connect to\n"
+            "    -authsrv                   Specify authserver IP to connect to\n\n"
+            ""
             "    -newauth                   The client will use Portal connection\n\n"
 
             "    -seed                      Specify the seed for pseudo random generation\n"
-            "    -v, --verbose              Write verbose\n\n"
+            "    -v, --verbose              Enable debug logs\n"
+            "    -vv, --trace               Enable trace logs\n\n"
 
             "    -mapid                     Specify the map id you want to start in\n"
             "    -maptype                   Specify the map type you want to start in\\nn"
@@ -58,6 +60,8 @@ void parse_command_args(int argc, const char **argv)
             options.print_version = true;
         } else if (!strcmp(arg, "-v") || !strcmp(arg, "--verbose")) {
             options.verbose = true;
+        } else if (!strcmp(arg, "-vv") || !strcmp(arg, "--trace")) {
+            options.trace = true;
         } else if (!strcmp(arg, "-authsrv")) {
             options.auth_srv = argv[++i];
         } else if (!strcmp(arg, "-email")) {

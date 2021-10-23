@@ -23,18 +23,18 @@ static const char *
 log_print_level_s(unsigned int level)
 {
     switch (level) {
-        case LOG_FATAL:
-            return "Fatal";
+        case LOG_CRITICAL:
+            return "critical";
         case LOG_ERROR:
-            return "Error";
+            return "error";
         case LOG_WARN:
-            return "Warning";
-        case LOG_NOTICE:
-            return "Notice";
+            return "warn";
         case LOG_INFO:
-            return "Info";
+            return "info";
         case LOG_DEBUG:
-            return "Debug";
+            return "debug";
+        case LOG_TRACE:
+            return "trace";
         default:
             abort();
     }
@@ -43,12 +43,7 @@ log_print_level_s(unsigned int level)
 void log_init(void)
 {
     int error;
-#ifdef _NDEBUG
     log_print_level = LOG_INFO;
-#else
-    log_print_level = LOG_DEBUG;
-#endif
-
 
     error = thread_mutex_init(&log_mutex);
     if (error) {
@@ -80,6 +75,11 @@ void log_init(void)
     }
     assert(log_file);
     printf("Logging to %s\n",file_path);
+}
+
+void log_set_level(unsigned int level)
+{
+    log_print_level = level;
 }
 
 static int log_time(char *buffer, size_t size)
@@ -150,6 +150,15 @@ int log_debug(const char *fmt, ...)
     return ret;
 }
 
+int log_trace(const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = log_vtrace(fmt, ap);
+    va_end(ap);
+    return ret;
+}
+
 int log_error(const char *fmt, ...)
 {
     va_list ap;
@@ -159,20 +168,11 @@ int log_error(const char *fmt, ...)
     return ret;
 }
 
-int log_notice(const char *fmt, ...)
+int log_warn(const char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-    int ret = log_vnotice(fmt, ap);
-    va_end(ap);
-    return ret;
-}
-
-int log_warning(const char *fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-    int ret = log_vwarning(fmt, ap);
+    int ret = log_vwarn(fmt, ap);
     va_end(ap);
     return ret;
 }
@@ -187,17 +187,17 @@ int log_vdebug(const char *format, va_list ap)
     return log_vmsg(LOG_DEBUG, format, ap);
 }
 
+int log_vtrace(const char *format, va_list ap)
+{
+    return log_vmsg(LOG_TRACE, format, ap);
+}
+
 int log_verror(const char *format, va_list ap)
 {
     return log_vmsg(LOG_ERROR, format, ap);
 }
 
-int log_vnotice(const char *format, va_list ap)
-{
-    return log_vmsg(LOG_NOTICE, format, ap);
-}
-
-int log_vwarning(const char *format, va_list ap)
+int log_vwarn(const char *format, va_list ap)
 {
     return log_vmsg(LOG_WARN, format, ap);
 }

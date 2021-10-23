@@ -243,9 +243,10 @@ struct PluginObject {
 
 HQAPI void              LogError(const char *fmt, ...);
 HQAPI void              LogDebug(const char *fmt, ...);
-HQAPI void              LogFatal(const char *fmt, ...);
+HQAPI void              LogCritical(const char *fmt, ...);
 HQAPI void              LogInfo(const char *fmt, ...);
 HQAPI void              LogWarn(const char *fmt, ...);
+HQAPI void              LogTrace(const char *fmt, ...);
 
 HQAPI _Noreturn void    FreePluginAndExitThread(PluginObject *plugin, int retval);
 HQAPI size_t            GetPlugins(ApiPlugin *buffer, size_t length);

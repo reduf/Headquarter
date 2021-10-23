@@ -117,6 +117,11 @@ int main(int argc, const char *argv[])
     time_init();
     init_timers();
 
+    if (options.verbose)
+        log_set_level(LOG_DEBUG);
+    if (options.trace)
+        log_set_level(LOG_TRACE);
+
 #ifdef _WIN32
     timeBeginPeriod(1);
 #endif
