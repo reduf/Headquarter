@@ -55,7 +55,7 @@ typedef struct Vec3f {
 typedef void(__cdecl* Log_pt)(const char* fmt, ...);
 static Log_pt LogError, LogDebug, LogFatal, LogInfo, LogWarn;
 
-typedef void(__cdecl* FreePluginAndExitThread_pt)(void* module, int retval);
+typedef void(__cdecl* FreePluginAndExitThread_pt)(PluginObject* plugin, int retval);
 static FreePluginAndExitThread_pt FreePluginAndExitThread;
 
 HQAPI uint32_t            GetPlugins(ApiPlugin* buffer, size_t length);
@@ -230,25 +230,13 @@ static bool hq_init() {
 #else
 static bool hq_init() {};
 
-typedef struct PluginObject PluginObject;
-typedef bool (*PluginEntry_pt)(PluginObject *);
-typedef void (*PluginUnload_pt)(PluginObject *);
+HQAPI void      LogError(const char *fmt, ...);
+HQAPI void      LogDebug(const char *fmt, ...);
+HQAPI void      LogCritical(const char *fmt, ...);
+HQAPI void      LogInfo(const char *fmt, ...);
+HQAPI void      LogWarn(const char *fmt, ...);
 
-struct PluginObject {
-    void           *module;
-
-    PluginEntry_pt  PluginInit;
-    PluginUnload_pt PluginUnload;
-};
-
-HQAPI void              LogError(const char *fmt, ...);
-HQAPI void              LogDebug(const char *fmt, ...);
-HQAPI void              LogCritical(const char *fmt, ...);
-HQAPI void              LogInfo(const char *fmt, ...);
-HQAPI void              LogWarn(const char *fmt, ...);
-HQAPI void              LogTrace(const char *fmt, ...);
-
-HQAPI _Noreturn void    FreePluginAndExitThread(PluginObject *plugin, int retval);
+HQAPI _Noreturn void    FreePluginAndExitThread(PluginObject *module, int retval);
 HQAPI size_t            GetPlugins(ApiPlugin *buffer, size_t length);
 HQAPI bool              LoadPlugin(const char *path);
 

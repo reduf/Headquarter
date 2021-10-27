@@ -165,7 +165,7 @@ void Network_Init(void)
     }
 #endif
 
-    char file_path[1024];
+    char file_path[1048];
     int length = 0;
     bool file_read_ok = false;
     char dir_path[1024];
