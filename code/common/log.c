@@ -7,6 +7,7 @@
 #include "process.h"
 #include "thread.h"
 
+
 #define LOG_MSG_SIZE    (1024)
 #define LOG_BUFFER_SIZE (16 * LOG_MSG_SIZE)
 
@@ -55,10 +56,10 @@ void log_init(void)
     time_t t = time(NULL);
     struct tm ts;
     // @Robustness: Deal with the error?
-    localtime_s(&ts, &t);
+    time_localtime(&t, &ts);
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d_%H-%M-%S", &ts);
 
-    char file_path[1024];
+    char file_path[1128];
     int length = 0;
     char dir_path[1024];
     length = dlldir(NULL, dir_path, sizeof(dir_path));
@@ -86,7 +87,7 @@ static int log_time(char *buffer, size_t size)
 {
     time_t t = time(NULL);
     struct tm ts;
-    localtime_s(&ts, &t);
+    time_localtime(&t, &ts);
     return strftime(buffer, size, "%Y-%m-%d %H:%M:%S", &ts);
 }
 
