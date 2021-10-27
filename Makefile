@@ -19,10 +19,10 @@ LOCAL_CFLAGS = $(WARNING_CFLAGS) \
 
 LOCAL_LDFLAGS = -L$(DESTDIR)/lib
 
-client: code/client/main.c
+client: code/client/build.c
 	mkdir -p $(DESTDIR)
 	$(MAKE) -C deps/mbedtls-2.16.5 install lib no_test DESTDIR=$(DESTDIR)
-	$(CC) $(LOCAL_CFLAGS) code/client/main.c code/common/common.c $(DESTDIR)/lib/libmbedcrypto.a \
+	$(CC) $(LOCAL_CFLAGS) code/client/build.c code/common/common.c $(DESTDIR)/lib/libmbedcrypto.a \
 		-std=c11 $(DFLAGS) $(LOCAL_LDFLAGS) $(LDFLAGS) -o $(DESTDIR)/bin/client
 
 .c.o:
