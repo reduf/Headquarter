@@ -231,6 +231,9 @@ void HandleChatMessageServer(Connection *conn, size_t psize, Packet *packet)
 
     broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
 
+    if (!is_event_subscribed(&client->event_mgr, EventType_ChatMessage))
+        goto clear_buffer_and_exit;
+
     array_u16_t* sb = &client->chat.str_builder;
 
     Event_ChatMessage params;
@@ -263,6 +266,9 @@ void HandleWhisperReceived(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     WhisperReceived *pack = cast(WhisperReceived *)packet;
     assert(client && client->game_srv.secured);
+
+    if (!is_event_subscribed(&client->event_mgr, EventType_ChatMessage))
+        return;
 
     DECLARE_KSTR(sender, 20);
     DECLARE_KSTR(message, 256);
