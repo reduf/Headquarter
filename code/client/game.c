@@ -451,21 +451,25 @@ void HandleFriendListMessage(Connection* conn, size_t psize, Packet* packet)
         // Player is not online, slap a message in.
         params.channel = Channel_Warning;
         params.sender.buffer = pack->subject;
-        wchar_t new_message[512];
+        wchar_t new_message[ARRAY_SIZE(pack->message)];
         wchar_t sender_ws[ARRAY_SIZE(pack->subject)];
-        size_t length = 0;
+        int length = 0;
         for (length = 0; length < ARRAY_SIZE(pack->subject) && pack->subject[length]; length++)
             sender_ws[length] = pack->subject[length];
         sender_ws[length] = 0;
-        swprintf(new_message, ARRAY_SIZE(new_message), L"Player %s is not online", sender_ws);
-        for (length = 0; length < ARRAY_SIZE(new_message) && new_message[length]; length++)
-            pack->message[length] = new_message[length];
-        pack->message[length] = 0;
+        length = swprintf(new_message, ARRAY_SIZE(new_message), L"Player %s is not online", sender_ws);
+        assert(length != -1);
+        int written = 0;
+        for (int i = 0; i < length; i++)
+            pack->message[i] = new_message[i];
     }
+    
     params.sender.buffer = pack->subject;
-    for (params.sender.length = 0; params.sender.length < ARRAY_SIZE(pack->subject) && pack->subject[params.sender.length] != 0; params.sender.length++) {}
-    params.message.buffer = pack->message;
-    for (params.message.length = 0; params.message.length < ARRAY_SIZE(pack->message) && pack->message[params.message.length] != 0; params.message.length++) {}
+    params.sender.length = u16len(pack->subject, ARRAY_SIZE(pack->subject));
+
+    params.sender.buffer = pack->message;
+    params.sender.length = u16len(pack->message, ARRAY_SIZE(pack->message));
+
     broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
 }
 

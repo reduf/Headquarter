@@ -165,11 +165,10 @@ void HandleChatMessageGlobal(Connection *conn, size_t psize, Packet *packet)
         sender_with_tag[length++] = pack->tag[i];
     }
     sender_with_tag[length++] = ']';
-    sender_with_tag[length] = 0;
+    sender_with_tag[length++] = 0;
 
     params.sender.buffer = sender_with_tag;
     params.sender.length = length;
-    for (params.sender.length = 0; params.sender.length < ARRAY_SIZE(pack->sender) && pack->sender[params.sender.length] != 0; params.sender.length++) {}
     params.message.length = sb->size;
     params.message.buffer = sb->data;
     broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
@@ -280,9 +279,10 @@ void HandleWhisperReceived(Connection *conn, size_t psize, Packet *packet)
     params.extra_id = 0;
     params.channel = Channel_Whisper;
     params.sender.buffer = pack->sender;
-    for (params.sender.length = 0; params.sender.length < ARRAY_SIZE(pack->sender) && pack->sender[params.sender.length] != 0; params.sender.length++) {}
+    params.sender.length = u16len(pack->sender, ARRAY_SIZE(pack->sender));
     params.message.buffer = pack->message;
-    for (params.message.length = 0; params.message.length < ARRAY_SIZE(pack->message) && pack->message[params.message.length] != 0; params.message.length++) {}
+    params.message.length = u16len(pack->message, ARRAY_SIZE(pack->message));
+
     broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
 }
 

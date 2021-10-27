@@ -3,6 +3,14 @@
 #endif
 #define CORE_KSTR_C
 
+size_t u16len(const uint16_t* src, size_t size) {
+    size_t length;
+    for (length = 0; length < size; length++) {
+        if (!src[length])
+            break;
+    }
+    return length;
+}
 void kstr_init(struct kstr *str, uint16_t *buffer, size_t length, size_t capacity)
 {
     str->length = length;
@@ -14,7 +22,7 @@ bool kstr_copy(struct kstr *dest, const struct kstr *src)
 {
     if (dest->capacity < src->length)
         return false;
-    memcpy(dest->buffer, src->buffer, src->length * 2);
+    memcpy(dest->buffer, src->buffer, src->length * sizeof(uint16_t));
     dest->length = src->length;
     return true;
 }
@@ -29,12 +37,7 @@ int kstr_compare(struct kstr *s1, struct kstr *s2)
 
 bool kstr_read(struct kstr *str, const uint16_t *src, size_t size)
 {
-    size_t length;
-    for (length = 0; length < size; length++) {
-        if (!src[length])
-            break;
-    }
-
+    size_t length = u16len(src, size);
     const struct kstr source = {
         .length = length,
         .capacity = length,
@@ -48,8 +51,8 @@ bool kstr_write(struct kstr *str, uint16_t *buffer, size_t size)
 {
     if (str->length >= size)
         return false;
-    memcpy(buffer, str->buffer, str->length * 2);
-    buffer[str->length] = 0;
+    memcpy(buffer, str->buffer, str->length * sizeof(uint16_t));
+    buffer[str->length++] = 0;
     return true;
 }
 

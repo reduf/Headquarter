@@ -10,6 +10,8 @@ struct kstr {
     uint16_t name ## _buffer[size]; \
     struct kstr name = {0, size, name ## _buffer};
 
+size_t u16len(const uint16_t* src, size_t size);
+
 void kstr_init(struct kstr *str, uint16_t *buffer, size_t length, size_t capacity);
 
 bool kstr_copy(struct kstr *dest, const struct kstr *src);

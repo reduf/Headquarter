@@ -636,9 +636,9 @@ void HandlePartySearchAdvertisement(Connection *conn, size_t psize, Packet *pack
     params.hero_count = pack->hero_count;
     params.search_type = pack->search_type;
     params.sender.buffer = pack->player_name;
-    for (params.sender.length = 0; params.sender.length < ARRAY_SIZE(pack->player_name) && pack->player_name[params.sender.length] != 0; params.sender.length++) {}
+    params.sender.length = u16len(pack->player_name, ARRAY_SIZE(pack->player_name));
     params.message.buffer = pack->message;
-    for (params.message.length = 0; params.message.length < ARRAY_SIZE(pack->message) && pack->message[params.message.length] != 0; params.message.length++) {}
+    params.sender.length = u16len(pack->message, ARRAY_SIZE(pack->message));
     broadcast_event(&client->event_mgr, EventType_PartySearchAdvertisement, &params);
 }
 
