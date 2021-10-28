@@ -20,6 +20,6 @@
 #define ALIGN32(v)  ((v + 3) & ~3)
 
 #define MAX(a, b) (((b) < (a)) ? (a) : (b))
-#define MIN(a, b) (((b) > (a)) ? (b) : (a))
+#define MIN(a, b) (((b) > (a)) ? (a) : (b))
 
 #endif // COMMON_MACRO_H
