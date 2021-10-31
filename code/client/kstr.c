@@ -37,7 +37,7 @@ int kstr_compare(struct kstr *s1, struct kstr *s2)
 
 bool kstr_read(struct kstr *str, const uint16_t *src, size_t size)
 {
-    size_t length = u16len(src, size);
+    size_t length = u16len(src, size) + 1;
     const struct kstr source = {
         .length = length,
         .capacity = length,
