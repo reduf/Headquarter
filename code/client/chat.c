@@ -311,18 +311,42 @@ void GameSrv_SendChat(GwClient *client, Channel channel, struct kstr *msg)
 
 void GameSrv_SendWhisper(GwClient *client, struct kstr *target, struct kstr *msg)
 {
-    uint16_t buffer[137];
-    assert(target->length + msg->length < ARRAY_SIZE(buffer));
+#pragma pack(push, 1)
+    typedef struct {
+        Header header;
+        AgentId agent_id;
+        uint16_t buffer[138];
+    } ChatMessage;
+#pragma pack(pop)
+
+    ChatMessage packet = NewPacket(GAME_CMSG_SEND_CHAT_MESSAGE);
+    packet.agent_id = 0;
+    /*
+     * The format of packet.buffer is:
+     * "target,message
+     *
+     * So, the final message length is 2 (for " & ,) + target->length + msg->length
+     */
+
+    size_t final_length = 2 + target->length + msg->length;
+    if (final_length >= ARRAY_SIZE(packet.buffer))
+    {
+        LogError("Maximum size in packet is %zu, but we need %zu", ARRAY_SIZE(packet.buffer), final_length + 1);
+        return;
+    }
+
+    uint16_t *buffer = packet.buffer;
     size_t wpos = 0;
-    size_t max_length = ARRAY_SIZE(buffer) - 1;
-    for (size_t i = 0; i < target->length && wpos < max_length; i++)
+
+    buffer[wpos++] = '"';
+    for (size_t i = 0; i < target->length; i++)
         buffer[wpos++] = target->buffer[i];
+
     buffer[wpos++] = ',';
-    for (size_t i = 0; i < msg->length && wpos < max_length; i++)
+    for (size_t i = 0; i < msg->length; i++)
         buffer[wpos++] = msg->buffer[i];
-    buffer[wpos] = 0;
-    DECLARE_KSTR(kmsg, ARRAY_SIZE(buffer));
-    kstr_read(&kmsg, buffer, wpos);
-    LogInfo("Sendchat %ls", buffer);
-    GameSrv_SendChat(client, Channel_Whisper, &kmsg);
+
+    buffer[wpos++] = 0;
+    assert(wpos <= ARRAY_SIZE(packet.buffer));
+    SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
