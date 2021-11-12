@@ -1,42 +1,13 @@
 # User specific configuration
 usr/
-Configuration.ini
 
 # Build directories
-.vs/
-Debug/
-Release/
-tests/
-bin/
-
 archive/
 logs/
+build/
 
 *.exe
 *.user
-*.vars
-
-# Bloated Windows Databases
-*.db
-*.exp
-*.idb
-*.ilk
-*.lastbuildstate
-*.log
-*.opendb
-*.opensdf
-*.pdb
-*.sdf
-*.suo
-
-# Compiled files
-*.dll
-*.exe
-*.lib
-*.lo
-*.o
-*.obj
-*.slo
 
 # Python
 __pycache__/
