@@ -60,7 +60,7 @@
 #include <common/endian.h>
 #include <common/rbtree.h>
 
-#include "headquarter.h"
+#include <client/Headquarter.h>
 
 #include "arc4.h"
 #include "command.h"

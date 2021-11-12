@@ -35,19 +35,19 @@ typedef struct Vec3f {
     float x, y, z;
 } Vec3f;
 
-#include "constants.h"
-#include "object/bag.h"
-#include "object/item.h"
-#include "object/agent.h"
-#include "object/party.h"
-#include "object/quest.h"
-#include "object/skill.h"
-#include "object/trade.h"
-#include "object/title.h"
-#include "object/friend.h"
-#include "object/player.h"
-#include "object/plugin.h"
-#include "object/guild.h"
+#include <client/constants.h>
+#include <client/object/bag.h>
+#include <client/object/item.h>
+#include <client/object/agent.h>
+#include <client/object/party.h>
+#include <client/object/quest.h>
+#include <client/object/skill.h>
+#include <client/object/trade.h>
+#include <client/object/title.h>
+#include <client/object/friend.h>
+#include <client/object/player.h>
+#include <client/object/plugin.h>
+#include <client/object/guild.h>
 
 #include "event.h"
 #ifdef HEADQUARTER_RUNTIME_LINKING

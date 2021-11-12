@@ -69,7 +69,7 @@ set(
 )
 
 set_source_files_properties(
-  ${COMMON_SOURCES}
+  ${CLIENT_SOURCES}
   PROPERTIES HEADER_FILE_ONLY TRUE
 )
 
@@ -77,10 +77,11 @@ add_executable(
   client
 
   build_client.c
-  ${COMMON_SOURCES}
+  ${CLIENT_SOURCES}
 )
 
 target_link_libraries(client PRIVATE common mbedcrypto)
+target_compile_definitions(client PRIVATE HEADQUARTER_BUILD_EXPORTS)
 
 target_include_directories(
   client
