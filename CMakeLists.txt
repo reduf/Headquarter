@@ -6,5 +6,7 @@ project(
   LANGUAGES C
 )
 
+option(ENABLE_TESTING "Build tests" OFF)
+
 add_subdirectory(code)
 add_subdirectory(deps)
