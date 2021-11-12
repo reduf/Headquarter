@@ -76,7 +76,7 @@ set_source_files_properties(
 add_executable(
   client
 
-  build.c
+  build_client.c
   ${COMMON_SOURCES}
 )
 

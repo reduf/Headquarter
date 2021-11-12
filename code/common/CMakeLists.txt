@@ -5,7 +5,6 @@ set(
   array.c
   array.h
   assert.h
-  common.c
   dlfunc.h
   endian.h
   hash.h
@@ -39,7 +38,7 @@ set_source_files_properties(
 add_library(
   common
 
-  common.c
+  build_common.c
   ${COMMON_SOURCES}
 )
 
