@@ -367,7 +367,7 @@ static bool key_exchange_helper(Connection *conn, DiffieHellmanCtx *dhm)
     mbedtls_mpi_exp_mod(&public_key, &dhm->primitive_root, &private_key, &dhm->prime_modulus, NULL);
     mbedtls_mpi_exp_mod(&shared_secret, &dhm->server_public,  &private_key, &dhm->prime_modulus, NULL);
 
-    if ((shared_secret.n == 0) || (public_key.n == 0)) {
+    if ((shared_secret.private_n == 0) || (public_key.private_n == 0)) {
         LogError("Diffie-Hellman computation failed.");
         success = false;
         goto quick_exist;
@@ -375,7 +375,7 @@ static bool key_exchange_helper(Connection *conn, DiffieHellmanCtx *dhm)
 
     client_seed.source = 0;
     client_seed.length = 66;
-    memcpy(client_seed.seed, public_key.p, 64);
+    memcpy(client_seed.seed, public_key.private_p, 64);
 
     result = send(conn->fd.handle, cast(char *)&client_seed, sizeof(client_seed), 0);
     if (result != sizeof(client_seed)) {
@@ -393,7 +393,7 @@ static bool key_exchange_helper(Connection *conn, DiffieHellmanCtx *dhm)
     }
 
     uint8_t arc4_key[20];
-    uint8_t *shared_bytes = cast(uint8_t *)shared_secret.p;
+    uint8_t *shared_bytes = cast(uint8_t *)shared_secret.private_p;
     for (int i = 0; i < 20; i++)
         server_seed.seed[i] ^= shared_bytes[i];
     arc4_hash(server_seed.seed, arc4_key);

@@ -38,7 +38,6 @@
 # include <fcntl.h>
 #endif
 
-#include <mbedtls/arc4.h>
 #include <mbedtls/sha1.h>
 #include <mbedtls/bignum.h>
 #include <mbedtls/entropy.h>
@@ -62,6 +61,8 @@
 #include <common/rbtree.h>
 
 #include "headquarter.h"
+
+#include "arc4.h"
 #include "command.h"
 #include "error.h"
 #include "kstr.h"
@@ -133,6 +134,7 @@ typedef struct GwClient GwClient;
 #include "packets.c"
 #include "network.c"
 
+#include "arc4.c"
 #include "kstr.c"
 #include "vars.c"
 #include "error.c"
