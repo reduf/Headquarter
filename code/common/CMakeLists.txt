@@ -22,13 +22,25 @@ set(
   timer.c
   timer.h
   uuid.h
-
-  win32/dlfunc.c
-  win32/process.c
-  win32/thread.c
-  win32/time.c
-  win32/win32.h
 )
+
+if (WIN32)
+  list(
+    APPEND COMMON_SOURCES
+    win32/dlfunc.c
+    win32/process.c
+    win32/thread.c
+    win32/time.c
+    win32/win32.h
+  )
+else()
+  list(
+    APPEND COMMON_SOURCES
+    linux/dlfunc.c
+    linux/thread.c
+    linux/time.c
+  )
+endif()
 
 set_source_files_properties(
   ${COMMON_SOURCES}
