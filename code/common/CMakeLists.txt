@@ -54,6 +54,7 @@ add_library(
   ${COMMON_SOURCES}
 )
 
+target_link_libraries(common PRIVATE pthread m dl)
 target_include_directories(
   common
 

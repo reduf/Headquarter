@@ -6,8 +6,8 @@
 void *dllopen(const char *filename);
 int dllclose(void* handle);
 
-int dlllocation(void* handle, char* buffer, int length);
-int dlldir(void* handle, char* buffer, int length);
+int dlllocation(char* buffer, int length);
+int dlldir(char* buffer, int length);
 
 void *dllsym(void* handle, const char *symbol);
 

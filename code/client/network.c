@@ -169,7 +169,7 @@ void Network_Init(void)
     int length = 0;
     bool file_read_ok = false;
     char dir_path[1024];
-    length = dlldir(NULL, dir_path, sizeof(dir_path));
+    length = dlldir(dir_path, sizeof(dir_path));
     for (int i = 0; i < 4 && !file_read_ok; i++) {
         snprintf(file_path, sizeof(file_path), "%s/data/gw_%d.pub", dir_path, GUILD_WARS_VERSION);
         dir_path[length++] = '/';
@@ -182,7 +182,7 @@ void Network_Init(void)
     LogInfo("gw key found @ %s", file_path);
 
     file_read_ok = false;
-    length = dlldir(NULL, dir_path, sizeof(dir_path));
+    length = dlldir(dir_path, sizeof(dir_path));
     dir_path[length] = 0;
     for (int i = 0; i < 4 && !file_read_ok; i++) {
         snprintf(file_path, sizeof(file_path), "%s/data/authkey.pub",dir_path);
