@@ -65,7 +65,6 @@ HQAPI void FreePluginAndExitThread(PluginObject *plugin, int retval)
     thread_mutex_unlock(&client->mutex);
     thread_exit(retval);
 }
-
 HQAPI size_t GetItemModStruct(uint32_t item_id, uint32_t* buffer, size_t length) {
     assert(client != NULL);
     if (!length && buffer)
@@ -89,7 +88,6 @@ leave:
     thread_mutex_unlock(&client->mutex);
     return written;
 }
-
 HQAPI size_t GetItemName(uint32_t item_id, uint16_t* buffer, size_t length) {
     assert(client != NULL);
     if (!length && buffer)
@@ -858,7 +856,7 @@ HQAPI bool RequestItemQuote(uint32_t item_id)
     }
     if (!item)
         goto leave;
-    TransactionType type = TRANSACT_TYPE_TraderSell;
+    TransactionType type = TransactionType_TraderSell;
     QuoteInfo give;
     give.item_count = 0;
     give.unk1 = 0;
@@ -867,13 +865,13 @@ HQAPI bool RequestItemQuote(uint32_t item_id)
     recv.unk1 = 0;
     if (!item->bag) {
         // Buy quote
-        type = TRANSACT_TYPE_TraderBuy;
+        type = TransactionType_TraderBuy;
         recv.item_count = 1;
         recv.item_ids[0] = item_id;
     }
     else {
         // Sell quote
-        type = TRANSACT_TYPE_TraderSell;
+        type = TransactionType_TraderSell;
         give.item_count = 1;
         give.item_ids[0] = item_id;
     }
@@ -1747,7 +1745,6 @@ leave:
     thread_mutex_unlock(&client->mutex);
     return player_id;
 }
-
 HQAPI int GetTradeGold(void)
 {
     assert(client != NULL);
@@ -1887,7 +1884,7 @@ HQAPI bool ItemSalvage(ApiItem* apiItem, ApiItem *apiKit) {
     if (!item)
         goto leave;
 
-    if (item->bag == BagEnum_EquipmentPack)
+    if (!item->bag || item->bag->bag_id == BagEnum_EquipmentPack)
         goto leave;
 #if 0
     if (!(item->value)) // in toolbox no value is considered most likely not salvageable, we're probably missing something here though as this doesn't work as intended
@@ -1923,7 +1920,6 @@ HQAPI void SalvageMaterials() {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     GameSrv_SalvageMaterials(client);
-leave:
     thread_mutex_unlock(&client->mutex);
 }
 

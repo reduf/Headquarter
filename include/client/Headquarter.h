@@ -50,10 +50,22 @@ typedef struct Vec3f {
 #include <client/object/guild.h>
 
 #include "event.h"
+
+typedef struct PluginObject PluginObject;
+typedef bool (*PluginEntry_pt)(PluginObject *);
+typedef void (*PluginUnload_pt)(PluginObject *);
+
+struct PluginObject {
+    void           *module;
+
+    PluginEntry_pt  PluginInit;
+    PluginUnload_pt PluginUnload;
+};
+
 #ifdef HEADQUARTER_RUNTIME_LINKING
 
 typedef void(__cdecl* Log_pt)(const char* fmt, ...);
-static Log_pt LogError, LogDebug, LogFatal, LogInfo, LogWarn;
+static Log_pt LogError, LogDebug, LogCritical, LogInfo, LogWarn;
 
 typedef void(__cdecl* FreePluginAndExitThread_pt)(PluginObject* plugin, int retval);
 static FreePluginAndExitThread_pt FreePluginAndExitThread;
@@ -160,7 +172,7 @@ static bool hq_init() {
 
     assert(LogError = (Log_pt)dllsym(hnd, "LogError"));
     assert(LogDebug = (Log_pt)dllsym(hnd, "LogDebug"));
-    assert(LogFatal = (Log_pt)dllsym(hnd, "LogFatal"));
+    assert(LogCritical = (Log_pt)dllsym(hnd, "LogCritical"));
     assert(LogInfo = (Log_pt)dllsym(hnd, "LogInfo"));
     assert(LogWarn = (Log_pt)dllsym(hnd, "LogWarn"));
 
@@ -325,7 +337,6 @@ HQAPI int               GetGoldCharacter(void);
 
 HQAPI const SkillInfo  *GetSkillInfo(uint32_t skill_id);
 HQAPI void              GetSkillbar(uint32_t *skills, AgentId agent_id);
-HQAPI int               GetSkillbarPos(uint32_t skill_id, AgentId agent_id);
 HQAPI bool              GetSkillCasting(size_t pos, AgentId *target_id);
 HQAPI msec_t            GetSkillRecharge(int pos);
 HQAPI void              UseSkill(uint32_t skill_id, AgentId target_id);
@@ -369,11 +380,5 @@ HQAPI void              TradeRemoveItem(uint32_t item_id, uint32_t quantity);
 HQAPI void              TradeSendOffer(int gold);
 HQAPI void              TradeAccept(void);
 HQAPI void              TradeCancel(void);
-
-HQAPI bool ItemSalvage(ApiItem* apiItem, ApiItem *apiKit);
-HQAPI void SalvageMaterials();
-HQAPI bool ItemIdentify(ApiItem* apiItem, ApiItem *apiKit);
-HQAPI void MerchantBuyItem(uint32_t model_id, uint32_t gold_value);
-HQAPI void MerchantSellItem(ApiItem* apiItem);
-
+#endif
 #endif // HEADQUARTER_H

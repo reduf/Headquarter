@@ -41,6 +41,8 @@
 #define AUTH_SMSG_FRIEND_UPDATE_LOCATION            (0x0020) // 32
 #define AUTH_SMSG_SERVER_RESPONSE                   (0x0026) // 38
 
+#pragma once
+
 #define GAME_CMSG_TRADE_ACKNOWLEDGE                 (0x0000) // 0
 #define GAME_CMSG_TRADE_CANCEL                      (0x0001) // 1
 #define GAME_CMSG_TRADE_ADD_ITEM                    (0x0002) // 2
@@ -198,7 +200,7 @@
 #define GAME_SMSG_POST_PROCESS                      (0x006A) // 106
 #define GAME_SMSG_DUNGEON_REWARD                    (0x006B) // 107
 #define GAME_SMSG_NPC_UPDATE_WEAPONS                (0x006C) // 108
-#define GAME_SMSG_MERCENARY_INFO                    (0x0073) // 115
+#define GAME_SMSG_MERCENARY_INFO					(0x0073) // 115
 #define GAME_SMSG_DIALOG_BUTTON                     (0x007D) // 125
 #define GAME_SMSG_DIALOG_BODY                       (0x007F) // 127
 #define GAME_SMSG_DIALOG_SENDER                     (0x0080) // 128
@@ -206,9 +208,9 @@
 #define GAME_SMSG_WINDOW_ADD_ITEMS                  (0x0083) // 131
 #define GAME_SMSG_WINDOW_ITEMS_END                  (0x0084) // 132
 #define GAME_SMSG_WINDOW_ITEM_STREAM_END            (0x0085) // 133
-#define GAME_SMSG_CARTOGRAPHY_DATA                    (0x0089) // 137
+#define GAME_SMSG_CARTOGRAPHY_DATA					(0x0089) // 137
 #define GAME_SMSG_COMPASS_DRAWING                   (0x0090) // 144
-#define GAME_SMSG_MAPS_UNLOCKED                        (0x0093) // 147
+#define GAME_SMSG_MAPS_UNLOCKED						(0x0093) // 147
 #define GAME_SMSG_AGENT_UPDATE_SCALE                (0x0099) // 153
 #define GAME_SMSG_AGENT_UPDATE_NPC_NAME             (0x009A) // 154
 #define GAME_SMSG_AGENT_DISPLAY_DIALOG              (0x009D) // 157
@@ -269,9 +271,9 @@
 #define GAME_SMSG_CINEMATIC_DATA_END                (0x0102) // 258
 #define GAME_SMSG_CINEMATIC_DATA                    (0x0103) // 259
 #define GAME_SMSG_CINEMATIC_END                     (0x0104) // 260
-#define GAME_SMSG_SIGNPOST_BUTTON                    (0x0109) // 265
-#define GAME_SMSG_SIGNPOST_BODY                        (0x010A) // 266
-#define GAME_SMSG_SIGNPOST_SENDER                    (0x010B) // 267
+#define GAME_SMSG_SIGNPOST_BUTTON					(0x0109) // 265
+#define GAME_SMSG_SIGNPOST_BODY						(0x010A) // 266
+#define GAME_SMSG_SIGNPOST_SENDER					(0x010B) // 267
 #define GAME_SMSG_MANIPULATE_MAP_OBJECT             (0x010D) // 269
 #define GAME_SMSG_MANIPULATE_MAP_OBJECT2            (0x0110) // 272
 #define GAME_SMSG_GUILD_PLAYER_ROLE                 (0x0117) // 279

@@ -487,7 +487,7 @@ void HandleAgentUpdateAttribute(Connection *conn, size_t psize, Packet *packet)
         Header header;
         AgentId agent_id;
         uint32_t n_data;
-        uint32_t data[48];
+        int32_t data[48];
     } UpdateAttribute;
 #pragma pack(pop)
 
@@ -568,7 +568,7 @@ static SkillTemplate* template_decode(const char* temp) {
 
     size_t len = strlen(temp);
 
-    const int bufSize = 1024;
+    const size_t bufSize = 1024;
     assert((len * 6) < bufSize);
 
     char bitStr[1024];

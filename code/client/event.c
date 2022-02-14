@@ -32,6 +32,10 @@ void events_rem_entry(EventManager *mgr, CallbackEntry *entry)
     entry->registered = false;
 }
 
+bool is_event_subscribed(EventManager* mgr, EventType e) {
+    return 0 <= e && e < N_EVENT && !list_empty(&mgr->callbacks[e]);
+}
+
 void broadcast_event(EventManager *mgr, EventType e, void *args)
 {
     assert(0 <= e && e < N_EVENT);

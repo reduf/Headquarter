@@ -11,3 +11,4 @@ void init_event_manager(EventManager *mgr);
 void events_add_entry(EventManager *mgr, EventType e, CallbackEntry *entry);
 void events_rem_entry(EventManager *mgr, CallbackEntry *entry);
 void broadcast_event(EventManager *mgr, EventType e, void *args);
+bool is_event_subscribed(EventManager* mgr, EventType e);

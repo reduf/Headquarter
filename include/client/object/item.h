@@ -46,11 +46,10 @@ typedef struct ApiItemModifier {
 typedef array(ApiItemModifier) ArrayApiItemModifier;
 
 typedef struct ApiItem {
-    uint32_t    item_id;
-    uint32_t    model_id;
-    uint32_t    quantity;
-    uint32_t    value;
-    ItemType    type;
+    uint32_t             item_id;
+    uint32_t             model_id;
+    uint32_t             quantity;
+    ItemType             type;
     ArrayApiItemModifier mods;
 } ApiItem;
 typedef array(ApiItem) ArrayApiItem;

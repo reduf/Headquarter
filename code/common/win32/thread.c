@@ -10,7 +10,7 @@
 static DWORD WINAPI ThreadProc(LPVOID lpParam)
 {
     assert(lpParam != NULL);
-    struct thread *thread = lpParam;
+    struct thread *thread = (struct thread* )lpParam;
     int retval = thread->start(thread->param);
     return (DWORD)retval;
 }

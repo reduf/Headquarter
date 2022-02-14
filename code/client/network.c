@@ -621,7 +621,7 @@ void SendPacket(Connection *conn, size_t size, void *p)
 
     // @Robustness: This is undefined behaviors ! (Well not int practice)
     Packet *packet = cast(Packet *)p;
-    Header header = packet->header & 0x7FFF;
+    Header header = packet->header;
 
     assert(array_inside(conn->client_msg_format, header));
 

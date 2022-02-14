@@ -53,11 +53,11 @@ typedef struct thread_mutex {
         unsigned char storage[_mtx_internal_imp_size];
 } thread_mutex_t;
 
-int thread_mutex_init(thread_mutex_t* mutex);
-int thread_mutex_destroy(thread_mutex_t* mutex);
-int thread_mutex_lock(thread_mutex_t* mutex);
-int thread_mutex_trylock(thread_mutex_t* mutex);
-int thread_mutex_unlock(thread_mutex_t* mutex);
+int thread_mutex_init(thread_mutex_t *mutex);
+int thread_mutex_destroy(thread_mutex_t *mutex);
+int thread_mutex_lock(thread_mutex_t *mutex);
+int thread_mutex_trylock(thread_mutex_t *mutex);
+int thread_mutex_unlock(thread_mutex_t *mutex);
 
 typedef struct thread_event {
     void* handle;

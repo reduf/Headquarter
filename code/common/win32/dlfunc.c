@@ -11,7 +11,7 @@ void *dllopen(const char *filename)
     HMODULE res = LoadLibraryA(filename);
     if (res)
         return res;
-    printf("LoadLibraryA Error: %d", GetLastError());
+    printf("LoadLibraryA Error: %d\n", GetLastError());
     return res;
 }
 
@@ -39,6 +39,6 @@ void *dllsym(void* handle, const char *symbol)
     void* proc_address = GetProcAddress((HMODULE)handle, symbol);
     if (proc_address)
         return proc_address;
-    printf("GetProcAddress Error: %d", GetLastError());
+    printf("GetProcAddress Error: %d findng symbol %s\n", GetLastError(), symbol);
     return proc_address;
 }

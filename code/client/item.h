@@ -32,7 +32,6 @@ typedef struct Item {
     ArrayItemModifier mods;
 } Item;
 
-
 static void api_make_item(ApiItem *dest, Item *src)
 {
     dest->item_id   = src->item_id;

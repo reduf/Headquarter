@@ -44,7 +44,13 @@ log_print_level_s(unsigned int level)
 void log_init(void)
 {
     int error;
+
+#ifdef _NDEBUG
     log_print_level = LOG_INFO;
+#else
+    log_print_level = LOG_DEBUG;
+#endif
+
 
     error = thread_mutex_init(&log_mutex);
     if (error) {
@@ -76,6 +82,7 @@ void log_init(void)
     }
     assert(log_file);
     printf("Logging to %s\n",file_path);
+
 }
 
 void log_set_level(unsigned int level)
