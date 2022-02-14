@@ -65,6 +65,7 @@ HQAPI void FreePluginAndExitThread(PluginObject *plugin, int retval)
     thread_mutex_unlock(&client->mutex);
     thread_exit(retval);
 }
+
 HQAPI size_t GetItemModStruct(uint32_t item_id, uint32_t* buffer, size_t length) {
     assert(client != NULL);
     if (!length && buffer)
@@ -88,6 +89,7 @@ leave:
     thread_mutex_unlock(&client->mutex);
     return written;
 }
+
 HQAPI size_t GetItemName(uint32_t item_id, uint16_t* buffer, size_t length) {
     assert(client != NULL);
     if (!length && buffer)
@@ -1745,6 +1747,7 @@ leave:
     thread_mutex_unlock(&client->mutex);
     return player_id;
 }
+
 HQAPI int GetTradeGold(void)
 {
     assert(client != NULL);
