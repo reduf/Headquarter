@@ -72,7 +72,7 @@ bool portal_init(void)
     int length = 0;
     bool file_read_ok = false;
     char dir_path[1024];
-    length = dlldir(NULL, dir_path, sizeof(dir_path));
+    length = dlldir(dir_path, sizeof(dir_path));
     for (int i = 0; i < 4 && !file_read_ok; i++) {
         snprintf(file_path, sizeof(file_path), "%s/data/GwLoginClient.dll", dir_path);
         dir_path[length++] = '/';
