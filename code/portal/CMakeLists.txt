@@ -1,5 +1,8 @@
 set(
   PORTAL_SOURCES
+
+  sts.h
+  sts.c
 )
 
 set_source_files_properties(
@@ -13,3 +16,12 @@ add_library(
   build_portal.c
   ${PORTAL_SOURCES}
 )
+
+target_link_libraries(portal PRIVATE common)
+target_include_directories(
+  portal
+
+  PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/..
+)
+
