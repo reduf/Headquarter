@@ -128,7 +128,7 @@ _array_remove(array_void_t *a, size_t index, const size_t elem_size)
 }
 
 int
-_array_insert(array_void_t *a, size_t count, void *ptr, const size_t elem_size)
+_array_insert(array_void_t *a, size_t count, const void *ptr, const size_t elem_size)
 {
     assert(a && elem_size > 0);
     if (!count) return 1;

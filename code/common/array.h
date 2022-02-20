@@ -114,7 +114,7 @@ int _array_resize(array_void_t *a, size_t new_capacity, const size_t elem_size);
 int _array_grow_to(array_void_t *a, size_t min, const size_t elem_size);
 int _array_reserve(array_void_t *a, size_t count, const size_t elem_size);
 void _array_remove(array_void_t *a, size_t index, const size_t elem_size);
-int _array_insert(array_void_t *a, size_t count, void *ptr, const size_t elem_size);
+int _array_insert(array_void_t *a, size_t count, const void *ptr, const size_t elem_size);
 int _array_copy(array_void_t *dest, array_void_t *src, const size_t elem_size);
 void * _array_push(array_void_t *a, size_t n, const size_t elem_size);
 void _array_remove_ordered(array_void_t *a, size_t i, const size_t elem_size);
