@@ -16,4 +16,7 @@ struct ssl_tls12_context {
     size_t   srp_username_len;
 };
 
+void ssl_tls2_init(struct ssl_tls12_context *ctx);
+void ssl_tls2_free(struct ssl_tls12_context *ctx);
+
 int ssl_tls12_write_client_hello(struct ssl_tls12_context *ctx);

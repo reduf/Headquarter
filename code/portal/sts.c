@@ -135,6 +135,17 @@ static int ssl_tls12_write_client_hello_body(
     return 0;
 }
 
+void ssl_tls2_init(struct ssl_tls12_context *ctx)
+{
+    array_init(ctx->buffer, 1);
+    ctx->srp_username_len = 0;
+}
+
+void ssl_tls2_free(struct ssl_tls12_context *ctx)
+{
+    array_reset(ctx->buffer);
+}
+
 int ssl_tls12_write_client_hello(struct ssl_tls12_context *ctx)
 {
     array_reserve(ctx->buffer, 1024);
