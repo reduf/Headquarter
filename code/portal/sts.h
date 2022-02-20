@@ -23,4 +23,9 @@ int ssl_tls12_write_client_hello(struct ssl_tls12_context *ctx);
 
 void sts_write_request(array_uint8_t *request,
     const char *url, size_t url_len,
-    const uint8_t *body, size_t body_len);
+    const uint8_t *content, size_t content_len);
+
+void sts_write_sequenced_request(
+    array_uint8_t *request, size_t seq_number, uint32_t timeout_ms,
+    const char *url, size_t url_len, const uint8_t *content, size_t content_len);
+

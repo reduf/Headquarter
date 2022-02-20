@@ -167,9 +167,8 @@ int ssl_tls12_write_client_hello(struct ssl_tls12_context *ctx)
     return 0;
 }
 
-void sts_write_request(array_uint8_t *request,
-    const char *url, size_t url_len,
-    const uint8_t *content, size_t content_len)
+static sts_write_header(array_uint8_t *request,
+    const char *url, size_t url_len, size_t content_len)
 {
     const char version[] = " STS/1.0\r\n";
 
@@ -181,12 +180,44 @@ void sts_write_request(array_uint8_t *request,
 
     // The content length is written as `l:%d`, we force use a `uint32_t`
     // ensuring that a buffer of 32 bytes is always enough.
-    char content_length[32];
-    int ret = snprintf(content_length, sizeof(content_length), "l:%" PRIu32, (uint32_t)content_len);
-    assert(0 <= ret);
-    array_insert(*request, (size_t)ret, content_length);
+    char content_length_buffer[32];
+    int ret = snprintf(content_length_buffer, sizeof(content_length_buffer),
+                       "l:%" PRIu32, (uint32_t)content_len);
+    if (ret < 0)
+        abort();
+    array_insert(*request, (size_t)ret, content_length_buffer);
+}
 
+static sts_finish_request(array_uint8_t *request, const uint8_t *content, size_t content_len)
+{
     // We are done writing the header, so we append "\r\n\r\n" like in http.
     array_insert(*request, 4, "\r\n\r\n");
     array_insert(*request, content_len, content);
+}
+
+void sts_write_request(array_uint8_t *request,
+    const char *url, size_t url_len,
+    const uint8_t *content, size_t content_len)
+{
+    sts_write_header(request, url, url_len, content_len);
+    sts_finish_request(request, content, content_len);
+}
+
+void sts_write_sequenced_request(
+    array_uint8_t *request, size_t seq_number, uint32_t timeout_ms,
+    const char *url, size_t url_len, const uint8_t *content, size_t content_len)
+{
+    sts_write_header(request, url, url_len, content_len);
+    array_insert(*request, 2, "\r\n");
+
+    char seq_number_buffer[64];
+    int ret = snprintf(
+        seq_number_buffer, sizeof(seq_number_buffer),
+        "s:%" PRIu32 ";timeout=%" PRIu32,
+        (uint32_t)seq_number, timeout_ms);
+    if (ret < 0)
+        abort();
+
+    array_insert(*request, (size_t)ret, seq_number_buffer);
+    sts_finish_request(request, content, content_len);
 }

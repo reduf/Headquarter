@@ -69,3 +69,20 @@ UTEST(sts, sts_write_request)
     ASSERT_EQ(request.size, ARRAY_SIZE(expected) - 1);
     ASSERT_TRUE(!memcmp(request.data, expected, request.size));
 }
+
+UTEST(sts, sts_write_sequenced_request)
+{
+    array_uint8_t request;
+    array_init(request, 1024);
+
+    const char url[] = "/Sts/Connect";
+    const char expected[] = \
+        "\x50\x20\x2F\x53\x74\x73\x2F\x43\x6F\x6E\x6E\x65\x63\x74\x20\x53"
+        "\x54\x53\x2F\x31\x2E\x30\x0D\x0A\x6C\x3A\x30\x0D\x0A\x73\x3A\x31"
+        "\x3B\x74\x69\x6D\x65\x6F\x75\x74\x3D\x34\x30\x30\x30\x0D\x0A\x0D"
+        "\x0A";
+
+    sts_write_sequenced_request(&request, 1, 4000, url, ARRAY_SIZE(url) - 1, "", 0);
+    ASSERT_EQ(request.size, ARRAY_SIZE(expected) - 1);
+    ASSERT_TRUE(!memcmp(request.data, expected, request.size));
+}
