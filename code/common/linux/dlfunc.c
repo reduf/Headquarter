@@ -17,7 +17,8 @@ int dllclose(void *handle)
 
 int dlllocation(char* buffer, int length)
 {
-    int bytes = MIN(readlink("/proc/self/exe", buffer, length), length - 1);
+    int ret = readlink("/proc/self/exe", buffer, length);
+    int bytes = MIN(ret, length - 1);
     if (bytes >= 0)
         buffer[bytes] = '\0';
     return bytes;
