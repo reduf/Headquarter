@@ -7,8 +7,24 @@
 #include <common/array.h>
 #include <common/macro.h>
 #include <portal/sts.h>
+#include <portal/login.h>
 
-UTEST_MAIN();
+UTEST_STATE();
+int main(int argc, char **argv)
+{
+    int ret;
+
+    WSADATA wsa_data;
+    if ((ret = WSAStartup(MAKEWORD(2, 2), &wsa_data)) != 0) {
+        fprintf(stderr, "'WSAStartup' failed: %d\n", WSAGetLastError());
+        return 1;
+    }
+
+    ret = utest_main(argc, argv);
+
+    WSACleanup();
+    return ret;
+}
 
 UTEST(sts, ssl_tls12_write_client_hello)
 {
@@ -85,4 +101,9 @@ UTEST(sts, sts_write_sequenced_request)
     sts_write_sequenced_request(&request, 1, 4000, url, ARRAY_SIZE(url) - 1, "", 0);
     ASSERT_EQ(request.size, ARRAY_SIZE(expected) - 1);
     ASSERT_TRUE(!memcmp(request.data, expected, request.size));
+}
+
+UTEST(sts, portal_login)
+{
+    portal_login("toto", "otot");
 }

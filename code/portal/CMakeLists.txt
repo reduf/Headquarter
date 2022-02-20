@@ -1,8 +1,10 @@
 set(
   PORTAL_SOURCES
 
-  sts.h
+  login.c
+  login.h
   sts.c
+  sts.h
 )
 
 set_source_files_properties(
