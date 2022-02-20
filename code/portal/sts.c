@@ -166,3 +166,27 @@ int ssl_tls12_write_client_hello(struct ssl_tls12_context *ctx)
 
     return 0;
 }
+
+void sts_write_request(array_uint8_t *request,
+    const char *url, size_t url_len,
+    const uint8_t *content, size_t content_len)
+{
+    const char version[] = " STS/1.0\r\n";
+
+    // Every requests start with 'P ' (\x50\x20).
+    array_insert(*request, 2, "P ");
+    array_insert(*request, url_len, (const uint8_t *)url);
+    // The request is followd by the version, on the same line.
+    array_insert(*request, sizeof(version) - 1, version);
+
+    // The content length is written as `l:%d`, we force use a `uint32_t`
+    // ensuring that a buffer of 32 bytes is always enough.
+    char content_length[32];
+    int ret = snprintf(content_length, sizeof(content_length), "l:%" PRIu32, (uint32_t)content_len);
+    assert(0 <= ret);
+    array_insert(*request, (size_t)ret, content_length);
+
+    // We are done writing the header, so we append "\r\n\r\n" like in http.
+    array_insert(*request, 4, "\r\n\r\n");
+    array_insert(*request, content_len, content);
+}
