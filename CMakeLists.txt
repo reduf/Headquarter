@@ -7,10 +7,11 @@ project(
 )
 
 option(ENABLE_TESTING "Build tests" OFF)
+option(HQ_ENABLE_TESTING "Build tests" OFF)
 
 add_subdirectory(code)
 add_subdirectory(deps)
 
-if (ENABLE_TESTING)
+if (HQ_ENABLE_TESTING)
   add_subdirectory(tests)
 endif()
