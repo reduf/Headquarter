@@ -105,5 +105,63 @@ UTEST(sts, sts_write_sequenced_request)
 
 UTEST(sts, portal_login)
 {
-    portal_login("toto", "otot");
+    // portal_login("toto", "otot");
+}
+
+UTEST(parse_sts_request, parse_request_without_content)
+{
+    const uint8_t raw[] = "STS/1.0 400 Success\r\ns:1R\r\nl:0\r\n\r\n";
+    struct sts_request request = {0};
+    int ret = parse_sts_request(&request, raw, sizeof(raw) - 1);
+    ASSERT_EQ(ret, STSE_SUCCESS);
+    ASSERT_EQ(request.status_code, 400);
+    ASSERT_EQ(request.sequence_number, 1);
+    ASSERT_EQ(request.content_length, 0);
+}
+
+UTEST(parse_sts_request, parse_request_with_unsupported_version)
+{
+    const uint8_t raw[] = "STS/1.1 400 Success\r\ns:1R\r\nl:0\r\n\r\n";
+    struct sts_request request = {0};
+    int ret = parse_sts_request(&request, raw, sizeof(raw) - 1);
+    ASSERT_EQ(ret, STSE_UNSUPPORTED_PROTOCOL);
+}
+
+UTEST(parse_sts_request, parse_request_with_content)
+{
+    const char expected[] = "Hello World!\0Hello Sailor!";
+    const uint8_t raw[] = "STS/1.0 400 Success\r\ns:1R\r\nl:26\r\n\r\nHello World!\0Hello Sailor!";
+    struct sts_request request = {0};
+    int ret = parse_sts_request(&request, raw, sizeof(raw) - 1);
+
+    ASSERT_EQ(ret, STSE_SUCCESS);
+    ASSERT_EQ(request.content_length, sizeof(expected) - 1);
+    ASSERT_TRUE(!memcmp(request.content, expected, sizeof(expected) - 1));
+}
+
+UTEST(parse_sts_request, parse_request_with_incomplete_status_line)
+{
+    const uint8_t raw[] = "STS/1.";
+    struct sts_request request = {0};
+    int ret = parse_sts_request(&request, raw, sizeof(raw) - 1);
+    ASSERT_EQ(ret, STSE_INCOMPLETE_HEADER);
+}
+
+UTEST(parse_sts_request, parse_request_with_incomplete_header)
+{
+    const uint8_t raw[] = "STS/1.0 400 Success\r\n\r";
+    struct sts_request request = {0};
+    int ret = parse_sts_request(&request, raw, sizeof(raw) - 1);
+    ASSERT_EQ(ret, STSE_INCOMPLETE_HEADER);
+}
+
+UTEST(parse_sts_request, parse_request_with_incomplete_content)
+{
+    const uint8_t raw[] = "STS/1.0 400 Success\r\ns:1R\r\nl:26\r\n\r\nHello World!\0Hello";
+    struct sts_request request = {0};
+    int ret = parse_sts_request(&request, raw, sizeof(raw) - 1);
+    ASSERT_EQ(ret, STSE_INCOMPLETE_CONTENT);
+    ASSERT_EQ(request.status_code, 400);
+    ASSERT_EQ(request.sequence_number, 1);
+    ASSERT_EQ(request.content_length, 26);
 }

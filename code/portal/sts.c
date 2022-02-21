@@ -221,3 +221,97 @@ void sts_write_sequenced_request(
     array_insert(*request, (size_t)ret, seq_number_buffer);
     sts_finish_request(request, content, content_len);
 }
+
+static int parse_next_line(const char *data, size_t length, size_t *line_len)
+{
+    // Every line finish with a "\r\n", so we need at least two bytes to
+    // have a complete line.
+    if (length < 2) {
+        return STSE_INCOMPLETE_HEADER;
+    }
+
+    size_t i;
+    for (i = 0; i < (length - 1); ++i) {
+        if (data[i] == '\r' && data[i + 1] == '\n')
+            break;
+    }
+
+    // We didn't find a line ending;
+    if (i == (length - 1))
+        return STSE_INCOMPLETE_HEADER;
+
+    *line_len = i;
+    return 0;
+}
+
+static void skip_line(const char **data, size_t *length, size_t line_len)
+{
+    assert((line_len + 2) <= *length);
+    assert((*data)[line_len] == '\r' && (*data)[line_len + 1] == '\n');
+
+    *data += (line_len + 2);
+    *length -= (line_len + 2);
+}
+
+int parse_sts_request(struct sts_request *request, const uint8_t *raw, size_t length)
+{
+    int ret;
+    size_t line_len;
+    const char *data = (const char *)raw;
+
+    if ((ret = parse_next_line(data, length, &line_len)) != 0) {
+        return ret;
+    }
+
+    unsigned version_major;
+    unsigned version_minor;
+    char separator;
+    ret = sscanf(raw, "STS/%1u.%1u%c%3u", &version_major, &version_minor,
+                 &separator, &request->status_code);
+
+    if (ret != 4) {
+        return STSE_UNSUPPORTED_PROTOCOL;
+    }
+
+    if ((version_major != 1) || (version_minor != 0)) {
+        fprintf(stderr, "Unsupported version %u.%u\n", version_major, version_minor);
+        return STSE_UNSUPPORTED_PROTOCOL;
+    }
+
+    skip_line(&data, &length, line_len);
+
+    while (length != 0) {
+        if ((ret = parse_next_line(data, length, &line_len)) != 0) {
+            return ret;
+        }
+
+        // Check if we are done parsing the header.
+        if (line_len == 0) {
+            // finish parsing the header.
+            skip_line(&data, &length, line_len);
+            break;
+        }
+
+        // We only care about the two "header" we saw. (i.e., 's' and 'l')
+        if (data[0] == 's') {
+            if (sscanf(data, "s:%uR", &request->sequence_number) != 1) {
+                return STSE_UNSUPPORTED_HEADER;
+            }
+        } else if (data[0] == 'l') {
+            if (sscanf(data, "l:%u", &request->content_length) != 1) {
+                return STSE_UNSUPPORTED_HEADER;
+            }
+        } else {
+            return STSE_UNSUPPORTED_HEADER;
+        }
+
+        skip_line(&data, &length, line_len);
+    }
+
+    if (length < request->content_length) {
+        return STSE_INCOMPLETE_CONTENT;
+    }
+
+    request->content = data;
+    return 0;
+}

@@ -29,3 +29,17 @@ void sts_write_sequenced_request(
     array_uint8_t *request, size_t seq_number, uint32_t timeout_ms,
     const char *url, size_t url_len, const uint8_t *content, size_t content_len);
 
+#define STSE_SUCCESS                 0
+#define STSE_INCOMPLETE_CONTENT      1
+#define STSE_INCOMPLETE_HEADER       2
+#define STSE_UNSUPPORTED_HEADER      3
+#define STSE_UNSUPPORTED_PROTOCOL    4
+
+struct sts_request {
+    unsigned status_code;
+    unsigned sequence_number;
+    unsigned content_length;
+    const uint8_t *content;
+};
+
+int parse_sts_request(struct sts_request *request, const uint8_t *raw, size_t length);
