@@ -20,6 +20,7 @@ void ssl_tls2_init(struct ssl_tls12_context *ctx);
 void ssl_tls2_free(struct ssl_tls12_context *ctx);
 
 int ssl_tls12_write_client_hello(struct ssl_tls12_context *ctx);
+void ssl_tls12_write_auth_packet(array_uint8_t *buffer, const uint8_t *content, size_t length);
 
 void sts_write_request(array_uint8_t *request,
     const char *url, size_t url_len,

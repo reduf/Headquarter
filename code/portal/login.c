@@ -159,17 +159,102 @@ bool portal_login(const char *username, const char *password)
 
     const char connect_url[] = "/Sts/Connect";
     sts_write_request(&request, connect_url, ARRAY_SIZE(connect_url) - 1,
-        request.data, request.size);
+        content.data, content.size);
     array_reset(content);
 
     ret = send(fd, request.data, request.size, 0);
-    array_clear(request);
+
+    if (ret != request.size) {
+        fprintf(stderr, "Failed to send initial packet\n");
+        array_reset(request);
+        closesocket(fd);
+        return false;
+    }
 
     const char start_tls_url[] = "/Auth/StartTls";
+
+    array_clear(request);
     sts_write_sequenced_request(&request, 1, 4000,
         start_tls_url, ARRAY_SIZE(start_tls_url) - 1, "", 0);
-
     ret = send(fd, request.data, request.size, 0);
 
+    if (ret != request.size) {
+        array_reset(request);
+        closesocket(fd);
+        return false;
+    }
+
+    array_reset(request);
+
+    uint8_t buffer[1024];
+    size_t length = 0;
+    struct sts_request sts_request = {0};
+
+    for (;;)
+    {
+        if (length == sizeof(buffer))
+            break;
+
+        char *p = buffer + length;
+        ret = recv(fd, p, sizeof(buffer) - length, 0);
+
+        if (ret <= 0) {
+            closesocket(fd);
+            return false;
+        }
+
+        length += (size_t)ret;
+
+        ret = parse_sts_request(&sts_request, buffer, length);
+
+        if (ret != STSE_INCOMPLETE_CONTENT && ret != STSE_INCOMPLETE_HEADER)
+            break;
+    }
+
+    if (ret != STSE_SUCCESS) {
+        closesocket(fd);
+        return false;
+    }
+
+    if (sts_request.status_code != 400) {
+        fprintf(stderr, "Couldn't start a STS connection, status: %d\n", sts_request.status_code);
+        closesocket(fd);
+        return false;
+    }
+
+    struct ssl_tls12_context ctx;
+    ssl_tls2_init(&ctx);
+    ctx.random_time = (uint32_t)anet_epoch();
+    memset(ctx.random_bytes, 0xCC, sizeof(ctx.random_bytes));
+    size_t username_len = strlen(username);
+    if (sizeof(ctx.srp_username) <= username_len + 1) {
+        // @Cleanup: Free stuff?
+        return false;
+    }
+    strcpy(ctx.srp_username, username);
+    ctx.srp_username_len = strlen(ctx.srp_username);
+
+    if (ssl_tls12_write_client_hello(&ctx) != 0) {
+        closesocket(fd);
+        ssl_tls2_free(&ctx);
+        return false;
+    }
+
+    array_uint8_t packet;
+    array_init(packet, 1024);
+    ssl_tls12_write_auth_packet(&packet, ctx.buffer.data, ctx.buffer.size);
+
+    ret = send(fd, packet.data, packet.size, 0);
+    if (ret != packet.size) {
+        fprintf(stderr, "Failed to send all the data\n");
+        array_reset(packet);
+        closesocket(fd);
+        return false;
+    }
+
+    array_reset(packet);
+    ret = recv(fd, buffer, sizeof(buffer), 0);
+
+    closesocket(fd);
     return true;
 }

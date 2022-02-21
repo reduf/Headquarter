@@ -146,6 +146,19 @@ void ssl_tls2_free(struct ssl_tls12_context *ctx)
     array_reset(ctx->buffer);
 }
 
+void ssl_tls12_write_auth_packet(array_uint8_t *buffer, const uint8_t *content, size_t length)
+{
+    array_add(*buffer, 0x16); // This is the identifier for the "auth phase"
+
+    // The version is always "\x03\x03". (i.e., TLS v1.2)
+    array_add(*buffer, 0x03);
+    array_add(*buffer, 0x03);
+
+    assert(length <= UINT16_MAX);
+    array_add_be_uint16(buffer, (uint16_t)length);
+    array_insert(*buffer, length, content);
+}
+
 int ssl_tls12_write_client_hello(struct ssl_tls12_context *ctx)
 {
     array_reserve(ctx->buffer, 1024);

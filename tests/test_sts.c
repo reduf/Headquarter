@@ -105,7 +105,8 @@ UTEST(sts, sts_write_sequenced_request)
 
 UTEST(sts, portal_login)
 {
-    // portal_login("toto", "otot");
+    bool result = portal_login("toto", "otot");
+    ASSERT_TRUE(result);
 }
 
 UTEST(parse_sts_request, parse_request_without_content)
