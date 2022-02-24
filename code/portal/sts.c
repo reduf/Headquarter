@@ -82,7 +82,7 @@ static int ssl_tls12_write_extension(
     // The second extension is SRP specifying the username. (i.e., email)
     ssl_tls12_write_srp(buffer, ctx->srp_username, ctx->srp_username_len);
 
-    size_t extension_len = array_end(*buffer) - extensions_len_ptr;
+    size_t extension_len = array_end(*buffer) - (extensions_len_ptr + 2);
     if ((size_t)UINT16_MAX < extension_len)
         return 1;
 
