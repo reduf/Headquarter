@@ -4,8 +4,12 @@
 #define PORTAL_STS_C
 
 #define SSL_HS_CLIENT_HELLO 1
+#define SSL_HS_SERVER_HELLO 2
+
 #define TLS_SRP_SHA_WITH_AES_256_CBC_SHA 0xC020
 #define TLS_SRP_SHA_WITH_AES_128_CBC_SHA 0xC01D
+
+#define TLS_CONTENT_TYPE_HANDSHAKE 0x16
 
 static void array_add_be_uint16(array_uint8_t *buffer, uint16_t value)
 {
@@ -148,7 +152,7 @@ void ssl_tls2_free(struct ssl_tls12_context *ctx)
 
 void ssl_tls12_write_auth_packet(array_uint8_t *buffer, const uint8_t *content, size_t length)
 {
-    array_add(*buffer, 0x16); // This is the identifier for the "auth phase"
+    array_add(*buffer, TLS_CONTENT_TYPE_HANDSHAKE);
 
     // The version is always "\x03\x03". (i.e., TLS v1.2)
     array_add(*buffer, 0x03);
@@ -176,6 +180,176 @@ int ssl_tls12_write_client_hello(struct ssl_tls12_context *ctx)
     }
 
     // Do we need to calculate the checksum?
+
+    return 0;
+}
+
+#define ERR_SSL_CONTINUE_PROCESSING 1
+#define ERR_SSL_UNEXPECTED_MESSAGE  2
+#define ERR_SSL_UNSUPPORTED_PROTOCOL 3
+#define ERR_SSL_BAD_INPUT_DATA 4
+
+static int parse_tls12_handshake(const uint8_t *data, size_t length,
+    uint8_t content_type, const uint8_t **subdata, size_t *sublen)
+{
+    const size_t HEADER_LEN = 5;
+    // The packet starts with 1 byte defining the content type, 2 bytes defining
+    // the version and 2 bytes defining the length of the payload.
+    if (length < HEADER_LEN)
+        return ERR_SSL_CONTINUE_PROCESSING;
+
+    if (data[0] != content_type)
+        return ERR_SSL_UNEXPECTED_MESSAGE;
+
+    if (data[1] != 3 && data[2] != 3)
+        return ERR_SSL_UNSUPPORTED_PROTOCOL;
+
+    uint16_t client_sublen = be16dec(&data[3]);
+
+    // This can't overflow, we checked it before.
+    if ((length - HEADER_LEN) < client_sublen)
+        return ERR_SSL_CONTINUE_PROCESSING;
+
+    *subdata = &data[HEADER_LEN];
+    *sublen = client_sublen;
+    return 0;
+}
+
+struct server_hello {
+    uint32_t random_time;
+    uint8_t  random_bytes[28];
+};
+
+static uint32_t be24dec(const void *pp)
+{
+    uint8_t const *p = (uint8_t const *)pp;
+    return (((unsigned)p[1] << 16) | (p[2] << 8) | p[3]);
+}
+
+static int chk_stream_read8(const uint8_t **data, size_t *length, uint8_t *out)
+{
+    if (*length < sizeof(*out))
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    *out = **data;
+    *data += sizeof(*out);
+    *length -= sizeof(*out);
+    return 0;
+}
+
+static int chk_stream_read16(const uint8_t **data, size_t *length, uint16_t *out)
+{
+    if (*length < sizeof(*out))
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    *out = be16dec(*data);
+    *data += sizeof(*out);
+    *length -= sizeof(*out);
+    return 0;
+}
+
+static int chk_stream_read32(const uint8_t **data, size_t *length, uint32_t *out)
+{
+    if (*length < sizeof(*out))
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    *out = be32dec(*data);
+    *data += sizeof(*out);
+    *length -= sizeof(*out);
+    return 0;
+}
+
+static int chk_stream_read(const uint8_t **data, size_t *length, uint8_t *out, size_t out_len)
+{
+    if (*length < out_len)
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    memcpy(out, data, out_len);
+    *data += out_len;
+    *length -= out_len;
+    return 0;
+}
+
+static int parse_server_hello(struct server_hello *hello, const uint8_t *data, size_t length)
+{
+    int ret;
+    // The type is encoded on 1 byte and the length on 3 bytes.
+    const size_t MIN_LEN = 4;
+
+    if (length < MIN_LEN)
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    if (data[0] != SSL_HS_SERVER_HELLO)
+        return ERR_SSL_UNEXPECTED_MESSAGE;
+
+    uint32_t content_len = be24dec(&data[1]);
+    if ((length - MIN_LEN) != content_len) {
+        // At this point, we should already know we have the complete data.
+        return ERR_SSL_BAD_INPUT_DATA;
+    }
+
+    const uint8_t *content = &data[MIN_LEN];
+
+    uint16_t version;
+    if ((ret = chk_stream_read16(&content, &content_len, &version)) != 0)
+        return ret;
+    // @Cleanup: Maybe not the best error code to return...
+    if (version != 0x0303)
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    if ((ret = chk_stream_read32(&content, &content_len, &hello->random_time)) != 0)
+        return ret;
+    if ((ret = chk_stream_read(&content, &content_len, hello->random_bytes, sizeof(hello->random_bytes))) != 0)
+        return ret;
+
+    uint8_t session_id_len;
+    if ((ret = chk_stream_read8(&content, &content_len, &session_id_len)) != 0)
+        return ret;
+
+    // @Cleanup: Should we distinguish with unsupported input data?!?
+    if (session_id_len != 0)
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    uint16_t cipher_suite;
+    if ((ret = chk_stream_read16(&content, &content_len, &cipher_suite)) != 0)
+        return ret;
+
+    // @Cleanup:
+    // In theory any of the ciphers we told the cipher should work...
+    if (cipher_suite != TLS_SRP_SHA_WITH_AES_256_CBC_SHA)
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    uint8_t compression_method;
+    if ((ret = chk_stream_read8(&content, &content_len, &compression_method)) != 0)
+        return ret;
+    if (compression_method != 0)
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    uint16_t extension_len;
+    if ((ret = chk_stream_read16(&content, &content_len, &extension_len)) != 0)
+        return ret;
+    if (content_len != extension_len)
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    // @Cleanup: Should we read the extension and ensure we get what we expect?
+    return 0;
+}
+
+int sts_process_server_hello(const uint8_t *data, size_t length)
+{
+    int ret;
+    const uint8_t *server_hello_data;
+    size_t server_hello_len;
+
+    ret = parse_tls12_handshake(data, length, TLS_CONTENT_TYPE_HANDSHAKE,
+        &server_hello_data, &server_hello_len);
+    if (ret != 0) {
+        return ret;
+    }
+
+    struct server_hello hello = {0};
+    if ((ret = parse_server_hello(&hello, server_hello_data, server_hello_len)) != 0)
+        return ret;
 
     return 0;
 }
