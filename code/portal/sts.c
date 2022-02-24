@@ -215,15 +215,10 @@ static int parse_tls12_handshake(const uint8_t *data, size_t length,
     return 0;
 }
 
-struct server_hello {
-    uint32_t random_time;
-    uint8_t  random_bytes[28];
-};
-
 static uint32_t be24dec(const void *pp)
 {
     uint8_t const *p = (uint8_t const *)pp;
-    return (((unsigned)p[1] << 16) | (p[2] << 8) | p[3]);
+    return (((unsigned)p[0] << 16) | (p[1] << 8) | p[2]);
 }
 
 static int chk_stream_read8(const uint8_t **data, size_t *length, uint8_t *out)
@@ -264,7 +259,7 @@ static int chk_stream_read(const uint8_t **data, size_t *length, uint8_t *out, s
     if (*length < out_len)
         return ERR_SSL_BAD_INPUT_DATA;
 
-    memcpy(out, data, out_len);
+    memcpy(out, *data, out_len);
     *data += out_len;
     *length -= out_len;
     return 0;
@@ -335,7 +330,7 @@ static int parse_server_hello(struct server_hello *hello, const uint8_t *data, s
     return 0;
 }
 
-int sts_process_server_hello(const uint8_t *data, size_t length)
+int sts_process_server_hello(struct server_hello *hello, const uint8_t *data, size_t length)
 {
     int ret;
     const uint8_t *server_hello_data;
@@ -347,8 +342,7 @@ int sts_process_server_hello(const uint8_t *data, size_t length)
         return ret;
     }
 
-    struct server_hello hello = {0};
-    if ((ret = parse_server_hello(&hello, server_hello_data, server_hello_len)) != 0)
+    if ((ret = parse_server_hello(hello, server_hello_data, server_hello_len)) != 0)
         return ret;
 
     return 0;

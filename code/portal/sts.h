@@ -22,7 +22,12 @@ void ssl_tls2_free(struct ssl_tls12_context *ctx);
 int ssl_tls12_write_client_hello(struct ssl_tls12_context *ctx);
 void ssl_tls12_write_auth_packet(array_uint8_t *buffer, const uint8_t *content, size_t length);
 
-int sts_process_server_hello(const uint8_t *data, size_t length);
+struct server_hello {
+    uint32_t random_time;
+    uint8_t  random_bytes[28];
+};
+
+int sts_process_server_hello(struct server_hello *hello, const uint8_t *data, size_t length);
 
 void sts_write_request(array_uint8_t *request,
     const char *url, size_t url_len,

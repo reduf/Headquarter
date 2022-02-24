@@ -166,3 +166,24 @@ UTEST(parse_sts_request, parse_request_with_incomplete_content)
     ASSERT_EQ(request.sequence_number, 1);
     ASSERT_EQ(request.content_length, 26);
 }
+
+UTEST(sts_process_server_hello, process_valid_message)
+{
+    const char message[] = \
+        "\x16\x03\x03\x00\x30\x02\x00\x00\x2c\x03\x03\x18\x28\x38\x66\x48"
+        "\x51\x4b\xaf\x84\x67\x92\xcc\xed\x7f\x68\x33\x5f\xb0\x91\x1c\x01"
+        "\x36\x6a\xb3\x78\xd2\x39\x2c\x4a\xa6\xb2\x6c\x00\xc0\x20\x00\x00"
+        "\x04\xad\xae\x00\x00";
+
+    struct server_hello expected = {
+        .random_time = 0x18283866,
+        .random_bytes = "\x48\x51\x4b\xaf\x84\x67\x92\xcc\xed\x7f\x68\x33\x5f\xb0\x91\x1c"
+                        "\x01\x36\x6a\xb3\x78\xd2\x39\x2c\x4a\xa6\xb2\x6c",
+    };
+
+    struct server_hello hello = {0};
+
+    int ret = sts_process_server_hello(&hello, message, sizeof(message) - 1);
+    ASSERT_EQ(ret, 0);
+    ASSERT_TRUE(memcmp(&hello, &expected, sizeof(expected)) == 0);
+}
