@@ -5,6 +5,7 @@
 
 #define SSL_HS_CLIENT_HELLO 1
 #define SSL_HS_SERVER_HELLO 2
+#define SSL_HS_SERVER_KEY_EXCHANGE 12
 
 #define TLS_SRP_SHA_WITH_AES_256_CBC_SHA 0xC020
 #define TLS_SRP_SHA_WITH_AES_128_CBC_SHA 0xC01D
@@ -343,6 +344,93 @@ int sts_process_server_hello(struct server_hello *hello, const uint8_t *data, si
     }
 
     if ((ret = parse_server_hello(hello, server_hello_data, server_hello_len)) != 0)
+        return ret;
+
+    return 0;
+}
+
+static int parse_server_key_exchange(struct server_key *key, const uint8_t *data, size_t length)
+{
+    int ret;
+    // The type is encoded on 1 byte and the length on 3 bytes.
+    const size_t MIN_LEN = 4;
+
+    if (length < MIN_LEN)
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    if (data[0] != SSL_HS_SERVER_KEY_EXCHANGE)
+        return ERR_SSL_UNEXPECTED_MESSAGE;
+
+    uint32_t content_len = be24dec(&data[1]);
+    if ((length - MIN_LEN) != content_len) {
+        // At this point, we should already know we have the complete data.
+        return ERR_SSL_BAD_INPUT_DATA;
+    }
+
+    const uint8_t *content = &data[MIN_LEN];
+
+    // Currently, we support only an hardcoded format, with specified length
+    // for every integers. This isn't a requirement of the protocol, but it's
+    // simpler for us.
+
+    uint16_t prime_len;
+    if ((ret = chk_stream_read16(&content, &content_len, &prime_len)) != 0)
+        return ret;
+    if (prime_len != sizeof(key->prime)) {
+        // @Cleanup: Add trace prints.
+        return ERR_SSL_UNSUPPORTED_PROTOCOL;
+    }
+    if ((ret = chk_stream_read(&content, &content_len, key->prime, sizeof(key->prime))) != 0)
+        return ret;
+
+    uint16_t generator_len;
+    if ((ret = chk_stream_read16(&content, &content_len, &generator_len)) != 0)
+        return ret;
+    if (generator_len != sizeof(key->generator)) {
+        // @Cleanup: Add trace prints.
+        return ERR_SSL_UNSUPPORTED_PROTOCOL;
+    }
+    if ((ret = chk_stream_read(&content, &content_len, key->generator, sizeof(key->generator))) != 0)
+        return ret;
+
+    uint8_t salt_len;
+    if ((ret = chk_stream_read8(&content, &content_len, &salt_len)) != 0)
+        return ret;
+    if (salt_len != sizeof(key->salt)) {
+        // @Cleanup: Add trace prints.
+        return ERR_SSL_UNSUPPORTED_PROTOCOL;
+    }
+    if ((ret = chk_stream_read(&content, &content_len, key->salt, sizeof(key->salt))) != 0)
+        return ret;
+
+    uint16_t server_public_len;
+    if ((ret = chk_stream_read16(&content, &content_len, &server_public_len)) != 0)
+        return ret;
+    if (server_public_len != sizeof(key->server_public)) {
+        // @Cleanup: Add trace prints.
+        return ERR_SSL_UNSUPPORTED_PROTOCOL;
+    }
+    if ((ret = chk_stream_read(&content, &content_len, key->server_public, sizeof(key->server_public))) != 0)
+        return ret;
+
+    if (content_len != 0)
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    return 0;
+}
+
+int sts_process_server_key_exchange(struct server_key *key, const uint8_t *data, size_t length)
+{
+    int ret;
+    const uint8_t *server_key_data;
+    size_t server_key_len;
+
+    if ((ret = parse_tls12_handshake(data, length, TLS_CONTENT_TYPE_HANDSHAKE,
+                                     &server_key_data, &server_key_len)) != 0) {
+        return ret;
+    }
+
+    if ((ret = parse_server_key_exchange(key, server_key_data, server_key_len)) != 0)
         return ret;
 
     return 0;

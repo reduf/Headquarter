@@ -29,6 +29,15 @@ struct server_hello {
 
 int sts_process_server_hello(struct server_hello *hello, const uint8_t *data, size_t length);
 
+struct server_key {
+    uint8_t prime[128];
+    uint8_t generator[1];
+    uint8_t salt[8];
+    uint8_t server_public[128];
+};
+
+int sts_process_server_key_exchange(struct server_key *key, const uint8_t *data, size_t length);
+
 void sts_write_request(array_uint8_t *request,
     const char *url, size_t url_len,
     const uint8_t *content, size_t content_len);
