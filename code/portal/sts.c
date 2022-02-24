@@ -436,6 +436,27 @@ int sts_process_server_key_exchange(struct server_key *key, const uint8_t *data,
     return 0;
 }
 
+int sts_process_server_done(const uint8_t *data, size_t length)
+{
+    int ret;
+    const uint8_t *server_done_data;
+    size_t server_done_len;
+
+    if ((ret = parse_tls12_handshake(data, length, TLS_CONTENT_TYPE_HANDSHAKE,
+                                     &server_done_data, &server_done_len)) != 0) {
+        return ret;
+    }
+
+    char expected[] = "\x0e\x00\x00\x00";
+    if (server_done_len != (sizeof(expected) - 1))
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    if (memcmp(server_done_data, expected, server_done_len) != 0)
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    return 0;
+}
+
 static sts_write_header(array_uint8_t *request,
     const char *url, size_t url_len, size_t content_len)
 {

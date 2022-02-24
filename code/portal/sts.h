@@ -37,6 +37,7 @@ struct server_key {
 };
 
 int sts_process_server_key_exchange(struct server_key *key, const uint8_t *data, size_t length);
+int sts_process_server_done(const uint8_t *data, size_t length);
 
 void sts_write_request(array_uint8_t *request,
     const char *url, size_t url_len,

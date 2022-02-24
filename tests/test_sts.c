@@ -237,3 +237,10 @@ UTEST(sts_process_server_key_exchange, process_valid_message)
     ASSERT_EQ(ret, 0);
     ASSERT_TRUE(memcmp(&calculated, &expected, sizeof(expected)) == 0);
 }
+
+UTEST(sts_process_server_done, process_valid_message)
+{
+    const char message[] = "\x16\x03\x03\x00\x04\x0e\x00\x00\x00";
+    int ret = sts_process_server_done(message, sizeof(message) - 1);
+    ASSERT_EQ(ret, 0);
+}
