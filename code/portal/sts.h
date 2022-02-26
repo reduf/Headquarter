@@ -23,6 +23,7 @@ int ssl_tls12_write_client_hello(struct ssl_tls12_context *ctx);
 void ssl_tls12_write_auth_packet(array_uint8_t *buffer, const uint8_t *content, size_t length);
 
 int ssl_tls12_write_client_key_exchange(array_uint8_t *buffer, const uint8_t *key, size_t key_len);
+void ssl_tls12_write_change_cipher_spec(array_uint8_t *buffer);
 
 struct server_hello {
     uint32_t random_time;

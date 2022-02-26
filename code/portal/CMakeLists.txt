@@ -27,3 +27,9 @@ target_include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
+if (MSVC)
+  # We disable the following warnings:
+  # - C4057: nonstandard extension used: nameless struct/union
+  target_compile_options(portal PRIVATE /W4 /WX /wd4201)
+endif()
+

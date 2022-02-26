@@ -202,6 +202,20 @@ int ssl_tls12_write_client_key_exchange(array_uint8_t *buffer, const uint8_t *ke
     return 0;
 }
 
+void ssl_tls12_write_change_cipher_spec(array_uint8_t *buffer)
+{
+    array_add(*buffer, SSL_MSG_CHANGE_CIPHER_SPEC);
+
+    // The version is always "\x03\x03". (i.e., TLS v1.2)
+    array_add(*buffer, 0x03);
+    array_add(*buffer, 0x03);
+
+    // We hardcode the length of the message, because we only send one.
+    array_add_be_uint16(buffer, 1);
+
+    array_add(*buffer, 1);
+}
+
 #define ERR_SSL_CONTINUE_PROCESSING    1
 #define ERR_SSL_UNEXPECTED_MESSAGE     2
 #define ERR_SSL_UNSUPPORTED_PROTOCOL   3
@@ -474,7 +488,7 @@ int sts_process_server_done(const uint8_t *data, size_t length)
     return 0;
 }
 
-static sts_write_header(array_uint8_t *request,
+static void sts_write_header(array_uint8_t *request,
     const char *url, size_t url_len, size_t content_len)
 {
     const char version[] = " STS/1.0\r\n";
@@ -495,7 +509,7 @@ static sts_write_header(array_uint8_t *request,
     array_insert(*request, (size_t)ret, content_length_buffer);
 }
 
-static sts_finish_request(array_uint8_t *request, const uint8_t *content, size_t content_len)
+static void sts_finish_request(array_uint8_t *request, const uint8_t *content, size_t content_len)
 {
     // We are done writing the header, so we append "\r\n\r\n" like in http.
     array_insert(*request, 4, "\r\n\r\n");
@@ -573,7 +587,7 @@ int parse_sts_request(struct sts_request *request, const uint8_t *raw, size_t le
     unsigned version_major;
     unsigned version_minor;
     char separator;
-    ret = sscanf(raw, "STS/%1u.%1u%c%3u", &version_major, &version_minor,
+    ret = sscanf(data, "STS/%1u.%1u%c%3u", &version_major, &version_minor,
                  &separator, &request->status_code);
 
     if (ret != 4) {
@@ -619,6 +633,6 @@ int parse_sts_request(struct sts_request *request, const uint8_t *raw, size_t le
         return STSE_INCOMPLETE_CONTENT;
     }
 
-    request->content = data;
+    request->content = (const uint8_t *)data;
     return 0;
 }

@@ -103,6 +103,7 @@ static struct sockname get_local_addr(SOCKET fd)
 
 bool portal_login(const char *username, const char *password)
 {
+    (void)password;
     int ret;
 
     array_sockaddr_t addresses = {0};
@@ -162,9 +163,9 @@ bool portal_login(const char *username, const char *password)
         content.data, content.size);
     array_reset(content);
 
-    ret = send(fd, request.data, request.size, 0);
+    ret = send(fd, (const char *)request.data, request.size, 0);
 
-    if (ret != request.size) {
+    if ((ret < 0) || ((size_t)ret != request.size)) {
         fprintf(stderr, "Failed to send initial packet\n");
         array_reset(request);
         closesocket(fd);
@@ -172,13 +173,14 @@ bool portal_login(const char *username, const char *password)
     }
 
     const char start_tls_url[] = "/Auth/StartTls";
+    const uint8_t empty[] = "";
 
     array_clear(request);
     sts_write_sequenced_request(&request, 1, 4000,
-        start_tls_url, ARRAY_SIZE(start_tls_url) - 1, "", 0);
-    ret = send(fd, request.data, request.size, 0);
+        start_tls_url, ARRAY_SIZE(start_tls_url) - 1, empty, 0);
+    ret = send(fd, (const char *)request.data, request.size, 0);
 
-    if (ret != request.size) {
+    if ((ret < 0) || ((size_t)ret != request.size)) {
         array_reset(request);
         closesocket(fd);
         return false;
@@ -195,8 +197,8 @@ bool portal_login(const char *username, const char *password)
         if (length == sizeof(buffer))
             break;
 
-        char *p = buffer + length;
-        ret = recv(fd, p, sizeof(buffer) - length, 0);
+        uint8_t *p = buffer + length;
+        ret = recv(fd, (char *)p, sizeof(buffer) - length, 0);
 
         if (ret <= 0) {
             closesocket(fd);
@@ -244,8 +246,8 @@ bool portal_login(const char *username, const char *password)
     array_init(packet, 1024);
     ssl_tls12_write_auth_packet(&packet, ctx.buffer.data, ctx.buffer.size);
 
-    ret = send(fd, packet.data, packet.size, 0);
-    if (ret != packet.size) {
+    ret = send(fd, (const char *)packet.data, packet.size, 0);
+    if ((ret < 0) || ((size_t)ret != packet.size)) {
         fprintf(stderr, "Failed to send all the data\n");
         array_reset(packet);
         closesocket(fd);
@@ -253,7 +255,7 @@ bool portal_login(const char *username, const char *password)
     }
 
     array_reset(packet);
-    ret = recv(fd, buffer, sizeof(buffer), 0);
+    ret = recv(fd, (char *)buffer, sizeof(buffer), 0);
 
     closesocket(fd);
     return true;
