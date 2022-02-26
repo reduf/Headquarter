@@ -3,14 +3,19 @@
 #endif
 #define PORTAL_STS_C
 
-#define SSL_HS_CLIENT_HELLO 1
-#define SSL_HS_SERVER_HELLO 2
-#define SSL_HS_SERVER_KEY_EXCHANGE 12
+#define SSL_HS_CLIENT_HELLO            1
+#define SSL_HS_SERVER_HELLO            2
+#define SSL_HS_SERVER_KEY_EXCHANGE     12
+#define SSL_HS_CLIENT_KEY_EXCHANGE     16
 
 #define TLS_SRP_SHA_WITH_AES_256_CBC_SHA 0xC020
 #define TLS_SRP_SHA_WITH_AES_128_CBC_SHA 0xC01D
 
-#define TLS_CONTENT_TYPE_HANDSHAKE 0x16
+#define SSL_MSG_CHANGE_CIPHER_SPEC     20
+#define SSL_MSG_ALERT                  21
+#define SSL_MSG_HANDSHAKE              22
+#define SSL_MSG_APPLICATION_DATA       23
+#define SSL_MSG_CID                    25
 
 static void array_add_be_uint16(array_uint8_t *buffer, uint16_t value)
 {
@@ -151,9 +156,28 @@ void ssl_tls2_free(struct ssl_tls12_context *ctx)
     array_reset(ctx->buffer);
 }
 
+int ssl_tls12_write_client_hello(struct ssl_tls12_context *ctx)
+{
+    array_reserve(ctx->buffer, 1024);
+
+    ssl_tls12_start_handshake_msg(&ctx->buffer, SSL_HS_CLIENT_HELLO);
+
+    if (ssl_tls12_write_client_hello_body(&ctx->buffer, ctx) != 0) {
+        return 1;
+    }
+
+    if (ssl_tls12_finish_handshake_msg(&ctx->buffer, SSL_HS_CLIENT_HELLO) != 0) {
+        return 1;
+    }
+
+    // Do we need to calculate the checksum?
+
+    return 0;
+}
+
 void ssl_tls12_write_auth_packet(array_uint8_t *buffer, const uint8_t *content, size_t length)
 {
-    array_add(*buffer, TLS_CONTENT_TYPE_HANDSHAKE);
+    array_add(*buffer, SSL_MSG_HANDSHAKE);
 
     // The version is always "\x03\x03". (i.e., TLS v1.2)
     array_add(*buffer, 0x03);
@@ -164,31 +188,24 @@ void ssl_tls12_write_auth_packet(array_uint8_t *buffer, const uint8_t *content, 
     array_insert(*buffer, length, content);
 }
 
-int ssl_tls12_write_client_hello(struct ssl_tls12_context *ctx)
+int ssl_tls12_write_client_key_exchange(array_uint8_t *buffer, const uint8_t *key, size_t key_len)
 {
-    array_reserve(ctx->buffer, 1024);
+    ssl_tls12_start_handshake_msg(buffer, SSL_HS_CLIENT_KEY_EXCHANGE);
 
-    ssl_tls12_start_handshake_msg(&ctx->buffer, SSL_HS_CLIENT_HELLO);
+    array_add_be_uint16(buffer, (uint16_t)key_len);
+    array_insert(*buffer, key_len, key);
 
-    if (ssl_tls12_write_client_hello_body(&ctx->buffer, ctx) != 0) {
-        array_reset(ctx->buffer);
+    if (ssl_tls12_finish_handshake_msg(buffer, SSL_HS_CLIENT_KEY_EXCHANGE) != 0) {
         return 1;
     }
-
-    if (ssl_tls12_finish_handshake_msg(&ctx->buffer, SSL_HS_CLIENT_HELLO) != 0) {
-        array_reset(ctx->buffer);
-        return 1;
-    }
-
-    // Do we need to calculate the checksum?
 
     return 0;
 }
 
-#define ERR_SSL_CONTINUE_PROCESSING 1
-#define ERR_SSL_UNEXPECTED_MESSAGE  2
-#define ERR_SSL_UNSUPPORTED_PROTOCOL 3
-#define ERR_SSL_BAD_INPUT_DATA 4
+#define ERR_SSL_CONTINUE_PROCESSING    1
+#define ERR_SSL_UNEXPECTED_MESSAGE     2
+#define ERR_SSL_UNSUPPORTED_PROTOCOL   3
+#define ERR_SSL_BAD_INPUT_DATA         4
 
 static int parse_tls12_handshake(const uint8_t *data, size_t length,
     uint8_t content_type, const uint8_t **subdata, size_t *sublen)
@@ -337,7 +354,7 @@ int sts_process_server_hello(struct server_hello *hello, const uint8_t *data, si
     const uint8_t *server_hello_data;
     size_t server_hello_len;
 
-    ret = parse_tls12_handshake(data, length, TLS_CONTENT_TYPE_HANDSHAKE,
+    ret = parse_tls12_handshake(data, length, SSL_MSG_HANDSHAKE,
         &server_hello_data, &server_hello_len);
     if (ret != 0) {
         return ret;
@@ -425,7 +442,7 @@ int sts_process_server_key_exchange(struct server_key *key, const uint8_t *data,
     const uint8_t *server_key_data;
     size_t server_key_len;
 
-    if ((ret = parse_tls12_handshake(data, length, TLS_CONTENT_TYPE_HANDSHAKE,
+    if ((ret = parse_tls12_handshake(data, length, SSL_MSG_HANDSHAKE,
                                      &server_key_data, &server_key_len)) != 0) {
         return ret;
     }
@@ -442,7 +459,7 @@ int sts_process_server_done(const uint8_t *data, size_t length)
     const uint8_t *server_done_data;
     size_t server_done_len;
 
-    if ((ret = parse_tls12_handshake(data, length, TLS_CONTENT_TYPE_HANDSHAKE,
+    if ((ret = parse_tls12_handshake(data, length, SSL_MSG_HANDSHAKE,
                                      &server_done_data, &server_done_len)) != 0) {
         return ret;
     }
