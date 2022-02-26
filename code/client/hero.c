@@ -18,7 +18,6 @@ void GameSrv_HeroUseSkill(GwClient *client, AgentId hero_id,
 
     assert(client && client->game_srv.secured);
 
-    ArrayAgent *agents = &client->world.agents;
     Agent *caster = get_agent_safe(client, hero_id);
     if (!caster) {
         LogError("Can't get hero agent '%d' when using skill %u", hero_id, skill_id);
@@ -121,6 +120,5 @@ void HandleHeroBehavior(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(HeroBehavior) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    HeroBehavior *pack = cast(HeroBehavior *)packet;
     assert(client && client->game_srv.secured);
 }

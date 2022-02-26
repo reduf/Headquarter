@@ -13,6 +13,7 @@ static void HandlePingRequest(Connection *conn, size_t psize, Packet *packet)
 #pragma pack(pop)
 
     assert(packet->header == GAME_SMSG_PING_REQUEST);
+    assert(sizeof(PingReply) == psize);
 
     // @Cleanup: This should be the time that it take to make a loop in main_loop.
     PingReply pack = NewPacket(GAME_CMSG_PING_REPLY);
@@ -37,6 +38,7 @@ static void HandlePingReply(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     PingReply *pack = cast(PingReply *)packet;
+    (void)pack;
 
     // @Remark:
     // In PingReply packet we send/receive the "reaction" of our code
@@ -130,7 +132,9 @@ static void HandleGoldStorageAdd(Connection *conn, size_t psize, Packet *packet)
 
 void HandleReadyForMapSpawn(Connection *conn, size_t psize, Packet *packet)
 {
+    (void)psize;
     (void)packet;
+
     GwClient *client = cast(GwClient *)conn->data;
     assert(client && client->game_srv.secured);
     assert(!client->ingame);
@@ -276,7 +280,6 @@ void HandleInstanceLoadHead(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(InstanceHead) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    InstanceHead *pack = cast(InstanceHead *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -376,7 +379,6 @@ void HandleCinematicData(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(CinematicData) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    CinematicData *pack = cast(CinematicData *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -414,7 +416,6 @@ void HandleMissionAddGoal(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(Payload) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    Payload *pack = cast(Payload *)packet;
     assert(client && client->game_srv.secured);
 
     client->world.objective_count += 1;
@@ -459,7 +460,6 @@ void HandleFriendListMessage(Connection* conn, size_t psize, Packet* packet)
         sender_ws[length] = 0;
         length = swprintf(new_message, ARRAY_SIZE(new_message), L"Player %s is not online", sender_ws);
         assert(length != -1);
-        int written = 0;
         for (int i = 0; i < length; i++)
             pack->message[i] = new_message[i];
     }
@@ -487,8 +487,7 @@ void HandleMissionAddObjective(Connection *conn, size_t psize, Packet *packet)
     assert(packet->header == GAME_SMSG_MISSION_OBJECTIVE_ADD);
     assert(sizeof(Payload) == psize);
 
-    GwClient *client = cast(GwClient *)conn->data;
-    Payload *pack = cast(Payload *)packet;
+    (void)conn;
 }
 
 void GameSrv_RegisterCallbacks(Connection *conn)

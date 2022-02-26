@@ -400,7 +400,6 @@ void HandlePartyMemberStreamEnd(Connection *conn, size_t psize, Packet *packet)
     assert(psize == sizeof(MemberStreamEnd));
 
     GwClient *client = cast(GwClient *)conn->data;
-    MemberStreamEnd *pack = cast(MemberStreamEnd *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -597,7 +596,6 @@ void HandlePartySearchRequestDone(Connection *conn, size_t psize, Packet *packet
     assert(sizeof(RequestDone) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    RequestDone *pack = cast(RequestDone *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -655,7 +653,6 @@ void HandlePartySearchSeek(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(SeekParty) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    SeekParty *pack = cast(SeekParty *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -691,7 +688,6 @@ void HandlePartySearchSize(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(PacketType) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    PacketType *pack = cast(PacketType *)packet;
     assert(client && client->game_srv.secured);
 }
 

@@ -12,7 +12,7 @@ uint32_t item_mod_arg2(ItemModifier mod);
 
 typedef struct Item {
     GameObject  object;
-    int32_t     item_id;
+    uint32_t    item_id;
     AgentId     agent_id;
 
     uint32_t    flags;
@@ -42,13 +42,12 @@ static void api_make_item(ApiItem *dest, Item *src)
     array_init2(dest->mods, array_size(src->mods));
 
     ItemModifier* mod;
-    uint32_t i = 0;
     array_foreach(mod, src->mods) {
-        ApiItemModifier apiMod = {
-            item_mod_identifier(*mod),
-            item_mod_arg1(*mod),
-            item_mod_arg2(*mod),
-        };
+        ApiItemModifier apiMod;
+        apiMod.identifier = item_mod_identifier(*mod);
+        apiMod.arg1 = item_mod_arg1(*mod);
+        apiMod.arg2 = item_mod_arg2(*mod);
+
         array_add(dest->mods, apiMod);
     }
 }

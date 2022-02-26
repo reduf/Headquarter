@@ -60,7 +60,6 @@ void HandleItemStreamCreate(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(StreamCreate) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    StreamCreate *pack = cast(StreamCreate *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -77,7 +76,6 @@ void HandleItemStreamDestroy(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(StreamDestroy) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    StreamDestroy *pack = cast(StreamDestroy *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -180,7 +178,6 @@ void HandleItemWeaponSet(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(WeaponSet) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    WeaponSet *pack = cast(WeaponSet *)packet;
     assert(client && client->game_srv.secured);
 
     // LogInfo("New Weapon set !");
@@ -319,7 +316,6 @@ void HandleWindowItemStreamEnd(Connection* conn, size_t psize, Packet* packet) {
     assert(sizeof(ItemStreamEnd) == psize);
 
     GwClient* client = cast(GwClient*)conn->data;
-    ItemStreamEnd* pack = cast(ItemStreamEnd*)packet;
     assert(client && client->game_srv.secured);
 
     HandleMerchantReady(client);

@@ -1818,7 +1818,9 @@ HQAPI void TradeAddItem(uint32_t item_id, uint32_t quantity)
     if (!(item && quantity && (item->quantity >= quantity)))
         goto leave;
     quantity = quantity ? quantity : item->quantity;
-    GameSrv_TradeAddItem(client, item_id, quantity);
+    if ((uint32_t)UINT8_MAX < quantity)
+        goto leave;
+    GameSrv_TradeAddItem(client, item_id, (uint8_t)quantity);
 leave:
     thread_mutex_unlock(&client->mutex);
 }
@@ -1954,7 +1956,8 @@ leave:
     return attempt;
 }
 
-HQAPI void MerchantBuyItem(uint32_t model_id, uint32_t gold_value) {
+HQAPI void MerchantBuyItem(uint32_t model_id, uint32_t gold_value)
+{
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
     Item* item = NULL;
@@ -1976,7 +1979,7 @@ HQAPI void MerchantBuyItem(uint32_t model_id, uint32_t gold_value) {
     item_recv.item_ids[0] = item->item_id;
     item_recv.item_quants[0] = 1;
 
-    GameSrv_TransactItems(client, TransactionType_MerchantBuy, gold_value, &item_send, 0, &item_recv);
+    GameSrv_TransactItems(client, TransactionType_MerchantBuy, gold_value, &item_send, gold_recv, &item_recv);
 leave:
     thread_mutex_unlock(&client->mutex);
 }

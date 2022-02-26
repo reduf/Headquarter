@@ -90,3 +90,14 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/include
 )
 
+if (MSVC)
+  # We disable the following warnings:
+  # - C4057: nonstandard extension used: nameless struct/union
+  # - C4204: nonstandard extension used: non-constant aggregate initializer
+  # - C4221: nonstandard extension used: '<var>': cannot be initialized using address of automatic variable
+  # - C4459: declaration of '<var>' hides global declaration
+  #
+  # @Cleanup: We should re-add '/WX', but we need to fix all warnings first...
+  target_compile_options(client PRIVATE /W4 /wd4201 /wd4204 /wd4221 /wd4459)
+endif()
+
