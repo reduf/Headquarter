@@ -1,3 +1,15 @@
+#ifndef _CRT_SECURE_NO_WARNINGS
+# define _CRT_SECURE_NO_WARNINGS
+#endif
+
+#ifndef _CRT_NONSTDC_NO_DEPRECATE
+# define _CRT_NONSTDC_NO_DEPRECATE
+#endif
+
+#ifndef __STDC__
+# define __STDC__ 1
+#endif
+
 #include <assert.h>
 #include <ctype.h>
 #include <inttypes.h>
