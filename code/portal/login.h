@@ -3,4 +3,4 @@
 #endif
 #define PORTAL_LOGIN_H
 
-bool portal_login(const char *username, const char *password);
+int portal_login(const char *username, const char *password);

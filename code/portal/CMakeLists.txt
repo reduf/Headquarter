@@ -19,7 +19,7 @@ add_library(
   ${PORTAL_SOURCES}
 )
 
-target_link_libraries(portal PRIVATE common)
+target_link_libraries(portal PRIVATE common mbedcrypto)
 target_include_directories(
   portal
 

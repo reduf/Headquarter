@@ -3,546 +3,6 @@
 #endif
 #define PORTAL_STS_C
 
-#define SSL_HS_CLIENT_HELLO            1
-#define SSL_HS_SERVER_HELLO            2
-#define SSL_HS_SERVER_KEY_EXCHANGE     12
-#define SSL_HS_CLIENT_KEY_EXCHANGE     16
-
-#define TLS_SRP_SHA_WITH_AES_256_CBC_SHA 0xC020
-#define TLS_SRP_SHA_WITH_AES_128_CBC_SHA 0xC01D
-
-#define SSL_MSG_CHANGE_CIPHER_SPEC     20
-#define SSL_MSG_ALERT                  21
-#define SSL_MSG_HANDSHAKE              22
-#define SSL_MSG_APPLICATION_DATA       23
-#define SSL_MSG_CID                    25
-
-static void array_add_be_uint16(array_uint8_t *buffer, uint16_t value)
-{
-    uint8_t *ptr = array_push(*buffer, sizeof(value));
-    be16enc(ptr, value);
-}
-
-static void ssl_tls12_start_handshake_msg(array_uint8_t *buffer, uint8_t hs_type)
-{
-    /*
-     * Reserve 4 bytes for hanshake header.
-     *    ...
-     *    HandshakeType msg_type;
-     *    uint24 length;
-     *    ...
-     */
-
-    array_add(*buffer, hs_type);
-
-    array_add(*buffer, 0);
-    array_add(*buffer, 0);
-    array_add(*buffer, 0);
-}
-
-static int ssl_tls12_finish_handshake_msg(array_uint8_t *buffer, uint8_t hs_type)
-{
-    const size_t HANDSHAKE_HDR_LEN = 4;
-    assert(HANDSHAKE_HDR_LEN <= array_size(*buffer));
-    assert(array_at(*buffer, 0) == hs_type);
-
-    uint8_t *content_begin = array_begin(*buffer) + HANDSHAKE_HDR_LEN;
-    size_t content_length = array_end(*buffer) - content_begin;
-
-    const size_t UINT24_MAX = 0xFFFFFF;
-    if (UINT24_MAX <= content_length)
-        return 1;
-
-    uint8_t *hs_len_ptr = array_begin(*buffer) + 1;
-    hs_len_ptr[0] = (content_length >> 16) & 0xFF;
-    hs_len_ptr[1] = (content_length >> 8) & 0xFF;
-    hs_len_ptr[2] = content_length & 0xFF;
-    return 0;
-}
-
-static void ssl_tls12_write_srp(array_uint8_t *buffer,
-    const char *username, size_t length)
-{
-    assert(length < (UINT8_MAX - 1));
-
-    static const uint16_t EXTENSION_SRP = 12;
-    array_add_be_uint16(buffer, EXTENSION_SRP);
-
-    // The length of the extension which effectively encode the length of the
-    // username on 1 byte and then the actual username. So, it's length + 1.
-    array_add_be_uint16(buffer, (uint16_t)(length + 1));
-    array_add(*buffer, (uint8_t)length);
-
-    // Add the username.
-    array_insert(*buffer, length, (uint8_t *)username);
-}
-
-static int ssl_tls12_write_extension(
-    array_uint8_t *buffer, struct ssl_tls12_context *ctx)
-{
-    // We first need to write the length on a `uint16be_t`, but we don't know
-    // it yet. Instead, we reserve those bytes and we will write it later.
-    uint8_t *extensions_len_ptr = array_push(*buffer, 2);
-
-    // The first extension is undocumented and doesn't contain any data.
-    // So we simply hardcode it.
-    array_add_be_uint16(buffer, 0xADAE);
-    array_add_be_uint16(buffer, 0); // Length is 0
-
-    // The second extension is SRP specifying the username. (i.e., email)
-    ssl_tls12_write_srp(buffer, ctx->srp_username, ctx->srp_username_len);
-
-    size_t extension_len = array_end(*buffer) - (extensions_len_ptr + 2);
-    if ((size_t)UINT16_MAX < extension_len)
-        return 1;
-
-    be16enc(extensions_len_ptr, (uint16_t)extension_len);
-    return 0;
-}
-
-static int ssl_tls12_write_client_hello_body(
-    array_uint8_t *buffer, struct ssl_tls12_context *ctx)
-{
-    // The version is always "\x03\x03". (i.e., TLS v1.2)
-    array_add(*buffer, 0x03);
-    array_add(*buffer, 0x03);
-
-    // Write random bytes.
-    uint8_t *random_time_ptr = array_push(*buffer, 4);
-    be32enc(random_time_ptr, ctx->random_time);
-    array_insert(*buffer, sizeof(ctx->random_bytes), ctx->random_bytes);
-
-    // The session id is always null
-    array_add(*buffer, 0);
-
-    // Write cipher suites
-    static const uint16_t ciphers[] = {
-        TLS_SRP_SHA_WITH_AES_256_CBC_SHA,
-        TLS_SRP_SHA_WITH_AES_128_CBC_SHA,
-        0xFF02, // No ideas what this is...
-        0xFF01, // No ideas what this is...
-        0xFF04, // No ideas what this is...
-        0xFF03, // No ideas what this is...
-    };
-
-    assert(sizeof(ciphers) <= UINT16_MAX);
-    array_add_be_uint16(buffer, (uint16_t)sizeof(ciphers));
-    for (size_t i = 0; i < ARRAY_SIZE(ciphers); ++i) {
-        array_add_be_uint16(buffer, ciphers[i]);
-    }
-
-    // Write compression methods.
-    // This is hardcoded and means 1 compression methods named "null".
-    // Not sure if required, but simply reproducing the behavior of the
-    // official DLL.
-    array_add(*buffer, 1);
-    array_add(*buffer, 0);
-
-    if (ssl_tls12_write_extension(buffer, ctx) != 0) {
-        return 1;
-    }
-
-    return 0;
-}
-
-void ssl_tls2_init(struct ssl_tls12_context *ctx)
-{
-    array_init(ctx->buffer, 1);
-    ctx->srp_username_len = 0;
-}
-
-void ssl_tls2_free(struct ssl_tls12_context *ctx)
-{
-    array_reset(ctx->buffer);
-}
-
-int ssl_tls12_write_client_hello(struct ssl_tls12_context *ctx)
-{
-    array_reserve(ctx->buffer, 1024);
-
-    ssl_tls12_start_handshake_msg(&ctx->buffer, SSL_HS_CLIENT_HELLO);
-
-    if (ssl_tls12_write_client_hello_body(&ctx->buffer, ctx) != 0) {
-        return 1;
-    }
-
-    if (ssl_tls12_finish_handshake_msg(&ctx->buffer, SSL_HS_CLIENT_HELLO) != 0) {
-        return 1;
-    }
-
-    // Do we need to calculate the checksum?
-
-    return 0;
-}
-
-void ssl_tls12_write_auth_packet(array_uint8_t *buffer, const uint8_t *content, size_t length)
-{
-    array_add(*buffer, SSL_MSG_HANDSHAKE);
-
-    // The version is always "\x03\x03". (i.e., TLS v1.2)
-    array_add(*buffer, 0x03);
-    array_add(*buffer, 0x03);
-
-    assert(length <= UINT16_MAX);
-    array_add_be_uint16(buffer, (uint16_t)length);
-    array_insert(*buffer, length, content);
-}
-
-int ssl_tls12_write_client_key_exchange(array_uint8_t *buffer, const uint8_t *key, size_t key_len)
-{
-    ssl_tls12_start_handshake_msg(buffer, SSL_HS_CLIENT_KEY_EXCHANGE);
-
-    array_add_be_uint16(buffer, (uint16_t)key_len);
-    array_insert(*buffer, key_len, key);
-
-    if (ssl_tls12_finish_handshake_msg(buffer, SSL_HS_CLIENT_KEY_EXCHANGE) != 0) {
-        return 1;
-    }
-
-    return 0;
-}
-
-void ssl_tls12_write_change_cipher_spec(array_uint8_t *buffer)
-{
-    array_add(*buffer, SSL_MSG_CHANGE_CIPHER_SPEC);
-
-    // The version is always "\x03\x03". (i.e., TLS v1.2)
-    array_add(*buffer, 0x03);
-    array_add(*buffer, 0x03);
-
-    // We hardcode the length of the message, because we only send one.
-    array_add_be_uint16(buffer, 1);
-
-    array_add(*buffer, 1);
-}
-
-#define ERR_SSL_CONTINUE_PROCESSING    1
-#define ERR_SSL_UNEXPECTED_MESSAGE     2
-#define ERR_SSL_UNSUPPORTED_PROTOCOL   3
-#define ERR_SSL_BAD_INPUT_DATA         4
-
-static int parse_tls12_handshake(const uint8_t *data, size_t length,
-    uint8_t content_type, const uint8_t **subdata, size_t *sublen)
-{
-    const size_t HEADER_LEN = 5;
-    // The packet starts with 1 byte defining the content type, 2 bytes defining
-    // the version and 2 bytes defining the length of the payload.
-    if (length < HEADER_LEN)
-        return ERR_SSL_CONTINUE_PROCESSING;
-
-    if (data[0] != content_type)
-        return ERR_SSL_UNEXPECTED_MESSAGE;
-
-    if (data[1] != 3 && data[2] != 3)
-        return ERR_SSL_UNSUPPORTED_PROTOCOL;
-
-    uint16_t client_sublen = be16dec(&data[3]);
-
-    // This can't overflow, we checked it before.
-    if ((length - HEADER_LEN) < client_sublen)
-        return ERR_SSL_CONTINUE_PROCESSING;
-
-    *subdata = &data[HEADER_LEN];
-    *sublen = client_sublen;
-    return 0;
-}
-
-static uint32_t be24dec(const void *pp)
-{
-    uint8_t const *p = (uint8_t const *)pp;
-    return (((unsigned)p[0] << 16) | (p[1] << 8) | p[2]);
-}
-
-static int chk_stream_read8(const uint8_t **data, size_t *length, uint8_t *out)
-{
-    if (*length < sizeof(*out))
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    *out = **data;
-    *data += sizeof(*out);
-    *length -= sizeof(*out);
-    return 0;
-}
-
-static int chk_stream_read16(const uint8_t **data, size_t *length, uint16_t *out)
-{
-    if (*length < sizeof(*out))
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    *out = be16dec(*data);
-    *data += sizeof(*out);
-    *length -= sizeof(*out);
-    return 0;
-}
-
-static int chk_stream_read32(const uint8_t **data, size_t *length, uint32_t *out)
-{
-    if (*length < sizeof(*out))
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    *out = be32dec(*data);
-    *data += sizeof(*out);
-    *length -= sizeof(*out);
-    return 0;
-}
-
-static int chk_stream_read(const uint8_t **data, size_t *length, uint8_t *out, size_t out_len)
-{
-    if (*length < out_len)
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    memcpy(out, *data, out_len);
-    *data += out_len;
-    *length -= out_len;
-    return 0;
-}
-
-static int parse_server_hello(struct server_hello *hello, const uint8_t *data, size_t length)
-{
-    int ret;
-    // The type is encoded on 1 byte and the length on 3 bytes.
-    const size_t MIN_LEN = 4;
-
-    if (length < MIN_LEN)
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    if (data[0] != SSL_HS_SERVER_HELLO)
-        return ERR_SSL_UNEXPECTED_MESSAGE;
-
-    uint32_t content_len = be24dec(&data[1]);
-    if ((length - MIN_LEN) != content_len) {
-        // At this point, we should already know we have the complete data.
-        return ERR_SSL_BAD_INPUT_DATA;
-    }
-
-    const uint8_t *content = &data[MIN_LEN];
-
-    uint16_t version;
-    if ((ret = chk_stream_read16(&content, &content_len, &version)) != 0)
-        return ret;
-    // @Cleanup: Maybe not the best error code to return...
-    if (version != 0x0303)
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    if ((ret = chk_stream_read32(&content, &content_len, &hello->random_time)) != 0)
-        return ret;
-    if ((ret = chk_stream_read(&content, &content_len, hello->random_bytes, sizeof(hello->random_bytes))) != 0)
-        return ret;
-
-    uint8_t session_id_len;
-    if ((ret = chk_stream_read8(&content, &content_len, &session_id_len)) != 0)
-        return ret;
-
-    // @Cleanup: Should we distinguish with unsupported input data?!?
-    if (session_id_len != 0)
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    uint16_t cipher_suite;
-    if ((ret = chk_stream_read16(&content, &content_len, &cipher_suite)) != 0)
-        return ret;
-
-    // @Cleanup:
-    // In theory any of the ciphers we told the cipher should work...
-    if (cipher_suite != TLS_SRP_SHA_WITH_AES_256_CBC_SHA)
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    uint8_t compression_method;
-    if ((ret = chk_stream_read8(&content, &content_len, &compression_method)) != 0)
-        return ret;
-    if (compression_method != 0)
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    uint16_t extension_len;
-    if ((ret = chk_stream_read16(&content, &content_len, &extension_len)) != 0)
-        return ret;
-    if (content_len != extension_len)
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    // @Cleanup: Should we read the extension and ensure we get what we expect?
-    return 0;
-}
-
-int sts_process_server_hello(struct server_hello *hello, const uint8_t *data, size_t length)
-{
-    int ret;
-    const uint8_t *server_hello_data;
-    size_t server_hello_len;
-
-    ret = parse_tls12_handshake(data, length, SSL_MSG_HANDSHAKE,
-        &server_hello_data, &server_hello_len);
-    if (ret != 0) {
-        return ret;
-    }
-
-    if ((ret = parse_server_hello(hello, server_hello_data, server_hello_len)) != 0)
-        return ret;
-
-    return 0;
-}
-
-static int parse_server_key_exchange(struct server_key *key, const uint8_t *data, size_t length)
-{
-    int ret;
-    // The type is encoded on 1 byte and the length on 3 bytes.
-    const size_t MIN_LEN = 4;
-
-    if (length < MIN_LEN)
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    if (data[0] != SSL_HS_SERVER_KEY_EXCHANGE)
-        return ERR_SSL_UNEXPECTED_MESSAGE;
-
-    uint32_t content_len = be24dec(&data[1]);
-    if ((length - MIN_LEN) != content_len) {
-        // At this point, we should already know we have the complete data.
-        return ERR_SSL_BAD_INPUT_DATA;
-    }
-
-    const uint8_t *content = &data[MIN_LEN];
-
-    // Currently, we support only an hardcoded format, with specified length
-    // for every integers. This isn't a requirement of the protocol, but it's
-    // simpler for us.
-
-    uint16_t prime_len;
-    if ((ret = chk_stream_read16(&content, &content_len, &prime_len)) != 0)
-        return ret;
-    if (prime_len != sizeof(key->prime)) {
-        // @Cleanup: Add trace prints.
-        return ERR_SSL_UNSUPPORTED_PROTOCOL;
-    }
-    if ((ret = chk_stream_read(&content, &content_len, key->prime, sizeof(key->prime))) != 0)
-        return ret;
-
-    uint16_t generator_len;
-    if ((ret = chk_stream_read16(&content, &content_len, &generator_len)) != 0)
-        return ret;
-    if (generator_len != sizeof(key->generator)) {
-        // @Cleanup: Add trace prints.
-        return ERR_SSL_UNSUPPORTED_PROTOCOL;
-    }
-    if ((ret = chk_stream_read(&content, &content_len, key->generator, sizeof(key->generator))) != 0)
-        return ret;
-
-    uint8_t salt_len;
-    if ((ret = chk_stream_read8(&content, &content_len, &salt_len)) != 0)
-        return ret;
-    if (salt_len != sizeof(key->salt)) {
-        // @Cleanup: Add trace prints.
-        return ERR_SSL_UNSUPPORTED_PROTOCOL;
-    }
-    if ((ret = chk_stream_read(&content, &content_len, key->salt, sizeof(key->salt))) != 0)
-        return ret;
-
-    uint16_t server_public_len;
-    if ((ret = chk_stream_read16(&content, &content_len, &server_public_len)) != 0)
-        return ret;
-    if (server_public_len != sizeof(key->server_public)) {
-        // @Cleanup: Add trace prints.
-        return ERR_SSL_UNSUPPORTED_PROTOCOL;
-    }
-    if ((ret = chk_stream_read(&content, &content_len, key->server_public, sizeof(key->server_public))) != 0)
-        return ret;
-
-    if (content_len != 0)
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    return 0;
-}
-
-int sts_process_server_key_exchange(struct server_key *key, const uint8_t *data, size_t length)
-{
-    int ret;
-    const uint8_t *server_key_data;
-    size_t server_key_len;
-
-    if ((ret = parse_tls12_handshake(data, length, SSL_MSG_HANDSHAKE,
-                                     &server_key_data, &server_key_len)) != 0) {
-        return ret;
-    }
-
-    if ((ret = parse_server_key_exchange(key, server_key_data, server_key_len)) != 0)
-        return ret;
-
-    return 0;
-}
-
-int sts_process_server_done(const uint8_t *data, size_t length)
-{
-    int ret;
-    const uint8_t *server_done_data;
-    size_t server_done_len;
-
-    if ((ret = parse_tls12_handshake(data, length, SSL_MSG_HANDSHAKE,
-                                     &server_done_data, &server_done_len)) != 0) {
-        return ret;
-    }
-
-    char expected[] = "\x0e\x00\x00\x00";
-    if (server_done_len != (sizeof(expected) - 1))
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    if (memcmp(server_done_data, expected, server_done_len) != 0)
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    return 0;
-}
-
-static void sts_write_header(array_uint8_t *request,
-    const char *url, size_t url_len, size_t content_len)
-{
-    const char version[] = " STS/1.0\r\n";
-
-    // Every requests start with 'P ' (\x50\x20).
-    array_insert(*request, 2, "P ");
-    array_insert(*request, url_len, (const uint8_t *)url);
-    // The request is followd by the version, on the same line.
-    array_insert(*request, sizeof(version) - 1, version);
-
-    // The content length is written as `l:%d`, we force use a `uint32_t`
-    // ensuring that a buffer of 32 bytes is always enough.
-    char content_length_buffer[32];
-    int ret = snprintf(content_length_buffer, sizeof(content_length_buffer),
-                       "l:%" PRIu32, (uint32_t)content_len);
-    if (ret < 0)
-        abort();
-    array_insert(*request, (size_t)ret, content_length_buffer);
-}
-
-static void sts_finish_request(array_uint8_t *request, const uint8_t *content, size_t content_len)
-{
-    // We are done writing the header, so we append "\r\n\r\n" like in http.
-    array_insert(*request, 4, "\r\n\r\n");
-    array_insert(*request, content_len, content);
-}
-
-void sts_write_request(array_uint8_t *request,
-    const char *url, size_t url_len,
-    const uint8_t *content, size_t content_len)
-{
-    sts_write_header(request, url, url_len, content_len);
-    sts_finish_request(request, content, content_len);
-}
-
-void sts_write_sequenced_request(
-    array_uint8_t *request, size_t seq_number, uint32_t timeout_ms,
-    const char *url, size_t url_len, const uint8_t *content, size_t content_len)
-{
-    sts_write_header(request, url, url_len, content_len);
-    array_insert(*request, 2, "\r\n");
-
-    char seq_number_buffer[64];
-    int ret = snprintf(
-        seq_number_buffer, sizeof(seq_number_buffer),
-        "s:%" PRIu32 ";timeout=%" PRIu32,
-        (uint32_t)seq_number, timeout_ms);
-    if (ret < 0)
-        abort();
-
-    array_insert(*request, (size_t)ret, seq_number_buffer);
-    sts_finish_request(request, content, content_len);
-}
-
 static int parse_next_line(const char *data, size_t length, size_t *line_len)
 {
     // Every line finish with a "\r\n", so we need at least two bytes to
@@ -574,7 +34,7 @@ static void skip_line(const char **data, size_t *length, size_t line_len)
     *length -= (line_len + 2);
 }
 
-int parse_sts_request(struct sts_request *request, const uint8_t *raw, size_t length)
+int parse_sts_header(struct sts_header *header, const uint8_t *raw, size_t length)
 {
     int ret;
     size_t line_len;
@@ -588,7 +48,7 @@ int parse_sts_request(struct sts_request *request, const uint8_t *raw, size_t le
     unsigned version_minor;
     char separator;
     ret = sscanf(data, "STS/%1u.%1u%c%3u", &version_major, &version_minor,
-                 &separator, &request->status_code);
+                 &separator, &header->status_code);
 
     if (ret != 4) {
         return STSE_UNSUPPORTED_PROTOCOL;
@@ -615,11 +75,11 @@ int parse_sts_request(struct sts_request *request, const uint8_t *raw, size_t le
 
         // We only care about the two "header" we saw. (i.e., 's' and 'l')
         if (data[0] == 's') {
-            if (sscanf(data, "s:%uR", &request->sequence_number) != 1) {
+            if (sscanf(data, "s:%uR", &header->sequence_number) != 1) {
                 return STSE_UNSUPPORTED_HEADER;
             }
         } else if (data[0] == 'l') {
-            if (sscanf(data, "l:%u", &request->content_length) != 1) {
+            if (sscanf(data, "l:%u", &header->content_length) != 1) {
                 return STSE_UNSUPPORTED_HEADER;
             }
         } else {
@@ -629,10 +89,353 @@ int parse_sts_request(struct sts_request *request, const uint8_t *raw, size_t le
         skip_line(&data, &length, line_len);
     }
 
-    if (length < request->content_length) {
+    if (length < header->content_length) {
         return STSE_INCOMPLETE_CONTENT;
     }
 
-    request->content = (const uint8_t *)data;
+    header->content = (const uint8_t *)data;
+    return 0;
+}
+
+void sts_connection_init(struct sts_connection *sts)
+{
+    memset(sts, 0, sizeof(*sts));
+
+    sts->fd = INVALID_SOCKET;
+    array_init(sts->addresses, 1);
+}
+
+void sts_connection_free(struct sts_connection *sts)
+{
+    if (sts->fd != INVALID_SOCKET)
+        closesocket(sts->fd);
+    array_reset(sts->addresses);
+}
+
+static int resolve_dns(array_sockaddr_t *addresses, int af, const char *hostname, uint16_t port)
+{
+    int ret;
+    struct addrinfo hints = {0};
+    struct addrinfo *results = NULL;
+
+    char port_as_str[sizeof("65535")];
+    snprintf(port_as_str, sizeof(port_as_str), "%" PRIu16, port);
+
+    hints.ai_family = af;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    if ((ret = getaddrinfo(hostname, port_as_str, &hints, &results)) != 0) {
+        fprintf(stderr, "Failed to resolved host '%s'\n", hostname);
+        return 1;
+    }
+
+    for (struct addrinfo *it = results; it != NULL; it = it->ai_next) {
+        array_add(*addresses, *it->ai_addr);
+    }
+
+    freeaddrinfo(results);
+    return 0;
+}
+
+static int resolve_dns4(array_sockaddr_t *addresses, const char *hostname, uint16_t port)
+{
+    return resolve_dns(addresses, AF_INET, hostname, port);
+}
+
+static void appendv(array_uint8_t *buffer, const char *fmt, va_list args)
+{
+    int ret = vsnprintf(NULL, 0, fmt, args);
+    if (ret < 0)
+        abort();
+
+    // We need to allocate one more bytes, because  of `vsnprintf`.
+    // We will pop this "\0" byte later.
+    uint8_t *write_ptr = array_push(*buffer, (size_t)ret + 1);
+    vsnprintf((char *)write_ptr, (size_t)ret + 1, fmt, args);
+    array_pop(*buffer);
+}
+
+static void appendf(array_uint8_t *buffer, const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    appendv(buffer, fmt, args);
+    va_end(args);
+}
+
+static uint64_t anet_epoch()
+{
+    // For some reason the server has an offset on the epoch of 31 years.
+    // This value represent the exact offset
+    static const time_t EPOCH_OFFSET = 978307200;
+
+    time_t epoch = time(NULL);
+    return (uint64_t)(epoch - EPOCH_OFFSET);
+}
+
+static int set_sockname(struct sts_connection *sts)
+{
+    struct sockaddr_storage sa;
+    socklen_t len = sizeof(sa);
+    int ret = getsockname(sts->fd, (struct sockaddr *)&sa, &len);
+    if (ret != 0) {
+        fprintf(stderr, "'getsockname' failed\n");
+        return 1;
+    }
+
+    void *addr = NULL;
+    switch (sa.ss_family)
+    {
+        case AF_INET:
+            addr = &((struct sockaddr_in *)&sa)->sin_addr;
+            break;
+        case AF_INET6:
+            addr = &((struct sockaddr_in6 *)&sa)->sin6_addr;
+            break;
+        default:
+            return 1;
+    }
+
+    if (inet_ntop(sa.ss_family, addr, sts->sockname, sizeof(sts->sockname)) == NULL) {
+        fprintf(stdout, "Couldn't parse ip address\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int sts_write_header(array_uint8_t *request,
+    const char *url, size_t url_len, size_t content_len)
+{
+    const char version[] = " STS/1.0\r\n";
+
+    if ((size_t)UINT32_MAX < content_len) {
+        return 1;
+    }
+
+    uint32_t content_len_as_u32 = (uint32_t)content_len;
+
+    // Every requests start with 'P ' (\x50\x20).
+    array_insert(*request, 2, "P ");
+    array_insert(*request, url_len, (const uint8_t *)url);
+    // The request is followd by the version, on the same line.
+    array_insert(*request, sizeof(version) - 1, version);
+
+    // The content length is written as `l:%d`, we force use a `uint32_t`
+    // ensuring that a buffer of 32 bytes is always enough.
+    char content_length_buffer[32];
+    int ret = snprintf(content_length_buffer, sizeof(content_length_buffer),
+                       "l:%" PRIu32, (uint32_t)content_len_as_u32);
+    if (ret < 0)
+        return 1;
+
+    array_insert(*request, (size_t)ret, content_length_buffer);
+    return 0;
+}
+
+static void sts_finish_request(array_uint8_t *request,
+    const uint8_t *content, size_t content_len)
+{
+    // We are done writing the header, so we append "\r\n\r\n" like in http.
+    array_insert(*request, 4, "\r\n\r\n");
+    array_insert(*request, content_len, content);
+}
+
+static int send_full(SOCKET fd, const uint8_t *buffer, size_t buffer_len)
+{
+    int ret;
+    size_t written = 0;
+
+    while (written < buffer_len) {
+        const char *p = (const char *)buffer + written;
+        if ((ret = send(fd, p, buffer_len - written, 0)) <= 0)
+            return ret;
+        written += (size_t)ret;
+    }
+
+    return 0;
+}
+
+static int recv_to_buffer(SOCKET fd, array_uint8_t *buffer)
+{
+    int ret;
+
+    const size_t BUFFER_SIZE = 1024;
+    uint8_t *ptr = array_push(*buffer, BUFFER_SIZE);
+
+    if ((ret = recv(fd, (char *)ptr, BUFFER_SIZE, 0)) <= 0) {
+        size_t size = array_size(*buffer) - BUFFER_SIZE;
+        array_resize(*buffer, size);
+        return ret;
+    }
+
+    size_t size = array_size(*buffer) - (BUFFER_SIZE - (size_t)ret);
+    array_resize(*buffer, size);
+    return 0;
+}
+
+static int sts_write_request(
+    struct sts_connection *sts,
+    const char *url, size_t url_len,
+    const uint8_t *content, size_t content_len)
+{
+    int ret;
+
+    array_uint8_t request;
+    array_init(request, 1024);
+
+    if ((ret = sts_write_header(&request, url, url_len, content_len)) != 0) {
+        array_reset(request);
+        return 1;
+    }
+
+    sts_finish_request(&request, content, content_len);
+
+    if ((ret = send_full(sts->fd, request.data, request.size)) != 0) {
+        array_reset(request);
+        return ret;
+    }
+
+    array_reset(request);
+    return 0;
+}
+
+static int sts_write_request_with_sequence_number(
+    struct sts_connection *sts, const char *url, size_t url_len,
+    size_t seq_number, uint32_t timeout_ms, const uint8_t *content, size_t content_len)
+{
+    int ret;
+
+    array_uint8_t request;
+    array_init(request, 1024);
+
+    if ((ret = sts_write_header(&request, url, url_len, content_len)) != 0) {
+        return 1;
+    }
+
+    array_insert(request, 2, "\r\n");
+
+    char seq_number_buffer[64];
+    ret = snprintf(
+        seq_number_buffer, sizeof(seq_number_buffer),
+        "s:%" PRIu32 ";timeout=%" PRIu32,
+        (uint32_t)seq_number, timeout_ms);
+
+    if (ret < 0) {
+        array_reset(request);
+        return 1;
+    }
+
+    array_insert(request, (size_t)ret, seq_number_buffer);
+    sts_finish_request(&request, content, content_len);
+
+    if ((ret = send_full(sts->fd, request.data, request.size)) != 0) {
+        array_reset(request);
+        return ret;
+    }
+
+    array_reset(request);
+    return 0;
+}
+
+int sts_connection_connect(struct sts_connection *sts, const char *hostname)
+{
+    int ret;
+
+    if ((ret = resolve_dns4(&sts->addresses, hostname, 6112)) != 0)
+        return ret;
+
+    sts->fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (sts->fd == INVALID_SOCKET) {
+        fprintf(stderr, "'socket' failed\n");
+        return 1;
+    }
+
+    struct sockaddr *it;
+    array_foreach(it, sts->addresses) {
+        if ((ret = connect(sts->fd, it, sizeof(*it))) == 0) {
+            break;
+        }
+    }
+
+    if (it == array_end(sts->addresses)) {
+        fprintf(stderr, "Couldn't connect to '%s:%hu\n", hostname, 6112);
+        return 1;
+    }
+
+    if ((ret = set_sockname(sts)) != 0) {
+        return ret;
+    }
+
+    array_uint8_t content;
+    array_init(content, 1024);
+
+    appendf(&content, "<Connect>\n");
+    appendf(&content, "<ConnType>400</ConnType>\n");
+    appendf(&content, "<Address>%s</Address>\n", sts->sockname);
+    appendf(&content, "<ProductType>0</ProductType>\n");
+    appendf(&content, "<ProductName>Gw</ProductName>\n");
+    appendf(&content, "<AppIndex>1</AppIndex>\n");
+    appendf(&content, "<Epoch>%" PRIu64 "</Epoch>\n", anet_epoch());
+    appendf(&content, "<Program>1</Program>\n");
+    appendf(&content, "<Build>1002</Build>\n");
+    appendf(&content, "<Process>%d</Process>\n", getpid());
+    appendf(&content, "</Connect>\n");
+
+    const char url[] = "/Sts/Connect";
+    size_t url_len = ARRAY_SIZE(url) - 1;
+    if ((ret = sts_write_request(sts, url, url_len, content.data, content.size)) != 0) {
+        return ret;
+    }
+
+    return 0;
+}
+
+int sts_connection_start_tls(struct sts_connection *sts)
+{
+    int ret;
+
+    const char url[] = "/Auth/StartTls";
+    size_t url_len = ARRAY_SIZE(url) - 1;
+    const uint8_t content[] = "";
+    size_t content_len = ARRAY_SIZE(content) - 1;
+
+    if ((ret = sts_write_request_with_sequence_number(
+        sts, url, url_len, 1, 4000, content, content_len)) != 0) {
+
+        return ret;
+    }
+
+    array_uint8_t buffer;
+    array_init(buffer, 1024);
+
+    struct sts_header header = {0};
+    for (;;) {
+        if ((ret = recv_to_buffer(sts->fd, &buffer)) != 0) {
+            array_reset(buffer);
+            return ret;
+        }
+
+        ret = parse_sts_header(&header, buffer.data, buffer.size);
+
+        // We wait till we receive all the header and all the content.
+        if (ret != STSE_INCOMPLETE_CONTENT && ret != STSE_INCOMPLETE_HEADER) {
+            // We don't care about the content of the response, it's useless
+            // and the header gives us all the necessary information.
+            array_reset(buffer);
+            break;
+        }
+    }
+
+    if (ret != STSE_SUCCESS) {
+        return ret;
+    }
+
+    if (header.status_code != 400) {
+        fprintf(stderr, "Couldn't start a STS connection, status: %d\n", header.status_code);
+        return 1;
+    }
+
     return 0;
 }

@@ -29,7 +29,19 @@
 # include <Ws2tcpip.h>
 # pragma comment(lib, "Ws2_32.lib")
 #else
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <netinet/tcp.h>
+# include <netinet/in.h>
+# include <netdb.h>
+# include <arpa/inet.h>
+# define SOCKET int
+# define closesocket close
+# define INVALID_SOCKET -1
+# define SOCKET_ERROR -1
 #endif
+
+#include <mbedtls/sha1.h>
 
 #include <common/array.h>
 #include <common/endian.h>
@@ -38,6 +50,8 @@
 
 #include "login.h"
 #include "sts.h"
+#include "ssl.h"
 
 #include "login.c"
 #include "sts.c"
+#include "ssl.c"
