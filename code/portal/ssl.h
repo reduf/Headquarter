@@ -3,6 +3,11 @@
 #endif
 #define PORTAL_SSL_H
 
+#define ERR_SSL_CONTINUE_PROCESSING    1
+#define ERR_SSL_UNEXPECTED_MESSAGE     2
+#define ERR_SSL_UNSUPPORTED_PROTOCOL   3
+#define ERR_SSL_BAD_INPUT_DATA         4
+
 enum ssl_sts_state {
     AWAIT_CLIENT_HELLO,
     AWAIT_SERVER_HELLO,

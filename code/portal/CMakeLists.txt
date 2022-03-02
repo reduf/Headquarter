@@ -3,6 +3,10 @@ set(
 
   login.c
   login.h
+  socket.c
+  socket.h
+  ssl.c
+  ssl.h
   sts.c
   sts.h
 )
@@ -30,6 +34,7 @@ target_include_directories(
 if (MSVC)
   # We disable the following warnings:
   # - C4057: nonstandard extension used: nameless struct/union
-  target_compile_options(portal PRIVATE /W4 /WX /wd4201)
+  # - C4115: named type definition in parentheses
+  target_compile_options(portal PRIVATE /W4 /WX /wd4201 /wd4115)
 endif()
 

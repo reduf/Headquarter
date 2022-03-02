@@ -105,40 +105,83 @@ static void array_add_be_uint16(array_uint8_t *buffer, uint16_t value)
     be16enc(ptr, value);
 }
 
-static void ssl_srp_start_handshake_msg(array_uint8_t *buffer, size_t *pos, uint8_t hs_type)
+static void ssl_srp_start_protocol_msg(struct ssl_sts_connection *ssl, size_t *header_pos)
 {
-    /*
-     * Reserve 4 bytes for hanshake header.
-     *    ...
-     *    HandshakeType msg_type;
-     *    uint24 length;
-     *    ...
-     */
+    *header_pos = array_size(ssl->write);
 
-    // Save the position of the header to later write the appropriate size.
-    *pos = array_size(*buffer);
+    array_add(ssl->write, SSL_MSG_HANDSHAKE);
 
-    array_add(*buffer, hs_type);
-    (void)array_push(*buffer, 3);
+    // The version is always "\x03\x03". (i.e., TLS v1.2)
+    array_add(ssl->write, 0x03);
+    array_add(ssl->write, 0x03);
+
+    // Reserve two bytes to later write the length.
+    (void)array_push(ssl->write, 2);
 }
 
-static int ssl_srp_finish_handshake_msg(array_uint8_t *buffer, size_t header_pos, uint8_t hs_type)
+static int ssl_srp_finish_protocol_msg(struct ssl_sts_connection *ssl, size_t header_pos)
 {
-    const size_t HANDSHAKE_HDR_LEN = 4;
-    assert((header_pos + HANDSHAKE_HDR_LEN) <= array_size(*buffer));
-    assert(array_at(*buffer, header_pos) == hs_type);
+    const size_t MSG_HDR_LEN = 5;
+    assert((header_pos + MSG_HDR_LEN) <= array_size(ssl->write));
+    assert(array_at(ssl->write, header_pos) == SSL_MSG_HANDSHAKE);
 
-    uint8_t *content_begin = array_begin(*buffer) + HANDSHAKE_HDR_LEN;
-    size_t content_length = array_end(*buffer) - content_begin;
+    size_t msg_size = array_size(ssl->write) - (header_pos + MSG_HDR_LEN);
+    if ((size_t)UINT16_MAX < msg_size)
+        return 1;
+
+    uint8_t *p = &array_at(ssl->write, header_pos + 3);
+    be16enc(p, (uint16_t)msg_size);
+    return 0;
+}
+
+static void ssl_srp_start_handshake_msg(struct ssl_sts_connection *ssl, size_t *pos, uint8_t hs_type)
+{
+    size_t header_pos;
+    ssl_srp_start_protocol_msg(ssl, &header_pos);
+
+    // We assume this offset when we finish the handhsake message.
+    // There should be more elegant solution, but that's what we
+    // have for now.
+    assert((array_size(ssl->write) - header_pos) == 5);
+
+    //
+    // Reserve 4 bytes for hanshake header.
+    //    ...
+    //    HandshakeType msg_type;
+    //    uint24 length;
+    //    ...
+    //
+
+    // Save the position of the header to later write the appropriate size.
+    *pos = array_size(ssl->write);
+
+    array_add(ssl->write, hs_type);
+    (void)array_push(ssl->write, 3);
+}
+
+static int ssl_srp_finish_handshake_msg(struct ssl_sts_connection *ssl, size_t header_pos, uint8_t hs_type)
+{
+    int ret;
+    const size_t HANDSHAKE_HDR_LEN = 4;
+    assert((header_pos + HANDSHAKE_HDR_LEN) <= array_size(ssl->write));
+    assert(array_at(ssl->write, header_pos) == hs_type);
+
+    uint8_t *content_begin = array_begin(ssl->write) + header_pos + HANDSHAKE_HDR_LEN;
+    size_t content_length = array_end(ssl->write) - content_begin;
 
     const size_t UINT24_MAX = 0xFFFFFF;
     if (UINT24_MAX <= content_length)
         return 1;
 
-    uint8_t *hs_len_ptr = array_begin(*buffer) + 1;
+    uint8_t *hs_len_ptr = array_begin(ssl->write) + 1;
     hs_len_ptr[header_pos + 0] = (content_length >> 16) & 0xFF;
     hs_len_ptr[header_pos + 1] = (content_length >> 8) & 0xFF;
     hs_len_ptr[header_pos + 2] = content_length & 0xFF;
+
+    if ((ret = ssl_srp_finish_protocol_msg(ssl, (header_pos - 5))) != 0) {
+        return ret;
+    }
+
     return 0;
 }
 
@@ -234,48 +277,19 @@ static int ssl_srp_write_client_hello_body(struct ssl_sts_connection *ssl)
 static int ssl_srp_write_client_hello(struct ssl_sts_connection *ssl)
 {
     size_t header_pos;
-    ssl_srp_start_handshake_msg(&ssl->write, &header_pos, SSL_HS_CLIENT_HELLO);
+    ssl_srp_start_handshake_msg(ssl, &header_pos, SSL_HS_CLIENT_HELLO);
 
     if (ssl_srp_write_client_hello_body(ssl) != 0) {
         return 1;
     }
 
-    if (ssl_srp_finish_handshake_msg(&ssl->write, header_pos, SSL_HS_CLIENT_HELLO) != 0) {
+    if (ssl_srp_finish_handshake_msg(ssl, header_pos, SSL_HS_CLIENT_HELLO) != 0) {
         return 1;
     }
 
     // @Cleanup: We need to calculate the checksum for the hashmac.
 
     ssl->state = AWAIT_SERVER_HELLO;
-    return 0;
-}
-
-static void ssl_srp_start_handhsake_msg(struct ssl_sts_connection *ssl, size_t *header_pos)
-{
-    *header_pos = array_size(ssl->write);
-
-    array_add(ssl->write, SSL_MSG_HANDSHAKE);
-
-    // The version is always "\x03\x03". (i.e., TLS v1.2)
-    array_add(ssl->write, 0x03);
-    array_add(ssl->write, 0x03);
-
-    // Reserve two bytes to later write the length.
-    (void)array_push(ssl->write, 2);
-}
-
-static int ssl_srp_finish_handhsake_msg(struct ssl_sts_connection *ssl, size_t header_pos)
-{
-    const size_t MSG_HDR_LEN = 5;
-    assert((header_pos + MSG_HDR_LEN) <= array_size(ssl->write));
-    assert(array_at(ssl->write, header_pos) == SSL_MSG_HANDSHAKE);
-
-    size_t msg_size = array_size(ssl->write) - (header_pos + MSG_HDR_LEN);
-    if ((size_t)UINT16_MAX < msg_size)
-        return 1;
-
-    uint8_t *p = &array_at(ssl->write, header_pos + 3);
-    be16enc(p, (uint16_t)msg_size);
     return 0;
 }
 
@@ -308,11 +322,6 @@ void ssl_srp_write_change_cipher_spec(array_uint8_t *buffer)
 
     array_add(*buffer, 1);
 }
-
-#define ERR_SSL_CONTINUE_PROCESSING    1
-#define ERR_SSL_UNEXPECTED_MESSAGE     2
-#define ERR_SSL_UNSUPPORTED_PROTOCOL   3
-#define ERR_SSL_BAD_INPUT_DATA         4
 
 static int parse_tls12_handshake(const uint8_t *data, size_t length,
     uint8_t content_type, const uint8_t **subdata, size_t *sublen)
@@ -473,6 +482,8 @@ static int ssl_srp_process_server_hello(struct ssl_sts_connection *ssl)
     if ((ret = parse_server_hello(ssl, inner_data, inner_len)) != 0)
         return ret;
 
+    size_t processed = (inner_data - ssl->read.data) + inner_len;
+    array_remove_range_ordered(ssl->read, 0, processed);
     ssl->state = AWAIT_SERVER_KEY_EXCHANGE;
     return 0;
 }
@@ -561,6 +572,8 @@ static int ssl_srp_process_server_key_exchange(struct ssl_sts_connection *ssl)
     if ((ret = parse_server_key_exchange(&ssl->server_key, inner_data, inner_len)) != 0)
         return ret;
 
+    size_t processed = (inner_data - ssl->read.data) + inner_len;
+    array_remove_range_ordered(ssl->read, 0, processed);
     ssl->state = AWAIT_SERVER_HELLO_DONE;
     return 0;
 }
@@ -583,6 +596,8 @@ int sts_process_server_done(struct ssl_sts_connection *ssl)
     if (memcmp(inner_data, expected, inner_len) != 0)
         return ERR_SSL_BAD_INPUT_DATA;
 
+    size_t processed = (inner_data - ssl->read.data) + inner_len;
+    array_remove_range_ordered(ssl->read, 0, processed);
     ssl->state = AWAIT_CLIENT_KEY_EXCHANGE;
     return 0;
 }
@@ -590,9 +605,6 @@ int sts_process_server_done(struct ssl_sts_connection *ssl)
 int ssl_sts_connection_step(struct ssl_sts_connection *ssl)
 {
     int ret = 0;
-
-    size_t header_pos;
-    ssl_srp_start_handhsake_msg(ssl, &header_pos);
 
     switch (ssl->state) {
         case AWAIT_CLIENT_HELLO:
@@ -618,12 +630,6 @@ int ssl_sts_connection_step(struct ssl_sts_connection *ssl)
     }
 
     if (ret != 0) {
-        // @Cleanup: Should we kill the connection here?
-        return ret;
-    }
-
-    // This is actually broken, this function may not send any data...
-    if ((ret = ssl_srp_finish_handhsake_msg(ssl, header_pos)) != 0) {
         return ret;
     }
 

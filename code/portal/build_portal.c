@@ -48,10 +48,14 @@
 #include <common/macro.h>
 #include <common/process.h>
 
+typedef array(uint8_t) array_uint8_t;
+
 #include "login.h"
-#include "sts.h"
+#include "socket.h"
 #include "ssl.h"
+#include "sts.h"
 
 #include "login.c"
-#include "sts.c"
+#include "socket.c"
 #include "ssl.c"
+#include "sts.c"

@@ -32,10 +32,39 @@ int portal_login(const char *username, const char *password)
 
     for (;;) {
         if ((ret = ssl_sts_connection_step(&ssl)) != 0) {
-            ssl_sts_connection_free(&ssl);
-            return ret;
+            if (ret != ERR_SSL_CONTINUE_PROCESSING) {
+                ssl_sts_connection_free(&ssl);
+                return ret;
+            }
+        }
+
+        if (!array_empty(ssl.write)) {
+            if ((ret = send_full(ssl.fd, ssl.write.data, ssl.write.size)) != 0) {
+                ssl_sts_connection_free(&ssl);
+                return ret;
+            }
+
+            array_clear(ssl.write);
+        }
+
+        // This is a ugly, but only there for testing. We need to not block on
+        // socket read when there is nothing to read, but this is a next step.
+        if (!array_empty(ssl.read))
+            continue;
+
+        switch (ssl.state)
+        {
+            case AWAIT_SERVER_HELLO:
+            case AWAIT_SERVER_KEY_EXCHANGE:
+            case AWAIT_SERVER_HELLO_DONE:
+                if ((ret = recv_to_buffer(ssl.fd, &ssl.read)) != 0) {
+                    ssl_sts_connection_free(&ssl);
+                    return ret;
+                }
+                break;
+
+            default:
+                break;
         }
     }
-
-    return 0;
 }
