@@ -174,3 +174,19 @@ _array_remove_ordered(array_void_t *a, size_t i, const size_t elem_size)
     }
     a->size -= 1;
 }
+
+void
+_array_remove_range_ordered(array_void_t *a, size_t index, size_t count, const size_t elem_size)
+{
+    assert(a && elem_size > 0);
+    if (a->size <= index)
+        return;
+    if (a->size < (index + count))
+        count = a->size - index;
+    size_t rem = a->size - count;
+    if (rem) {
+        char *data = (char *)a->data + (index * elem_size);
+        memmove(data, data + (count * elem_size), rem * elem_size);
+    }
+    a->size -= count;
+}

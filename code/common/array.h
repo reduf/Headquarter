@@ -70,7 +70,8 @@ union {                         \
 #define array_copy(d, s)        _array_copy(&(d).base, &(s).base, sizeof((s).data[0]))
 #define array_push(a, n)        _array_push(&(a).base, (n), sizeof(*(a).data))
 
-#define array_remove_ordered(a, i) _array_remove_ordered(&(a).base, (i), sizeof(*(a).data))
+#define array_remove_ordered(a, i) _array_remove_range_ordered(&(a).base, (i), 1, sizeof(*(a).data))
+#define array_remove_range_ordered(a, i, c) _array_remove_range_ordered(&(a).base, (i), (c), sizeof(*(a).data))
 
 #define array_add(a, e)         (array_reserve(a, 1) && (((a).data[(a).size++] = (e)), 1))
 #define array_set(a, i, e)      (array_inside(a, i)  && (((a).data[(i)] = (e)), 1))
@@ -117,6 +118,7 @@ void _array_remove(array_void_t *a, size_t index, const size_t elem_size);
 int _array_insert(array_void_t *a, size_t count, const void *ptr, const size_t elem_size);
 int _array_copy(array_void_t *dest, array_void_t *src, const size_t elem_size);
 void * _array_push(array_void_t *a, size_t n, const size_t elem_size);
-void _array_remove_ordered(array_void_t *a, size_t i, const size_t elem_size);
+void _array_remove_ordered(array_void_t *a, size_t index, const size_t elem_size);
+void _array_remove_range_ordered(array_void_t *a, size_t index, size_t count, const size_t elem_size);
 
 #endif // COMMON_ARRAY_H
