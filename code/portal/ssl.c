@@ -99,12 +99,6 @@ int ssl_sts_connection_init_srp(struct ssl_sts_connection *ssl, const char *user
 #define SSL_MSG_APPLICATION_DATA       23
 #define SSL_MSG_CID                    25
 
-static void array_add_be_uint16(array_uint8_t *buffer, uint16_t value)
-{
-    uint8_t *ptr = array_push(*buffer, sizeof(value));
-    be16enc(ptr, value);
-}
-
 static void ssl_srp_start_protocol_msg(struct ssl_sts_connection *ssl, size_t *header_pos)
 {
     *header_pos = array_size(ssl->write);
@@ -293,34 +287,40 @@ static int ssl_srp_write_client_hello(struct ssl_sts_connection *ssl)
     return 0;
 }
 
-/*
-int ssl_srp_write_client_key_exchange(array_uint8_t *buffer, const uint8_t *key, size_t key_len)
+static int ssl_srp_write_client_key_exchange(struct ssl_sts_connection *ssl)
 {
-    ssl_srp_start_handshake_msg(buffer, SSL_HS_CLIENT_KEY_EXCHANGE);
+    STATIC_ASSERT(sizeof(ssl->client_key.public) <= UINT16_MAX);
 
-    array_add_be_uint16(buffer, (uint16_t)key_len);
-    array_insert(*buffer, key_len, key);
+    size_t header_pos;
+    ssl_srp_start_handshake_msg(ssl, &header_pos, SSL_HS_CLIENT_KEY_EXCHANGE);
 
-    if (ssl_srp_finish_handshake_msg(buffer, SSL_HS_CLIENT_KEY_EXCHANGE) != 0) {
+    const uint16_t keylen = sizeof(ssl->client_key.public);
+    array_add_be_uint16(&ssl->write, keylen);
+    array_insert(ssl->write, keylen, ssl->client_key.public);
+
+    if (ssl_srp_finish_handshake_msg(ssl, header_pos, SSL_HS_CLIENT_KEY_EXCHANGE) != 0) {
         return 1;
     }
 
+    ssl->state = AWAIT_CLIENT_CHANGE_CIPHER_SPEC;
     return 0;
 }
-*/
 
-void ssl_srp_write_change_cipher_spec(array_uint8_t *buffer)
+static int ssl_srp_write_change_cipher_spec(struct ssl_sts_connection *ssl)
 {
-    array_add(*buffer, SSL_MSG_CHANGE_CIPHER_SPEC);
+    array_add(ssl->write, SSL_MSG_CHANGE_CIPHER_SPEC);
 
     // The version is always "\x03\x03". (i.e., TLS v1.2)
-    array_add(*buffer, 0x03);
-    array_add(*buffer, 0x03);
+    array_add(ssl->write, 0x03);
+    array_add(ssl->write, 0x03);
 
     // We hardcode the length of the message, because we only send one.
-    array_add_be_uint16(buffer, 1);
+    array_add_be_uint16(&ssl->write, 1);
 
-    array_add(*buffer, 1);
+    array_add(ssl->write, 1);
+
+    ssl->state = AWAIT_CLIENT_FINISHED;
+    return 0;
 }
 
 static int parse_tls12_handshake(const uint8_t *data, size_t length,
@@ -346,56 +346,6 @@ static int parse_tls12_handshake(const uint8_t *data, size_t length,
 
     *subdata = &data[HEADER_LEN];
     *sublen = client_sublen;
-    return 0;
-}
-
-static uint32_t be24dec(const void *pp)
-{
-    uint8_t const *p = (uint8_t const *)pp;
-    return (((unsigned)p[0] << 16) | (p[1] << 8) | p[2]);
-}
-
-static int chk_stream_read8(const uint8_t **data, size_t *length, uint8_t *out)
-{
-    if (*length < sizeof(*out))
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    *out = **data;
-    *data += sizeof(*out);
-    *length -= sizeof(*out);
-    return 0;
-}
-
-static int chk_stream_read16(const uint8_t **data, size_t *length, uint16_t *out)
-{
-    if (*length < sizeof(*out))
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    *out = be16dec(*data);
-    *data += sizeof(*out);
-    *length -= sizeof(*out);
-    return 0;
-}
-
-static int chk_stream_read32(const uint8_t **data, size_t *length, uint32_t *out)
-{
-    if (*length < sizeof(*out))
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    *out = be32dec(*data);
-    *data += sizeof(*out);
-    *length -= sizeof(*out);
-    return 0;
-}
-
-static int chk_stream_read(const uint8_t **data, size_t *length, uint8_t *out, size_t out_len)
-{
-    if (*length < out_len)
-        return ERR_SSL_BAD_INPUT_DATA;
-
-    memcpy(out, *data, out_len);
-    *data += out_len;
-    *length -= out_len;
     return 0;
 }
 
@@ -578,7 +528,7 @@ static int ssl_srp_process_server_key_exchange(struct ssl_sts_connection *ssl)
     return 0;
 }
 
-int sts_process_server_done(struct ssl_sts_connection *ssl)
+static int sts_process_server_done(struct ssl_sts_connection *ssl)
 {
     int ret;
     const uint8_t *inner_data;
@@ -624,9 +574,15 @@ int ssl_sts_connection_step(struct ssl_sts_connection *ssl)
             break;
 
         case AWAIT_CLIENT_KEY_EXCHANGE:
-        case AWAIT_CLIENT_CHANGE_CIPHER_SPEC:
-            ret = 1;
+            ret = ssl_srp_write_client_key_exchange(ssl);
             break;
+
+        case AWAIT_CLIENT_CHANGE_CIPHER_SPEC:
+            ret = ssl_srp_write_change_cipher_spec(ssl);
+            break;
+
+        default:
+            ret = 1;
     }
 
     if (ret != 0) {

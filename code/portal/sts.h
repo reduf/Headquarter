@@ -3,7 +3,6 @@
 #endif
 #define PORTAL_STS_H
 
-typedef array(struct sockaddr) array_sockaddr_t;
 struct sts_connection {
     SOCKET           fd;
     array_sockaddr_t addresses;

@@ -7,6 +7,8 @@ set(
   socket.h
   ssl.c
   ssl.h
+  stream.c
+  stream.h
   sts.c
   sts.h
 )

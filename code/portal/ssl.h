@@ -15,6 +15,7 @@ enum ssl_sts_state {
     AWAIT_SERVER_HELLO_DONE,
     AWAIT_CLIENT_KEY_EXCHANGE,
     AWAIT_CLIENT_CHANGE_CIPHER_SPEC,
+    AWAIT_CLIENT_FINISHED,
 };
 
 // The hardcoded size here do not reflect the size(s) that are supported by
@@ -25,6 +26,11 @@ struct server_key {
     uint8_t generator[1];
     uint8_t salt[8];
     uint8_t server_public[128];
+};
+
+struct client_key {
+    uint8_t private[128];
+    uint8_t public[128];
 };
 
 struct tls12_random {
@@ -42,6 +48,7 @@ struct ssl_sts_connection {
     struct tls12_random client_random;
     struct tls12_random server_random;
     struct server_key   server_key;
+    struct client_key   client_key;
 
     char srp_username[256];
     size_t srp_username_len;

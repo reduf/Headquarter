@@ -112,58 +112,6 @@ void sts_connection_free(struct sts_connection *sts)
     array_reset(sts->addresses);
 }
 
-static int resolve_dns(array_sockaddr_t *addresses, int af, const char *hostname, uint16_t port)
-{
-    int ret;
-    struct addrinfo hints = {0};
-    struct addrinfo *results = NULL;
-
-    char port_as_str[sizeof("65535")];
-    snprintf(port_as_str, sizeof(port_as_str), "%" PRIu16, port);
-
-    hints.ai_family = af;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-
-    if ((ret = getaddrinfo(hostname, port_as_str, &hints, &results)) != 0) {
-        fprintf(stderr, "Failed to resolved host '%s'\n", hostname);
-        return 1;
-    }
-
-    for (struct addrinfo *it = results; it != NULL; it = it->ai_next) {
-        array_add(*addresses, *it->ai_addr);
-    }
-
-    freeaddrinfo(results);
-    return 0;
-}
-
-static int resolve_dns4(array_sockaddr_t *addresses, const char *hostname, uint16_t port)
-{
-    return resolve_dns(addresses, AF_INET, hostname, port);
-}
-
-static void appendv(array_uint8_t *buffer, const char *fmt, va_list args)
-{
-    int ret = vsnprintf(NULL, 0, fmt, args);
-    if (ret < 0)
-        abort();
-
-    // We need to allocate one more bytes, because  of `vsnprintf`.
-    // We will pop this "\0" byte later.
-    uint8_t *write_ptr = array_push(*buffer, (size_t)ret + 1);
-    vsnprintf((char *)write_ptr, (size_t)ret + 1, fmt, args);
-    array_pop(*buffer);
-}
-
-static void appendf(array_uint8_t *buffer, const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    appendv(buffer, fmt, args);
-    va_end(args);
-}
-
 static uint64_t anet_epoch()
 {
     // For some reason the server has an offset on the epoch of 31 years.

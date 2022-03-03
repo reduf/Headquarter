@@ -35,3 +35,34 @@ int recv_to_buffer(SOCKET fd, array_uint8_t *buffer)
     array_resize(*buffer, size);
     return 0;
 }
+
+int resolve_dns(array_sockaddr_t *addresses, int af, const char *hostname, uint16_t port)
+{
+    int ret;
+    struct addrinfo hints = {0};
+    struct addrinfo *results = NULL;
+
+    char port_as_str[sizeof("65535")];
+    snprintf(port_as_str, sizeof(port_as_str), "%" PRIu16, port);
+
+    hints.ai_family = af;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    if ((ret = getaddrinfo(hostname, port_as_str, &hints, &results)) != 0) {
+        fprintf(stderr, "Failed to resolved host '%s'\n", hostname);
+        return 1;
+    }
+
+    for (struct addrinfo *it = results; it != NULL; it = it->ai_next) {
+        array_add(*addresses, *it->ai_addr);
+    }
+
+    freeaddrinfo(results);
+    return 0;
+}
+
+int resolve_dns4(array_sockaddr_t *addresses, const char *hostname, uint16_t port)
+{
+    return resolve_dns(addresses, AF_INET, hostname, port);
+}

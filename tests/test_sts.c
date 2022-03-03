@@ -9,6 +9,10 @@
 
 #include <common/array.h>
 #include <common/macro.h>
+
+#include <portal/stream.h>
+#include <portal/socket.h>
+
 #include <portal/sts.h>
 #include <portal/login.h>
 
