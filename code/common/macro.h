@@ -22,4 +22,6 @@
 #define MAX(a, b) (((b) < (a)) ? (a) : (b))
 #define MIN(a, b) (((b) > (a)) ? (a) : (b))
 
+#define STATIC_ASSERT(expr) static_assert(expr, #expr)
+
 #endif // COMMON_MACRO_H
