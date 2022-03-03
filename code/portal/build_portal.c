@@ -42,6 +42,9 @@
 #endif
 
 #include <mbedtls/sha1.h>
+#include <mbedtls/bignum.h>
+#include <mbedtls/entropy.h>
+#include <mbedtls/ctr_drbg.h>
 
 #include <common/array.h>
 #include <common/endian.h>

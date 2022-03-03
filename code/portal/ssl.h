@@ -42,6 +42,8 @@ struct ssl_sts_connection {
     SOCKET fd;
     enum ssl_sts_state state;
 
+    mbedtls_ctr_drbg_context prng;
+
     array_uint8_t read;
     array_uint8_t write;
 
@@ -62,5 +64,6 @@ void ssl_sts_connection_free(struct ssl_sts_connection *ssl);
 
 void ssl_sts_connection_upgrade_sts_connection(struct ssl_sts_connection *ssl, struct sts_connection *sts);
 int ssl_sts_connection_init_srp(struct ssl_sts_connection *ssl, const char *username, const char *password);
+int ssl_sts_connection_seed(struct ssl_sts_connection *ssl, mbedtls_entropy_context *entropy);
 
 int ssl_sts_connection_step(struct ssl_sts_connection *ssl);

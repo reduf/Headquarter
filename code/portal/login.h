@@ -3,4 +3,7 @@
 #endif
 #define PORTAL_LOGIN_H
 
+int portal_init();
+void portal_free();
+
 int portal_login(const char *username, const char *password);

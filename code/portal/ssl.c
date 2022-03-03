@@ -16,9 +16,18 @@ static void sha1_swap_word(const void *data, size_t size, uint8_t *digest)
     le32enc(digest + 16, be32dec(digest + 16));
 }
 
-static int compute_static_verifier(struct ssl_sts_connection *ssl,
+static int compute_static_hash(struct ssl_sts_connection *ssl,
     const char *username, size_t username_len, const char *password, size_t password_len)
 {
+    // @Remark:
+    // Normally, SRP hash is done the following way:
+    // -> `x = sha1(salt + sha1(username + ':' + password))`
+    // ANet does it slightly differently. Instead, they do:
+    // -> `gw1hash = sha1_le_word(unicode_password + lowercase(unicode_email))`
+    // -> `x = sha1(salt + sha1(username + ':' + gw1hash))`
+    // The salt is sent earlier in the communication, as part of the server
+    // key exchange packet.
+
     uint16_t buffer[256];
     const size_t buffer_len = ARRAY_SIZE(buffer);
 
@@ -32,7 +41,7 @@ static int compute_static_verifier(struct ssl_sts_connection *ssl,
     for (size_t j = 0; j < username_len; j++, i++)
         buffer[i] = htole16(username[j] & 0xffff);
 
-    static_assert(20 == sizeof(ssl->static_verifier_hash), "We expect exactly 20 bytes to store the digest");
+    STATIC_ASSERT(20 == sizeof(ssl->static_verifier_hash));
     sha1_swap_word(buffer, (password_len + username_len), ssl->static_verifier_hash);
     return 0;
 }
@@ -44,6 +53,8 @@ void ssl_sts_connection_init(struct ssl_sts_connection *ssl)
     ssl->fd = INVALID_SOCKET;
     ssl->state = AWAIT_CLIENT_HELLO;
 
+    mbedtls_ctr_drbg_init(&ssl->prng);
+
     array_init(ssl->read, 1024);
     array_init(ssl->write, 1024);
 }
@@ -54,6 +65,8 @@ void ssl_sts_connection_free(struct ssl_sts_connection *ssl)
         closesocket(ssl->fd);
         ssl->fd = INVALID_SOCKET;
     }
+
+    mbedtls_ctr_drbg_free(&ssl->prng);
 
     array_reset(ssl->read);
     array_reset(ssl->write);
@@ -71,7 +84,7 @@ int ssl_sts_connection_init_srp(struct ssl_sts_connection *ssl, const char *user
 
     size_t username_len = strlen(username);
     size_t password_len = strlen(password);
-    if ((ret = compute_static_verifier(ssl, username, username_len, password, password_len)) != 0) {
+    if ((ret = compute_static_hash(ssl, username, username_len, password, password_len)) != 0) {
         return ret;
     }
 
@@ -81,6 +94,34 @@ int ssl_sts_connection_init_srp(struct ssl_sts_connection *ssl, const char *user
 
     memcpy(ssl->srp_username, username, username_len);
     ssl->srp_username_len = username_len;
+
+    return 0;
+}
+
+int ssl_sts_connection_seed(struct ssl_sts_connection *ssl, mbedtls_entropy_context *entropy)
+{
+    const uint8_t custom[] = "Master Togo";
+
+    int ret = mbedtls_ctr_drbg_seed(
+        &ssl->prng,
+        mbedtls_entropy_func,
+        entropy,
+        custom,
+        sizeof(custom) - 1);
+
+    if (ret != 0) {
+        fprintf(stderr, "Failed to see the prng\n");
+        return 1;
+    }
+
+    ret = mbedtls_ctr_drbg_random(
+        &ssl->prng,
+        ssl->client_key.private,
+        sizeof(ssl->client_key.private));
+
+    if (ret != 0) {
+        return 1;
+    }
 
     return 0;
 }
@@ -287,9 +328,63 @@ static int ssl_srp_write_client_hello(struct ssl_sts_connection *ssl)
     return 0;
 }
 
+static int compute_client_public(struct ssl_sts_connection *ssl)
+{
+    int ret;
+    mbedtls_mpi generator;
+    mbedtls_mpi prime_modulus;
+    mbedtls_mpi client_private;
+    mbedtls_mpi client_public;
+
+    mbedtls_mpi_init(&generator);
+    mbedtls_mpi_init(&prime_modulus);
+    mbedtls_mpi_init(&client_private);
+    mbedtls_mpi_init(&client_public);
+
+    if ((ret = mbedtls_mpi_read_binary(&prime_modulus, ssl->server_key.prime,
+                                       sizeof(ssl->server_key.prime))) != 0) {
+        ret = 1;
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&generator, ssl->server_key.generator,
+                                       sizeof(ssl->server_key.generator))) != 0) {
+        ret = 1;
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&client_private, ssl->client_key.private,
+                                       sizeof(ssl->client_key.private))) != 0) {
+        ret = 1;
+        goto cleanup;
+    }
+
+    if ((ret = mbedtls_mpi_exp_mod(&client_public, &generator, &client_private,
+                                   &prime_modulus, NULL)) != 0) {
+        ret = 1;
+        goto cleanup;
+    }
+
+    if ((ret = mbedtls_mpi_write_binary(&client_public, ssl->client_key.public,
+                                        sizeof(ssl->client_key.public))) != 0) {
+        ret = 1;
+        goto cleanup;
+    }
+
+cleanup:
+    mbedtls_mpi_free(&generator);
+    mbedtls_mpi_free(&prime_modulus);
+    mbedtls_mpi_free(&client_private);
+    mbedtls_mpi_free(&client_public);
+    return ret;
+}
+
 static int ssl_srp_write_client_key_exchange(struct ssl_sts_connection *ssl)
 {
     STATIC_ASSERT(sizeof(ssl->client_key.public) <= UINT16_MAX);
+
+    int ret;
+    if ((ret = compute_client_public(ssl)) != 0) {
+        return ret;
+    }
 
     size_t header_pos;
     ssl_srp_start_handshake_msg(ssl, &header_pos, SSL_HS_CLIENT_KEY_EXCHANGE);
