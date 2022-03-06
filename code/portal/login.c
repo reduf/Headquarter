@@ -66,5 +66,7 @@ int portal_login(const char *username, const char *password)
     }
 
     fprintf(stderr, "We are ready to initiate secured connection");
+
+    ssl_sts_connection_free(&ssl);
     return 0;
 }
