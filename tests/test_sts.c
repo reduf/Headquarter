@@ -114,8 +114,13 @@ UTEST(sts, sts_write_sequenced_request)
 
 UTEST(sts, portal_login)
 {
-    int ret = portal_login("user@email.com", "otot");
+    int ret;
+
+    ret = portal_init();
     ASSERT_EQ(ret, 0);
+    ret = portal_login("user@email.com", "otot");
+    ASSERT_EQ(ret, 0);
+    portal_free();
 }
 
 UTEST(parse_sts_header, parse_request_without_content)

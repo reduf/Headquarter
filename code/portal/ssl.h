@@ -65,4 +65,4 @@ void ssl_sts_connection_free(struct ssl_sts_connection *ssl);
 int ssl_sts_connection_init_srp(struct ssl_sts_connection *ssl, const char *username, const char *password);
 int ssl_sts_connection_seed(struct ssl_sts_connection *ssl, mbedtls_entropy_context *entropy);
 
-int ssl_sts_connection_step(struct ssl_sts_connection *ssl);
+int ssl_sts_connection_handshake(struct ssl_sts_connection *ssl);

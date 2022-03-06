@@ -383,6 +383,8 @@ static int ssl_srp_write_client_hello_body(struct ssl_sts_connection *ssl)
 
 static int ssl_srp_write_client_hello(struct ssl_sts_connection *ssl)
 {
+    assert(ssl->state == AWAIT_CLIENT_HELLO);
+
     size_t header_pos;
     ssl_srp_start_handshake_msg(ssl, &header_pos, SSL_HS_CLIENT_HELLO);
 
@@ -451,6 +453,7 @@ cleanup:
 
 static int ssl_srp_write_client_key_exchange(struct ssl_sts_connection *ssl)
 {
+    assert(ssl->state == AWAIT_CLIENT_KEY_EXCHANGE);
     STATIC_ASSERT(sizeof(ssl->client_key.public) <= UINT16_MAX);
 
     int ret;
@@ -492,6 +495,8 @@ static int ssl_srp_write_change_cipher_spec(struct ssl_sts_connection *ssl)
 
 static int ssl_srp_change_cipher_spec(struct ssl_sts_connection *ssl)
 {
+    assert(ssl->state == AWAIT_CLIENT_CHANGE_CIPHER_SPEC);
+
     int ret;
 
     uint8_t verifier_digest[SHA1_DIGEST_SIZE];
@@ -726,6 +731,8 @@ static int parse_server_hello(struct ssl_sts_connection *ssl, const uint8_t *dat
 
 static int ssl_srp_process_server_hello(struct ssl_sts_connection *ssl)
 {
+    assert(ssl->state == AWAIT_SERVER_HELLO);
+
     int ret;
     const uint8_t *inner_data;
     size_t inner_len;
@@ -818,6 +825,8 @@ static int parse_server_key_exchange(struct server_key *key, const uint8_t *data
 
 static int ssl_srp_process_server_key_exchange(struct ssl_sts_connection *ssl)
 {
+    assert(ssl->state == AWAIT_SERVER_KEY_EXCHANGE);
+
     int ret;
     const uint8_t *inner_data;
     size_t inner_len;
@@ -838,6 +847,8 @@ static int ssl_srp_process_server_key_exchange(struct ssl_sts_connection *ssl)
 
 static int sts_process_server_done(struct ssl_sts_connection *ssl)
 {
+    assert(ssl->state == AWAIT_SERVER_HELLO_DONE);
+
     int ret;
     const uint8_t *inner_data;
     size_t inner_len;
@@ -860,42 +871,73 @@ static int sts_process_server_done(struct ssl_sts_connection *ssl)
     return 0;
 }
 
-int ssl_sts_connection_step(struct ssl_sts_connection *ssl)
+static int wait_for_server_step(int (*stepf)(struct ssl_sts_connection *ssl), struct ssl_sts_connection *ssl)
 {
-    int ret = 0;
+    int ret;
+    for (;;) {
+        ret = stepf(ssl);
 
-    switch (ssl->state) {
-        case AWAIT_CLIENT_HELLO:
-            ret = ssl_srp_write_client_hello(ssl);
+        // `ERR_SSL_CONTINUE_PROCESSING` means we don't have enough data,
+        // so we read more from the network.
+        if (ret != ERR_SSL_CONTINUE_PROCESSING)
             break;
 
-        case AWAIT_SERVER_HELLO:
-            ret = ssl_srp_process_server_hello(ssl);
-            break;
-
-        case AWAIT_SERVER_KEY_EXCHANGE:
-            ret = ssl_srp_process_server_key_exchange(ssl);
-            break;
-
-        case AWAIT_SERVER_HELLO_DONE:
-            ret = sts_process_server_done(ssl);
-            break;
-
-        case AWAIT_CLIENT_KEY_EXCHANGE:
-            ret = ssl_srp_write_client_key_exchange(ssl);
-            break;
-
-        case AWAIT_CLIENT_CHANGE_CIPHER_SPEC:
-            ret = ssl_srp_change_cipher_spec(ssl);
-            break;
-
-        default:
-            ret = 1;
+        if ((ret = recv_to_buffer(ssl->fd, &ssl->read)) != 0) {
+            return ERR_SSL_UNEXPECTED_MESSAGE;
+        }
     }
 
-    if (ret != 0) {
+    return ret;
+}
+
+static int send_client_step(int (*stepf)(struct ssl_sts_connection *ssl), struct ssl_sts_connection *ssl)
+{
+    int ret;
+    if ((ret = stepf(ssl)) != 0)
         return ret;
+    if ((ret = send_full(ssl->fd, ssl->write.data, ssl->write.size)) != 0)
+        return ret;
+    return 0;
+}
+
+int ssl_sts_connection_handshake(struct ssl_sts_connection *ssl)
+{
+    if (ssl->state != AWAIT_CLIENT_HELLO) {
+        fprintf(stderr, "Invalid state (%d) the proceed to the handhsake\n", (int)ssl->state);
+        return 1;
     }
 
+    int ret;
+    if ((ret = send_client_step(ssl_srp_write_client_hello, ssl)) != 0) {
+        fprintf(stderr, "'ssl_srp_write_client_hello' failed: %d\n", ret);
+        return 1;
+    }
+
+    if ((ret = wait_for_server_step(ssl_srp_process_server_hello, ssl)) != 0) {
+        fprintf(stderr, "'ssl_srp_process_server_hello' failed: %d\n", ret);
+        return 1;
+    }
+
+    if ((ret = wait_for_server_step(ssl_srp_process_server_key_exchange, ssl)) != 0) {
+        fprintf(stderr, "'ssl_srp_process_server_key_exchange' failed: %d\n", ret);
+        return 1;
+    }
+
+    if ((ret = wait_for_server_step(sts_process_server_done, ssl)) != 0) {
+        fprintf(stderr, "'sts_process_server_done' failed: %d\n", ret);
+        return 1;
+    }
+
+    if ((ret = send_client_step(ssl_srp_write_client_key_exchange, ssl)) != 0) {
+        fprintf(stderr, "'ssl_srp_write_client_key_exchange' failed: %d\n", ret);
+        return 1;
+    }
+
+    if ((ret = send_client_step(ssl_srp_change_cipher_spec, ssl)) != 0) {
+        fprintf(stderr, "'ssl_srp_change_cipher_spec' failed: %d\n", ret);
+        return 1;
+    }
+
+    assert(ssl->state == AWAIT_CLIENT_FINISHED);
     return 0;
 }

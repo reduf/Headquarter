@@ -57,67 +57,14 @@ int portal_login(const char *username, const char *password)
         return 1;
     }
 
-    // @TODO:
     // We do the handshake process. After this handshake, we will have
     // a secured connection with initialized ciphers. We will then be
     // able to send encrypted application data.
-    // if ((ret = ssl_sts_connection_handshake(&ssl)) != 0) {
-    //     ssl_sts_connection_free(&ssl);
-    //     return 1;
-    // }
-
-    for (;;) {
-        if ((ret = ssl_sts_connection_step(&ssl)) != 0) {
-            if (ret != ERR_SSL_CONTINUE_PROCESSING) {
-                ssl_sts_connection_free(&ssl);
-                return ret;
-            }
-        }
-
-        if (!array_empty(ssl.write)) {
-            if ((ret = send_full(ssl.fd, ssl.write.data, ssl.write.size)) != 0) {
-                ssl_sts_connection_free(&ssl);
-                return ret;
-            }
-
-            array_clear(ssl.write);
-        }
-
-        if (ssl.state == AWAIT_CLIENT_FINISHED)
-            break;
-
-        // This is a ugly, but only there for testing. We need to not block on
-        // socket read when there is nothing to read, but this is a next step.
-        if (array_empty(ssl.read))
-        {
-            switch (ssl.state)
-            {
-                case AWAIT_SERVER_HELLO:
-                case AWAIT_SERVER_KEY_EXCHANGE:
-                case AWAIT_SERVER_HELLO_DONE:
-                    if ((ret = recv_to_buffer(ssl.fd, &ssl.read)) != 0) {
-                        ssl_sts_connection_free(&ssl);
-                        return ret;
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-        }
+    if ((ret = ssl_sts_connection_handshake(&ssl)) != 0) {
+        ssl_sts_connection_free(&ssl);
+        return 1;
     }
 
     fprintf(stderr, "We are ready to initiate secured connection");
-
-    // Time to calculate the "premaster secret"
-    // U, P = <read from user> (username, password)
-    // N, g, s, B = <read from server>
-    // a = random() (client private)
-    // A = g^a % N  (client public)
-    // u = SHA1(PAD(A) | PAD(B))
-    // k = SHA1(N | PAD(g))
-    // x = SHA1(s | SHA1(U | ":" | P))
-    // <premaster secret> = (B - (k * g^x)) ^ (a + (u * x)) % N
-
     return 0;
 }
