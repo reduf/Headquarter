@@ -13,7 +13,7 @@ void sts_connection_init(struct sts_connection *sts);
 void sts_connection_free(struct sts_connection *sts);
 
 int sts_connection_connect(struct sts_connection *sts, const char *hostname);
-int sts_connection_start_tls(struct sts_connection *sts);
+int sts_connection_start_tls(struct sts_connection *sts, struct ssl_sts_connection *ssl);
 
 #define STSE_SUCCESS                 0
 #define STSE_INCOMPLETE_CONTENT      1

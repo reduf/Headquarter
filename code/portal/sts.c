@@ -307,7 +307,7 @@ int sts_connection_connect(struct sts_connection *sts, const char *hostname)
     return 0;
 }
 
-int sts_connection_start_tls(struct sts_connection *sts)
+int sts_connection_start_tls(struct sts_connection *sts, struct ssl_sts_connection *ssl)
 {
     int ret;
 
@@ -351,6 +351,11 @@ int sts_connection_start_tls(struct sts_connection *sts)
         fprintf(stderr, "Couldn't start a STS connection, status: %d\n", header.status_code);
         return 1;
     }
+
+    // If we were successful, we transfer the connection to the
+    // `struct ssl_sts_connection` structure.
+    ssl->fd = sts->fd;
+    sts->fd = INVALID_SOCKET;
 
     return 0;
 }

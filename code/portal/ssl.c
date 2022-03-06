@@ -16,34 +16,112 @@ static void sha1_swap_word(const void *data, size_t size, uint8_t *digest)
     le32enc(digest + 16, be32dec(digest + 16));
 }
 
-static int compute_static_hash(struct ssl_sts_connection *ssl,
-    const char *username, size_t username_len, const char *password, size_t password_len)
+#define SHA1_DIGEST_SIZE 20
+
+static int compute_srp_hash(
+    uint8_t *digest,
+    const uint8_t *part1, size_t part1_len,
+    const uint8_t *part2, size_t part2_len)
 {
-    // @Remark:
-    // Normally, SRP hash is done the following way:
-    // -> `x = sha1(salt + sha1(username + ':' + password))`
-    // ANet does it slightly differently. Instead, they do:
-    // -> `gw1hash = sha1_le_word(unicode_password + lowercase(unicode_email))`
-    // -> `x = sha1(salt + sha1(username + ':' + gw1hash))`
-    // The salt is sent earlier in the communication, as part of the server
-    // key exchange packet.
+    mbedtls_sha1_context ctx;
+    mbedtls_sha1_init(&ctx);
 
-    uint16_t buffer[256];
-    const size_t buffer_len = ARRAY_SIZE(buffer);
+    int ret;
+    if ((ret = mbedtls_sha1_starts(&ctx)) != 0) {
+        goto cleanup;
+    }
 
-    if (buffer_len < (username_len + password_len))
+    if ((ret = mbedtls_sha1_update(&ctx, part1, part1_len)) != 0) {
+        goto cleanup;
+    }
+
+    uint8_t seperator = ':';
+    if ((ret = mbedtls_sha1_update(&ctx, &seperator, sizeof(seperator))) != 0) {
+        goto cleanup;
+    }
+
+    if ((ret = mbedtls_sha1_update(&ctx, part2, part2_len)) != 0) {
+        goto cleanup;
+    }
+
+    if ((ret = mbedtls_sha1_finish(&ctx, digest)) != 0) {
+        goto cleanup;
+    }
+
+cleanup:
+    mbedtls_sha1_free(&ctx);
+    if (ret != 0)
+        ret = 1;
+    return 0;
+}
+
+static int sha1_of_two_values(
+    uint8_t *digest,
+    const uint8_t *part1, size_t part1_len,
+    const uint8_t *part2, size_t part2_len)
+{
+    mbedtls_sha1_context ctx;
+    mbedtls_sha1_init(&ctx);
+
+    int ret;
+    if ((ret = mbedtls_sha1_starts(&ctx)) != 0) {
+        goto cleanup;
+    }
+
+    if ((ret = mbedtls_sha1_update(&ctx, part1, part1_len)) != 0) {
+        goto cleanup;
+    }
+
+    if ((ret = mbedtls_sha1_update(&ctx, part2, part2_len)) != 0) {
+        goto cleanup;
+    }
+
+    if ((ret = mbedtls_sha1_finish(&ctx, digest)) != 0) {
+        goto cleanup;
+    }
+
+cleanup:
+    mbedtls_sha1_free(&ctx);
+    if (ret != 0)
+        ret = 1;
+    return 0;
+}
+
+static int sha1_of_two_values_with_padding(
+    uint8_t *digest, size_t padding,
+    const uint8_t *part1, size_t part1_len,
+    const uint8_t *part2, size_t part2_len)
+{
+    uint8_t buffer1[256];
+    uint8_t buffer2[256];
+
+    if ((sizeof(buffer1) < padding) && (sizeof(buffer2) < padding))
         return 1;
 
-    // @Cleanup: We should do a proper utf8 -> unicode.
-    size_t i = 0;
-    for (size_t j = 0; j < password_len; j++, i++)
-        buffer[i] = htole16(password[j] & 0xffff);
-    for (size_t j = 0; j < username_len; j++, i++)
-        buffer[i] = htole16(username[j] & 0xffff);
+    if ((padding < part1_len) || (padding < part2_len))
+        return 1;
 
-    STATIC_ASSERT(20 == sizeof(ssl->static_verifier_hash));
-    sha1_swap_word(buffer, (password_len + username_len), ssl->static_verifier_hash);
-    return 0;
+    size_t number_of_zeroes = padding - part1_len;
+    memset(buffer1, 0, number_of_zeroes);
+    memcpy(buffer1 + number_of_zeroes, part1, part1_len);
+
+    number_of_zeroes = padding - part2_len;
+    memset(buffer2, 0, number_of_zeroes);
+    memcpy(buffer2 + number_of_zeroes, part2, part2_len);
+
+    return sha1_of_two_values(digest, buffer1, padding, buffer2, padding);
+}
+
+static int compute_static_hash(
+    struct ssl_sts_connection *ssl,
+    const char *username, size_t username_len,
+    const char *password, size_t password_len)
+{
+    STATIC_ASSERT(SHA1_DIGEST_SIZE == sizeof(ssl->static_verifier_hash));
+    return compute_srp_hash(
+        ssl->static_verifier_hash,
+        (const uint8_t *)username, username_len,
+        (const uint8_t *)password, password_len);
 }
 
 void ssl_sts_connection_init(struct ssl_sts_connection *ssl)
@@ -70,12 +148,6 @@ void ssl_sts_connection_free(struct ssl_sts_connection *ssl)
 
     array_reset(ssl->read);
     array_reset(ssl->write);
-}
-
-void ssl_sts_connection_upgrade_sts_connection(struct ssl_sts_connection *ssl, struct sts_connection *sts)
-{
-    ssl->fd = sts->fd;
-    sts->fd = INVALID_SOCKET;
 }
 
 int ssl_sts_connection_init_srp(struct ssl_sts_connection *ssl, const char *username, const char *password)
@@ -418,6 +490,147 @@ static int ssl_srp_write_change_cipher_spec(struct ssl_sts_connection *ssl)
     return 0;
 }
 
+static int ssl_srp_change_cipher_spec(struct ssl_sts_connection *ssl)
+{
+    int ret;
+
+    uint8_t verifier_digest[SHA1_DIGEST_SIZE];
+    ret = sha1_of_two_values(
+        verifier_digest,
+        ssl->server_key.salt, sizeof(ssl->server_key.salt),
+        ssl->static_verifier_hash, sizeof(ssl->static_verifier_hash));
+    if (ret != 0)
+        return ret;
+
+    const size_t padding = sizeof(ssl->server_key.prime);
+
+    uint8_t u_buffer[SHA1_DIGEST_SIZE];
+    ret = sha1_of_two_values_with_padding(
+        u_buffer, padding,
+        ssl->client_key.public, sizeof(ssl->client_key.public),
+        ssl->server_key.server_public, sizeof(ssl->server_key.server_public));
+    if (ret != 0)
+        return ret;
+
+    uint8_t k_buffer[SHA1_DIGEST_SIZE];
+    ret = sha1_of_two_values_with_padding(
+        k_buffer, padding,
+        ssl->server_key.prime, sizeof(ssl->server_key.prime),
+        ssl->server_key.generator, sizeof(ssl->server_key.generator));
+    if (ret != 0)
+        return ret;
+
+    // Calculating the pre-master secret.
+    mbedtls_mpi generator;
+    mbedtls_mpi prime;
+    mbedtls_mpi server_public;
+    mbedtls_mpi client_public;
+    mbedtls_mpi client_private;
+    mbedtls_mpi verifier;
+    mbedtls_mpi u;
+    mbedtls_mpi k;
+
+    mbedtls_mpi_init(&generator); // Also "g"
+    mbedtls_mpi_init(&prime); // Also "N"
+    mbedtls_mpi_init(&server_public); // Also "B"
+    mbedtls_mpi_init(&client_public); // Also "A"
+    mbedtls_mpi_init(&client_private); // Also "a"
+    mbedtls_mpi_init(&verifier); // Also "x"
+    mbedtls_mpi_init(&u);
+    mbedtls_mpi_init(&k);
+
+    // Those values are the outputs or the temporary values.
+    mbedtls_mpi shared_secret;
+    mbedtls_mpi base;
+    mbedtls_mpi base1;
+    mbedtls_mpi base2;
+    mbedtls_mpi exponent;
+    mbedtls_mpi exponent1;
+
+    mbedtls_mpi_init(&shared_secret);
+    mbedtls_mpi_init(&base);
+    mbedtls_mpi_init(&base1);
+    mbedtls_mpi_init(&base2);
+    mbedtls_mpi_init(&exponent);
+    mbedtls_mpi_init(&exponent1);
+
+    if ((ret = mbedtls_mpi_read_binary(&generator, ssl->server_key.generator, sizeof(ssl->server_key.generator))) != 0) {
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&prime, ssl->server_key.prime, sizeof(ssl->server_key.prime))) != 0) {
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&server_public, ssl->server_key.server_public, sizeof(ssl->server_key.server_public))) != 0) {
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&client_public, ssl->client_key.public, sizeof(ssl->client_key.public))) != 0) {
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&client_private, ssl->client_key.private, sizeof(ssl->client_key.private))) != 0) {
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&verifier, verifier_digest, sizeof(verifier_digest))) != 0) {
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&u, u_buffer, sizeof(u_buffer))) != 0) {
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&k, k_buffer, sizeof(k_buffer))) != 0) {
+        goto cleanup;
+    }
+
+    // The formula is:
+    // <premaster secret> = (B - (k * g^x)) ^ (a + (u * x)) % N
+    // base = (B - (k * g^x))
+    //  base1 = g^x
+    //  base2 = k * g^x
+    if ((ret = mbedtls_mpi_exp_mod(&base1, &generator, &verifier, &prime, NULL)) != 0)
+        goto cleanup;
+    if ((ret = mbedtls_mpi_mul_mpi(&base2, &k, &base1)) != 0)
+        goto cleanup;
+    if ((ret = mbedtls_mpi_sub_mpi(&base, &server_public, &base2)) != 0)
+        goto cleanup;
+
+    // exponent = (a + (u * x))
+    //  exponent1 = (u * x)
+    if ((ret = mbedtls_mpi_mul_mpi(&exponent1, &u, &verifier)) != 0)
+        goto cleanup;
+    if ((ret = mbedtls_mpi_add_mpi(&exponent, &client_private, &exponent1)) != 0)
+        goto cleanup;
+
+    // Calculate the premastered secret
+    if ((ret = mbedtls_mpi_exp_mod(&shared_secret, &base, &exponent, &prime, NULL)) != 0)
+        goto cleanup;
+
+    if ((ret = ssl_srp_write_change_cipher_spec(ssl)) != 0) {
+        return 1;
+    }
+
+    ssl->state = AWAIT_CLIENT_FINISHED;
+    return 0;
+
+cleanup:;
+    mbedtls_mpi_free(&generator);
+    mbedtls_mpi_free(&prime);
+    mbedtls_mpi_free(&server_public);
+    mbedtls_mpi_free(&client_public);
+    mbedtls_mpi_free(&client_private);
+    mbedtls_mpi_free(&verifier);
+    mbedtls_mpi_free(&u);
+    mbedtls_mpi_free(&k);
+
+    mbedtls_mpi_free(&shared_secret);
+    mbedtls_mpi_free(&base);
+    mbedtls_mpi_free(&base1);
+    mbedtls_mpi_free(&base2);
+    mbedtls_mpi_free(&exponent);
+    mbedtls_mpi_free(&exponent1);
+
+    if (ret != 0)
+        ret = 1;
+    return ret;
+}
+
 static int parse_tls12_handshake(const uint8_t *data, size_t length,
     uint8_t content_type, const uint8_t **subdata, size_t *sublen)
 {
@@ -673,7 +886,7 @@ int ssl_sts_connection_step(struct ssl_sts_connection *ssl)
             break;
 
         case AWAIT_CLIENT_CHANGE_CIPHER_SPEC:
-            ret = ssl_srp_write_change_cipher_spec(ssl);
+            ret = ssl_srp_change_cipher_spec(ssl);
             break;
 
         default:

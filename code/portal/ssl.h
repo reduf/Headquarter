@@ -56,13 +56,12 @@ struct ssl_sts_connection {
     size_t srp_username_len;
 
     uint8_t static_verifier_hash[20];
-    // uint8_t  verifier[20];
+    uint8_t verifier_hash[20];
 };
 
 void ssl_sts_connection_init(struct ssl_sts_connection *ssl);
 void ssl_sts_connection_free(struct ssl_sts_connection *ssl);
 
-void ssl_sts_connection_upgrade_sts_connection(struct ssl_sts_connection *ssl, struct sts_connection *sts);
 int ssl_sts_connection_init_srp(struct ssl_sts_connection *ssl, const char *username, const char *password);
 int ssl_sts_connection_seed(struct ssl_sts_connection *ssl, mbedtls_entropy_context *entropy);
 
