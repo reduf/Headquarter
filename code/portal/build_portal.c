@@ -42,6 +42,7 @@
 #endif
 
 #include <mbedtls/sha1.h>
+#include <mbedtls/sha256.h>
 #include <mbedtls/bignum.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/ctr_drbg.h>

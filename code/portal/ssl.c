@@ -132,6 +132,7 @@ void ssl_sts_connection_init(struct ssl_sts_connection *ssl)
     ssl->state = AWAIT_CLIENT_HELLO;
 
     mbedtls_ctr_drbg_init(&ssl->prng);
+    mbedtls_sha256_init(&ssl->checksum);
 
     array_init(ssl->read, 1024);
     array_init(ssl->write, 1024);
@@ -145,6 +146,7 @@ void ssl_sts_connection_free(struct ssl_sts_connection *ssl)
     }
 
     mbedtls_ctr_drbg_free(&ssl->prng);
+    mbedtls_sha256_free(&ssl->checksum);
 
     array_reset(ssl->read);
     array_reset(ssl->write);
@@ -228,13 +230,22 @@ static void ssl_srp_start_protocol_msg(struct ssl_sts_connection *ssl, size_t *h
 
 static int ssl_srp_finish_protocol_msg(struct ssl_sts_connection *ssl, size_t header_pos)
 {
+    int ret;
+
     const size_t MSG_HDR_LEN = 5;
     assert((header_pos + MSG_HDR_LEN) <= array_size(ssl->write));
     assert(array_at(ssl->write, header_pos) == SSL_MSG_HANDSHAKE);
 
-    size_t msg_size = array_size(ssl->write) - (header_pos + MSG_HDR_LEN);
+    size_t msg_offset = header_pos + MSG_HDR_LEN;
+    size_t msg_size = array_size(ssl->write) - msg_offset;
     if ((size_t)UINT16_MAX < msg_size)
         return 1;
+
+    // The HMAC is computed on everything following the innitial header.
+    const uint8_t *msg_start = &array_at(ssl->write, msg_offset);
+    if ((ret = mbedtls_sha256_update(&ssl->checksum, msg_start, msg_size)) != 0) {
+        return 1;
+    }
 
     uint8_t *p = &array_at(ssl->write, header_pos + 3);
     be16enc(p, (uint16_t)msg_size);
@@ -636,10 +647,15 @@ cleanup:;
     return ret;
 }
 
-static int parse_tls12_handshake(const uint8_t *data, size_t length,
-    uint8_t content_type, const uint8_t **subdata, size_t *sublen)
+static int parse_tls12_handshake(
+    struct ssl_sts_connection *ssl, uint8_t content_type,
+    const uint8_t **subdata, size_t *sublen)
 {
     const size_t HEADER_LEN = 5;
+
+    const uint8_t *data = ssl->read.data;
+    size_t length = array_size(ssl->read);
+
     // The packet starts with 1 byte defining the content type, 2 bytes defining
     // the version and 2 bytes defining the length of the payload.
     if (length < HEADER_LEN)
@@ -654,11 +670,20 @@ static int parse_tls12_handshake(const uint8_t *data, size_t length,
     uint16_t client_sublen = be16dec(&data[3]);
 
     // This can't overflow, we checked it before.
+    // We ensure we have all the data in the header to ensure we will not
+    // try to parse the same packet because of incomplete data. This is done
+    // to ensure we don't calculate the checksum on the packet twice.
     if ((length - HEADER_LEN) < client_sublen)
         return ERR_SSL_CONTINUE_PROCESSING;
 
     *subdata = &data[HEADER_LEN];
     *sublen = client_sublen;
+
+    int ret;
+    if ((ret = mbedtls_sha256_update(&ssl->checksum, *subdata, *sublen)) != 0) {
+        return 1;
+    }
+
     return 0;
 }
 
@@ -737,9 +762,7 @@ static int ssl_srp_process_server_hello(struct ssl_sts_connection *ssl)
     const uint8_t *inner_data;
     size_t inner_len;
 
-    ret = parse_tls12_handshake(
-        ssl->read.data, ssl->read.size, SSL_MSG_HANDSHAKE,
-        &inner_data, &inner_len);
+    ret = parse_tls12_handshake(ssl, SSL_MSG_HANDSHAKE, &inner_data, &inner_len);
     if (ret != 0) {
         return ret;
     }
@@ -831,8 +854,7 @@ static int ssl_srp_process_server_key_exchange(struct ssl_sts_connection *ssl)
     const uint8_t *inner_data;
     size_t inner_len;
 
-    if ((ret = parse_tls12_handshake(ssl->read.data, ssl->read.size, SSL_MSG_HANDSHAKE,
-                                     &inner_data, &inner_len)) != 0) {
+    if ((ret = parse_tls12_handshake(ssl, SSL_MSG_HANDSHAKE, &inner_data, &inner_len)) != 0) {
         return ret;
     }
 
@@ -853,8 +875,7 @@ static int sts_process_server_done(struct ssl_sts_connection *ssl)
     const uint8_t *inner_data;
     size_t inner_len;
 
-    if ((ret = parse_tls12_handshake(ssl->read.data, ssl->read.size, SSL_MSG_HANDSHAKE,
-                                     &inner_data, &inner_len)) != 0) {
+    if ((ret = parse_tls12_handshake(ssl, SSL_MSG_HANDSHAKE, &inner_data, &inner_len)) != 0) {
         return ret;
     }
 

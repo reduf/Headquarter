@@ -43,6 +43,7 @@ struct ssl_sts_connection {
     enum ssl_sts_state state;
 
     mbedtls_ctr_drbg_context prng;
+    mbedtls_sha256_context checksum;
 
     array_uint8_t read;
     array_uint8_t write;
