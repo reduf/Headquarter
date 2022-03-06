@@ -190,6 +190,15 @@ int ssl_sts_connection_seed(struct ssl_sts_connection *ssl, mbedtls_entropy_cont
 
     ret = mbedtls_ctr_drbg_random(
         &ssl->prng,
+        (uint8_t *)&ssl->client_random,
+        sizeof(ssl->client_random));
+
+    if (ret != 0) {
+        return 1;
+    }
+
+    ret = mbedtls_ctr_drbg_random(
+        &ssl->prng,
         ssl->client_key.private,
         sizeof(ssl->client_key.private));
 
