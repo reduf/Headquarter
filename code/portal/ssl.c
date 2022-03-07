@@ -435,31 +435,19 @@ static int compute_client_public(struct ssl_sts_connection *ssl)
     mbedtls_mpi_init(&client_private);
     mbedtls_mpi_init(&client_public);
 
-    if ((ret = mbedtls_mpi_read_binary(&prime_modulus, ssl->server_key.prime,
-                                       sizeof(ssl->server_key.prime))) != 0) {
-        ret = 1;
+    if ((ret = mbedtls_mpi_read_binary(&prime_modulus, ssl->server_key.prime, sizeof(ssl->server_key.prime))) != 0) {
         goto cleanup;
     }
-    if ((ret = mbedtls_mpi_read_binary(&generator, ssl->server_key.generator,
-                                       sizeof(ssl->server_key.generator))) != 0) {
-        ret = 1;
+    if ((ret = mbedtls_mpi_read_binary(&generator, ssl->server_key.generator, sizeof(ssl->server_key.generator))) != 0) {
         goto cleanup;
     }
-    if ((ret = mbedtls_mpi_read_binary(&client_private, ssl->client_key.private,
-                                       sizeof(ssl->client_key.private))) != 0) {
-        ret = 1;
+    if ((ret = mbedtls_mpi_read_binary(&client_private, ssl->client_key.private, sizeof(ssl->client_key.private))) != 0) {
         goto cleanup;
     }
-
-    if ((ret = mbedtls_mpi_exp_mod(&client_public, &generator, &client_private,
-                                   &prime_modulus, NULL)) != 0) {
-        ret = 1;
+    if ((ret = mbedtls_mpi_exp_mod(&client_public, &generator, &client_private, &prime_modulus, NULL)) != 0) {
         goto cleanup;
     }
-
-    if ((ret = mbedtls_mpi_write_binary(&client_public, ssl->client_key.public,
-                                        sizeof(ssl->client_key.public))) != 0) {
-        ret = 1;
+    if ((ret = mbedtls_mpi_write_binary(&client_public, ssl->client_key.public, sizeof(ssl->client_key.public))) != 0) {
         goto cleanup;
     }
 
@@ -468,6 +456,8 @@ cleanup:
     mbedtls_mpi_free(&prime_modulus);
     mbedtls_mpi_free(&client_private);
     mbedtls_mpi_free(&client_public);
+    if (ret != 0)
+        ret = 1;
     return ret;
 }
 
