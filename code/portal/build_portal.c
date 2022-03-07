@@ -41,11 +41,12 @@
 # define SOCKET_ERROR -1
 #endif
 
+#include <mbedtls/bignum.h>
+#include <mbedtls/ctr_drbg.h>
+#include <mbedtls/entropy.h>
+#include <mbedtls/md.h>
 #include <mbedtls/sha1.h>
 #include <mbedtls/sha256.h>
-#include <mbedtls/bignum.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/ctr_drbg.h>
 
 #include <common/array.h>
 #include <common/endian.h>
@@ -56,10 +57,12 @@
 #include "socket.h"
 
 #include "login.h"
+#include "prf.h"
 #include "ssl.h"
 #include "sts.h"
 
 #include "login.c"
+#include "prf.c"
 #include "socket.c"
 #include "ssl.c"
 #include "stream.c"

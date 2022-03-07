@@ -3,6 +3,8 @@ set(
 
   login.c
   login.h
+  prf.c
+  prf.h
   socket.c
   socket.h
   ssl.c
