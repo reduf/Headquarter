@@ -555,14 +555,14 @@ static int ssl_srp_change_cipher_spec(struct ssl_sts_connection *ssl)
     mbedtls_mpi_init(&k);
 
     // Those values are the outputs or the temporary values.
-    mbedtls_mpi shared_secret;
+    mbedtls_mpi premaster_secret;
     mbedtls_mpi base;
     mbedtls_mpi base1;
     mbedtls_mpi base2;
     mbedtls_mpi exponent;
     mbedtls_mpi exponent1;
 
-    mbedtls_mpi_init(&shared_secret);
+    mbedtls_mpi_init(&premaster_secret);
     mbedtls_mpi_init(&base);
     mbedtls_mpi_init(&base1);
     mbedtls_mpi_init(&base2);
@@ -614,7 +614,13 @@ static int ssl_srp_change_cipher_spec(struct ssl_sts_connection *ssl)
         goto cleanup;
 
     // Calculate the premastered secret
-    if ((ret = mbedtls_mpi_exp_mod(&shared_secret, &base, &exponent, &prime, NULL)) != 0)
+    if ((ret = mbedtls_mpi_exp_mod(&premaster_secret, &base, &exponent, &prime, NULL)) != 0)
+        goto cleanup;
+
+    // Save the pre-master secret as bytes. It will later be used to
+    // derive keys used for encryption ciphers.
+    STATIC_ASSERT(sizeof(ssl->premaster_secret) == sizeof(ssl->server_key.prime));
+    if ((ret = mbedtls_mpi_write_binary(&premaster_secret, ssl->premaster_secret, sizeof(ssl->premaster_secret))) != 0)
         goto cleanup;
 
     if ((ret = ssl_srp_write_change_cipher_spec(ssl)) != 0) {
@@ -634,7 +640,7 @@ cleanup:;
     mbedtls_mpi_free(&u);
     mbedtls_mpi_free(&k);
 
-    mbedtls_mpi_free(&shared_secret);
+    mbedtls_mpi_free(&premaster_secret);
     mbedtls_mpi_free(&base);
     mbedtls_mpi_free(&base1);
     mbedtls_mpi_free(&base2);
@@ -891,6 +897,65 @@ static int sts_process_server_done(struct ssl_sts_connection *ssl)
     return 0;
 }
 
+static int ssl_sts_connection_setup_ciphers(struct ssl_sts_connection *ssl)
+{
+    int ret;
+    uint8_t random[sizeof(struct tls12_random) * 2];
+
+    const char master_secret_lbl[] = "master secret";
+
+    // For the master secret, the "random buffer" is the concatenation
+    // of the client random followed by the server random.
+    memcpy(random, &ssl->client_random, sizeof(struct tls12_random));
+    memcpy(random + sizeof(struct tls12_random), &ssl->server_random, sizeof(struct tls12_random));
+
+    uint8_t master_secret[48];
+    ret = tls_prf_sha256(
+        ssl->premaster_secret, sizeof(ssl->premaster_secret),
+        master_secret_lbl, sizeof(master_secret_lbl) - 1,
+        random, sizeof(random),
+        master_secret, sizeof(master_secret));
+
+    if (ret != 0)
+        return ret;
+
+    const char key_expansion_lbl[] = "key expansion";
+
+    // For the master secret, the "random" buffer is the concatenation
+    // of the server random followed by the client random.
+    memcpy(random, &ssl->server_random, sizeof(struct tls12_random));
+    memcpy(random + sizeof(struct tls12_random), &ssl->client_random, sizeof(struct tls12_random));
+
+    uint8_t key_expansion[20];
+    ret = tls_prf_sha256(
+        master_secret, sizeof(master_secret),
+        key_expansion_lbl, sizeof(key_expansion_lbl) - 1,
+        random, sizeof(random),
+        key_expansion, sizeof(key_expansion));
+
+    if (ret != 0)
+        return ret;
+
+    const char client_finished_lbl[] = "client finished";
+
+    uint8_t checksum[32];
+    if ((ret = mbedtls_sha256_finish(&ssl->checksum, checksum)) != 0) {
+        return 1;
+    }
+
+    uint8_t client_finished[12];
+    ret = tls_prf_sha256(
+        master_secret, sizeof(master_secret),
+        client_finished_lbl, sizeof(client_finished_lbl) - 1,
+        checksum, sizeof(checksum),
+        client_finished, sizeof(client_finished));
+
+    if (ret != 0)
+        return ret;
+
+    return 0;
+}
+
 static int wait_for_server_step(int (*stepf)(struct ssl_sts_connection *ssl), struct ssl_sts_connection *ssl)
 {
     int ret;
@@ -955,6 +1020,11 @@ int ssl_sts_connection_handshake(struct ssl_sts_connection *ssl)
 
     if ((ret = send_client_step(ssl_srp_change_cipher_spec, ssl)) != 0) {
         fprintf(stderr, "'ssl_srp_change_cipher_spec' failed: %d\n", ret);
+        return 1;
+    }
+
+    if ((ret = ssl_sts_connection_setup_ciphers(ssl)) != 0) {
+        fprintf(stderr, "ssl_sts_connection_setup_ciphers failed: %d\n", ret);
         return 1;
     }
 

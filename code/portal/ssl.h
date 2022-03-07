@@ -58,6 +58,8 @@ struct ssl_sts_connection {
 
     uint8_t static_verifier_hash[20];
     uint8_t verifier_hash[20];
+
+    uint8_t premaster_secret[128];
 };
 
 void ssl_sts_connection_init(struct ssl_sts_connection *ssl);
