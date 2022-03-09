@@ -118,3 +118,68 @@ UTEST(tls_prf_sha256, tls_prf_sha256_client_finished)
     ASSERT_EQ(output_len, expected_len);
     ASSERT_TRUE(memcmp(output, expected, expected_len) == 0);
 }
+
+UTEST(tls_prf_sha256, tls_prf_sha256_multiple_finish)
+{
+    const char label[] = "key expansion";
+    const size_t label_len = sizeof(label) - 1;
+
+    const uint8_t random[] = \
+        "\x18\x37\x94\x2C\xCB\xDA\x07\xB7\x33\x71\x48\x8E\x49\xE1\x7A\xE1"
+        "\x35\xE6\x27\xCA\xA0\xEF\xB0\x7F\x7E\x31\x5E\x0A\xA0\x3C\x00\x88"
+        "\x18\x37\x94\x31\x19\x1F\x18\x49\x2E\xFF\x3B\x7E\x64\x71\x1E\x3D"
+        "\xB8\x01\x24\x76\xE9\x03\x34\xCC\x23\x86\xD6\xF5\x29\xC6\xE7\x34";
+    const size_t random_len = sizeof(random) - 1;
+
+    const uint8_t secret[] = \
+        "\x38\x4F\x34\xF5\xB2\xD2\xC4\x10\x97\x7B\x4C\x9A\x13\x9E\x2E\x52"
+        "\x5F\x6F\x50\x9C\x04\xB9\x74\xF6\x47\x31\x5E\x43\xFF\x14\x0B\xFD"
+        "\x97\x2B\x1A\xA0\xAE\x6F\x4D\x81\x81\xA9\xAB\x5C\x04\x7E\x5C\xDD";
+    const size_t secret_len = sizeof(secret) - 1;
+
+    const uint8_t expected1[] = \
+        "\xF1\x35\xBD\xB8\x3D\x58\xC6\xAD\x71\x48\xDE\x44\xAE\x61\x3E\x17"
+        "\x0B\xDC\xE1\x1B";
+    const size_t expected1_len = sizeof(expected1) - 1;
+
+    const uint8_t expected2[] = \
+        "\x05\xFD\xA5\x94\x8E\xA4\x88\xBC\x1D\x90\x86\x5E\xF7\x29\x2F\xC7"
+        "\xD7\x0A\x71\x37";
+    const size_t expected2_len = sizeof(expected2) - 1;
+
+    const uint8_t expected3[] = \
+        "\xEB\xE5\xAE\xF5\xD6\xCC\x59\x45\x47\x7E\xC2\x70\x7F\x9F\xB5\xDA"
+        "\xCC\xEC\xA4\x7C\x07\xC5\x3C\xC3\x83\xC1\xA1\x79\x20\x18\x0F\x80";
+    const size_t expected3_len = sizeof(expected3) - 1;
+
+    const uint8_t expected4[] = \
+        "\xA5\x48\x80\xE5\x95\x06\xF3\x1B\x0A\xD0\xF6\x9A\x71\x85\x3B\x3C"
+        "\x5B\xF4\x41\x4E\x1C\x12\x26\x7B\x62\xE2\x30\x52\x13\x56\x7D\x27";
+    const size_t expected4_len = sizeof(expected4) - 1;
+
+    uint8_t output[104];
+    const size_t output_len = sizeof(output);
+
+    const size_t expected_len = expected1_len + expected2_len + expected3_len + expected4_len;
+    ASSERT_EQ(output_len, expected_len);
+
+    int ret = tls_prf_sha256(
+        secret, secret_len,
+        label, label_len,
+        random, random_len,
+        output, output_len);
+
+    ASSERT_EQ(ret, 0);
+
+    const uint8_t *offset = output;
+    ASSERT_TRUE(memcmp(offset, expected1, expected1_len) == 0);
+
+    offset = offset + expected1_len;
+    ASSERT_TRUE(memcmp(offset, expected2, expected2_len) == 0);
+
+    offset = offset + expected2_len;
+    ASSERT_TRUE(memcmp(offset, expected3, expected3_len) == 0);
+
+    offset = offset + expected3_len;
+    ASSERT_TRUE(memcmp(offset, expected4, expected4_len) == 0);
+}

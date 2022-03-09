@@ -45,6 +45,18 @@ struct ssl_sts_connection {
     mbedtls_ctr_drbg_context prng;
     mbedtls_sha256_context checksum;
 
+    uint8_t iv_enc[16];
+    uint8_t iv_dec[16];
+
+    // AES256-CBC
+    mbedtls_aes_context cipher_enc;
+    mbedtls_aes_context cipher_dec;
+
+    // Actually sha1, but mbedtls hmac implementation only works
+    // on `mbedtls_md_context_t`.
+    mbedtls_md_context_t mac_enc;
+    mbedtls_md_context_t mac_dec;
+
     array_uint8_t read;
     array_uint8_t write;
 

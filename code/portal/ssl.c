@@ -134,6 +134,11 @@ void ssl_sts_connection_init(struct ssl_sts_connection *ssl)
     mbedtls_ctr_drbg_init(&ssl->prng);
     mbedtls_sha256_init(&ssl->checksum);
 
+    mbedtls_aes_init(&ssl->cipher_enc);
+    mbedtls_aes_init(&ssl->cipher_dec);
+    mbedtls_md_init(&ssl->mac_enc);
+    mbedtls_md_init(&ssl->mac_dec);
+
     array_init(ssl->read, 1024);
     array_init(ssl->write, 1024);
 }
@@ -147,6 +152,11 @@ void ssl_sts_connection_free(struct ssl_sts_connection *ssl)
 
     mbedtls_ctr_drbg_free(&ssl->prng);
     mbedtls_sha256_free(&ssl->checksum);
+
+    mbedtls_aes_free(&ssl->cipher_enc);
+    mbedtls_aes_free(&ssl->cipher_dec);
+    mbedtls_md_free(&ssl->mac_enc);
+    mbedtls_md_free(&ssl->mac_dec);
 
     array_reset(ssl->read);
     array_reset(ssl->write);
@@ -503,155 +513,6 @@ static int ssl_srp_write_change_cipher_spec(struct ssl_sts_connection *ssl)
     return 0;
 }
 
-static int ssl_srp_change_cipher_spec(struct ssl_sts_connection *ssl)
-{
-    assert(ssl->state == AWAIT_CLIENT_CHANGE_CIPHER_SPEC);
-
-    int ret;
-
-    uint8_t verifier_digest[SHA1_DIGEST_SIZE];
-    ret = sha1_of_two_values(
-        verifier_digest,
-        ssl->server_key.salt, sizeof(ssl->server_key.salt),
-        ssl->static_verifier_hash, sizeof(ssl->static_verifier_hash));
-    if (ret != 0)
-        return ret;
-
-    const size_t padding = sizeof(ssl->server_key.prime);
-
-    uint8_t u_buffer[SHA1_DIGEST_SIZE];
-    ret = sha1_of_two_values_with_padding(
-        u_buffer, padding,
-        ssl->client_key.public, sizeof(ssl->client_key.public),
-        ssl->server_key.server_public, sizeof(ssl->server_key.server_public));
-    if (ret != 0)
-        return ret;
-
-    uint8_t k_buffer[SHA1_DIGEST_SIZE];
-    ret = sha1_of_two_values_with_padding(
-        k_buffer, padding,
-        ssl->server_key.prime, sizeof(ssl->server_key.prime),
-        ssl->server_key.generator, sizeof(ssl->server_key.generator));
-    if (ret != 0)
-        return ret;
-
-    // Calculating the pre-master secret.
-    mbedtls_mpi generator;
-    mbedtls_mpi prime;
-    mbedtls_mpi server_public;
-    mbedtls_mpi client_public;
-    mbedtls_mpi client_private;
-    mbedtls_mpi verifier;
-    mbedtls_mpi u;
-    mbedtls_mpi k;
-
-    mbedtls_mpi_init(&generator); // Also "g"
-    mbedtls_mpi_init(&prime); // Also "N"
-    mbedtls_mpi_init(&server_public); // Also "B"
-    mbedtls_mpi_init(&client_public); // Also "A"
-    mbedtls_mpi_init(&client_private); // Also "a"
-    mbedtls_mpi_init(&verifier); // Also "x"
-    mbedtls_mpi_init(&u);
-    mbedtls_mpi_init(&k);
-
-    // Those values are the outputs or the temporary values.
-    mbedtls_mpi premaster_secret;
-    mbedtls_mpi base;
-    mbedtls_mpi base1;
-    mbedtls_mpi base2;
-    mbedtls_mpi exponent;
-    mbedtls_mpi exponent1;
-
-    mbedtls_mpi_init(&premaster_secret);
-    mbedtls_mpi_init(&base);
-    mbedtls_mpi_init(&base1);
-    mbedtls_mpi_init(&base2);
-    mbedtls_mpi_init(&exponent);
-    mbedtls_mpi_init(&exponent1);
-
-    if ((ret = mbedtls_mpi_read_binary(&generator, ssl->server_key.generator, sizeof(ssl->server_key.generator))) != 0) {
-        goto cleanup;
-    }
-    if ((ret = mbedtls_mpi_read_binary(&prime, ssl->server_key.prime, sizeof(ssl->server_key.prime))) != 0) {
-        goto cleanup;
-    }
-    if ((ret = mbedtls_mpi_read_binary(&server_public, ssl->server_key.server_public, sizeof(ssl->server_key.server_public))) != 0) {
-        goto cleanup;
-    }
-    if ((ret = mbedtls_mpi_read_binary(&client_public, ssl->client_key.public, sizeof(ssl->client_key.public))) != 0) {
-        goto cleanup;
-    }
-    if ((ret = mbedtls_mpi_read_binary(&client_private, ssl->client_key.private, sizeof(ssl->client_key.private))) != 0) {
-        goto cleanup;
-    }
-    if ((ret = mbedtls_mpi_read_binary(&verifier, verifier_digest, sizeof(verifier_digest))) != 0) {
-        goto cleanup;
-    }
-    if ((ret = mbedtls_mpi_read_binary(&u, u_buffer, sizeof(u_buffer))) != 0) {
-        goto cleanup;
-    }
-    if ((ret = mbedtls_mpi_read_binary(&k, k_buffer, sizeof(k_buffer))) != 0) {
-        goto cleanup;
-    }
-
-    // The formula is:
-    // <premaster secret> = (B - (k * g^x)) ^ (a + (u * x)) % N
-    // base = (B - (k * g^x))
-    //  base1 = g^x
-    //  base2 = k * g^x
-    if ((ret = mbedtls_mpi_exp_mod(&base1, &generator, &verifier, &prime, NULL)) != 0)
-        goto cleanup;
-    if ((ret = mbedtls_mpi_mul_mpi(&base2, &k, &base1)) != 0)
-        goto cleanup;
-    if ((ret = mbedtls_mpi_sub_mpi(&base, &server_public, &base2)) != 0)
-        goto cleanup;
-
-    // exponent = (a + (u * x))
-    //  exponent1 = (u * x)
-    if ((ret = mbedtls_mpi_mul_mpi(&exponent1, &u, &verifier)) != 0)
-        goto cleanup;
-    if ((ret = mbedtls_mpi_add_mpi(&exponent, &client_private, &exponent1)) != 0)
-        goto cleanup;
-
-    // Calculate the premastered secret
-    if ((ret = mbedtls_mpi_exp_mod(&premaster_secret, &base, &exponent, &prime, NULL)) != 0)
-        goto cleanup;
-
-    // Save the pre-master secret as bytes. It will later be used to
-    // derive keys used for encryption ciphers.
-    STATIC_ASSERT(sizeof(ssl->premaster_secret) == sizeof(ssl->server_key.prime));
-    if ((ret = mbedtls_mpi_write_binary(&premaster_secret, ssl->premaster_secret, sizeof(ssl->premaster_secret))) != 0)
-        goto cleanup;
-
-    if ((ret = ssl_srp_write_change_cipher_spec(ssl)) != 0) {
-        return 1;
-    }
-
-    ssl->state = AWAIT_CLIENT_FINISHED;
-    return 0;
-
-cleanup:;
-    mbedtls_mpi_free(&generator);
-    mbedtls_mpi_free(&prime);
-    mbedtls_mpi_free(&server_public);
-    mbedtls_mpi_free(&client_public);
-    mbedtls_mpi_free(&client_private);
-    mbedtls_mpi_free(&verifier);
-    mbedtls_mpi_free(&u);
-    mbedtls_mpi_free(&k);
-
-    mbedtls_mpi_free(&premaster_secret);
-    mbedtls_mpi_free(&base);
-    mbedtls_mpi_free(&base1);
-    mbedtls_mpi_free(&base2);
-    mbedtls_mpi_free(&exponent);
-    mbedtls_mpi_free(&exponent1);
-
-    if (ret != 0)
-        ret = 1;
-    return ret;
-}
-
 static int parse_tls12_handshake(
     struct ssl_sts_connection *ssl, uint8_t content_type,
     const uint8_t **subdata, size_t *sublen)
@@ -897,15 +758,161 @@ static int sts_process_server_done(struct ssl_sts_connection *ssl)
     return 0;
 }
 
+static int ssl_srp_compute_premaster_secret(struct ssl_sts_connection *ssl)
+{
+    int ret;
+
+    uint8_t verifier_digest[SHA1_DIGEST_SIZE];
+    ret = sha1_of_two_values(
+        verifier_digest,
+        ssl->server_key.salt, sizeof(ssl->server_key.salt),
+        ssl->static_verifier_hash, sizeof(ssl->static_verifier_hash));
+    if (ret != 0)
+        return ret;
+
+    const size_t padding = sizeof(ssl->server_key.prime);
+
+    uint8_t u_buffer[SHA1_DIGEST_SIZE];
+    ret = sha1_of_two_values_with_padding(
+        u_buffer, padding,
+        ssl->client_key.public, sizeof(ssl->client_key.public),
+        ssl->server_key.server_public, sizeof(ssl->server_key.server_public));
+    if (ret != 0)
+        return ret;
+
+    uint8_t k_buffer[SHA1_DIGEST_SIZE];
+    ret = sha1_of_two_values_with_padding(
+        k_buffer, padding,
+        ssl->server_key.prime, sizeof(ssl->server_key.prime),
+        ssl->server_key.generator, sizeof(ssl->server_key.generator));
+    if (ret != 0)
+        return ret;
+
+    // Calculating the pre-master secret.
+    mbedtls_mpi generator;
+    mbedtls_mpi prime;
+    mbedtls_mpi server_public;
+    mbedtls_mpi client_public;
+    mbedtls_mpi client_private;
+    mbedtls_mpi verifier;
+    mbedtls_mpi u;
+    mbedtls_mpi k;
+
+    mbedtls_mpi_init(&generator); // Also "g"
+    mbedtls_mpi_init(&prime); // Also "N"
+    mbedtls_mpi_init(&server_public); // Also "B"
+    mbedtls_mpi_init(&client_public); // Also "A"
+    mbedtls_mpi_init(&client_private); // Also "a"
+    mbedtls_mpi_init(&verifier); // Also "x"
+    mbedtls_mpi_init(&u);
+    mbedtls_mpi_init(&k);
+
+    // Those values are the outputs or the temporary values.
+    mbedtls_mpi premaster_secret;
+    mbedtls_mpi base;
+    mbedtls_mpi base1;
+    mbedtls_mpi base2;
+    mbedtls_mpi exponent;
+    mbedtls_mpi exponent1;
+
+    mbedtls_mpi_init(&premaster_secret);
+    mbedtls_mpi_init(&base);
+    mbedtls_mpi_init(&base1);
+    mbedtls_mpi_init(&base2);
+    mbedtls_mpi_init(&exponent);
+    mbedtls_mpi_init(&exponent1);
+
+    if ((ret = mbedtls_mpi_read_binary(&generator, ssl->server_key.generator, sizeof(ssl->server_key.generator))) != 0) {
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&prime, ssl->server_key.prime, sizeof(ssl->server_key.prime))) != 0) {
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&server_public, ssl->server_key.server_public, sizeof(ssl->server_key.server_public))) != 0) {
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&client_public, ssl->client_key.public, sizeof(ssl->client_key.public))) != 0) {
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&client_private, ssl->client_key.private, sizeof(ssl->client_key.private))) != 0) {
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&verifier, verifier_digest, sizeof(verifier_digest))) != 0) {
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&u, u_buffer, sizeof(u_buffer))) != 0) {
+        goto cleanup;
+    }
+    if ((ret = mbedtls_mpi_read_binary(&k, k_buffer, sizeof(k_buffer))) != 0) {
+        goto cleanup;
+    }
+
+    // The formula is:
+    // <premaster secret> = (B - (k * g^x)) ^ (a + (u * x)) % N
+    // base = (B - (k * g^x))
+    //  base1 = g^x
+    //  base2 = k * g^x
+    if ((ret = mbedtls_mpi_exp_mod(&base1, &generator, &verifier, &prime, NULL)) != 0)
+        goto cleanup;
+    if ((ret = mbedtls_mpi_mul_mpi(&base2, &k, &base1)) != 0)
+        goto cleanup;
+    if ((ret = mbedtls_mpi_sub_mpi(&base, &server_public, &base2)) != 0)
+        goto cleanup;
+
+    // exponent = (a + (u * x))
+    //  exponent1 = (u * x)
+    if ((ret = mbedtls_mpi_mul_mpi(&exponent1, &u, &verifier)) != 0)
+        goto cleanup;
+    if ((ret = mbedtls_mpi_add_mpi(&exponent, &client_private, &exponent1)) != 0)
+        goto cleanup;
+
+    // Calculate the premastered secret
+    if ((ret = mbedtls_mpi_exp_mod(&premaster_secret, &base, &exponent, &prime, NULL)) != 0)
+        goto cleanup;
+
+    // Save the pre-master secret as bytes. It will later be used to
+    // derive keys used for encryption ciphers.
+    STATIC_ASSERT(sizeof(ssl->premaster_secret) == sizeof(ssl->server_key.prime));
+    if ((ret = mbedtls_mpi_write_binary(&premaster_secret, ssl->premaster_secret, sizeof(ssl->premaster_secret))) != 0)
+        goto cleanup;
+
+    return 0;
+
+cleanup:;
+    mbedtls_mpi_free(&generator);
+    mbedtls_mpi_free(&prime);
+    mbedtls_mpi_free(&server_public);
+    mbedtls_mpi_free(&client_public);
+    mbedtls_mpi_free(&client_private);
+    mbedtls_mpi_free(&verifier);
+    mbedtls_mpi_free(&u);
+    mbedtls_mpi_free(&k);
+
+    mbedtls_mpi_free(&premaster_secret);
+    mbedtls_mpi_free(&base);
+    mbedtls_mpi_free(&base1);
+    mbedtls_mpi_free(&base2);
+    mbedtls_mpi_free(&exponent);
+    mbedtls_mpi_free(&exponent1);
+
+    if (ret != 0)
+        ret = 1;
+    return ret;
+}
+
 static int ssl_sts_connection_setup_ciphers(struct ssl_sts_connection *ssl)
 {
     int ret;
-    uint8_t random[sizeof(struct tls12_random) * 2];
+
+    if ((ret = ssl_srp_compute_premaster_secret(ssl)) != 0) {
+        return ret;
+    }
 
     const char master_secret_lbl[] = "master secret";
 
     // For the master secret, the "random buffer" is the concatenation
     // of the client random followed by the server random.
+    uint8_t random[sizeof(struct tls12_random) * 2];
     memcpy(random, &ssl->client_random, sizeof(struct tls12_random));
     memcpy(random + sizeof(struct tls12_random), &ssl->server_random, sizeof(struct tls12_random));
 
@@ -926,7 +933,7 @@ static int ssl_sts_connection_setup_ciphers(struct ssl_sts_connection *ssl)
     memcpy(random, &ssl->server_random, sizeof(struct tls12_random));
     memcpy(random + sizeof(struct tls12_random), &ssl->client_random, sizeof(struct tls12_random));
 
-    uint8_t key_expansion[20];
+    uint8_t key_expansion[104];
     ret = tls_prf_sha256(
         master_secret, sizeof(master_secret),
         key_expansion_lbl, sizeof(key_expansion_lbl) - 1,
@@ -935,6 +942,39 @@ static int ssl_sts_connection_setup_ciphers(struct ssl_sts_connection *ssl)
 
     if (ret != 0)
         return ret;
+
+    // Those keys are used to initialize the following and in order:
+    // 1. SHA1-HMAC for outgoing traffic.
+    // 2. SHA1-HMAC for incoming traffic.
+    // 3. AES256-CBC for outgoing traffic.
+    // 4. AES256-CBC for incoming traffic.
+    const uint8_t *mac_enc_key = key_expansion;
+    const uint8_t *mac_dec_key = key_expansion + 20;
+    const uint8_t *cipher_enc_key = key_expansion + 40;
+    const uint8_t *cipher_dec_key = key_expansion + 72;
+
+    const uint16_t CIPHER_KEY_BITS = 20 * 8;
+    if ((ret = mbedtls_aes_setkey_enc(&ssl->cipher_enc, cipher_enc_key, CIPHER_KEY_BITS)) != 0)
+        return 1;
+    if ((ret = mbedtls_aes_setkey_dec(&ssl->cipher_dec, cipher_dec_key, CIPHER_KEY_BITS)) != 0)
+        return 1;
+
+    const mbedtls_md_info_t *md_info;
+    if ((md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA1)) == NULL)
+        return 1;
+
+    const int is_hmac = 1;
+    const size_t HMAC_KEY_LEN = 20;
+
+    if ((ret = mbedtls_md_setup(&ssl->mac_enc, md_info, is_hmac)) != 0)
+        return 1;
+    if ((ret = mbedtls_md_hmac_starts(&ssl->mac_enc, mac_enc_key, HMAC_KEY_LEN)) != 0)
+        return 1;
+
+    if ((ret = mbedtls_md_setup(&ssl->mac_enc, md_info, is_hmac)) != 0)
+        return 1;
+    if ((ret = mbedtls_md_hmac_starts(&ssl->mac_dec, mac_dec_key, HMAC_KEY_LEN)) != 0)
+        return 1;
 
     const char client_finished_lbl[] = "client finished";
 
@@ -988,7 +1028,7 @@ static int send_client_step(int (*stepf)(struct ssl_sts_connection *ssl), struct
 int ssl_sts_connection_handshake(struct ssl_sts_connection *ssl)
 {
     if (ssl->state != AWAIT_CLIENT_HELLO) {
-        fprintf(stderr, "Invalid state (%d) the proceed to the handhsake\n", (int)ssl->state);
+        fprintf(stderr, "Invalid state (%d) the proceed to the handshake\n", (int)ssl->state);
         return 1;
     }
 
@@ -1018,8 +1058,8 @@ int ssl_sts_connection_handshake(struct ssl_sts_connection *ssl)
         return 1;
     }
 
-    if ((ret = send_client_step(ssl_srp_change_cipher_spec, ssl)) != 0) {
-        fprintf(stderr, "'ssl_srp_change_cipher_spec' failed: %d\n", ret);
+    if ((ret = send_client_step(ssl_srp_write_change_cipher_spec, ssl)) != 0) {
+        fprintf(stderr, "'ssl_srp_write_change_cipher_spec' failed: %d\n", ret);
         return 1;
     }
 
@@ -1028,6 +1068,6 @@ int ssl_sts_connection_handshake(struct ssl_sts_connection *ssl)
         return 1;
     }
 
-    assert(ssl->state == AWAIT_CLIENT_FINISHED);
+    ssl->state = AWAIT_CLIENT_FINISHED;
     return 0;
 }
