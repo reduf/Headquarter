@@ -21,6 +21,6 @@ sudo apt install ninja-build cmake
 
 Generate the project and compile it.
 ```
-cmake -B build -G "Ninja"
+cmake -B build -G "Ninja" -DCMAKE_C_COMPILER=clang
 cmake --build build
 ```
