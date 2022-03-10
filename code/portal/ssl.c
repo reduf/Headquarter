@@ -3,6 +3,24 @@
 #endif
 #define PORTAL_SSL_C
 
+#define SSL_HS_CLIENT_HELLO            1
+#define SSL_HS_SERVER_HELLO            2
+#define SSL_HS_SERVER_KEY_EXCHANGE     12
+#define SSL_HS_CLIENT_KEY_EXCHANGE     16
+#define SSL_HS_FINISHED                20
+
+#define TLS_SRP_SHA_WITH_AES_256_CBC_SHA 0xC020
+#define TLS_SRP_SHA_WITH_AES_128_CBC_SHA 0xC01D
+
+#define SSL_MSG_CHANGE_CIPHER_SPEC     20
+#define SSL_MSG_ALERT                  21
+#define SSL_MSG_HANDSHAKE              22
+#define SSL_MSG_APPLICATION_DATA       23
+#define SSL_MSG_CID                    25
+
+// This hash is computed, but was never used as far as I know
+// temporarilly disabling it to prevent "unused function" warning.
+#if 0
 static void sha1_swap_word(const void *data, size_t size, uint8_t *digest)
 {
     const uint8_t *bytes = (const uint8_t *)data;
@@ -15,6 +33,7 @@ static void sha1_swap_word(const void *data, size_t size, uint8_t *digest)
     le32enc(digest + 12, be32dec(digest + 12));
     le32enc(digest + 16, be32dec(digest + 16));
 }
+#endif
 
 #define SHA1_DIGEST_SIZE 20
 
@@ -218,20 +237,6 @@ int ssl_sts_connection_seed(struct ssl_sts_connection *ssl, mbedtls_entropy_cont
 
     return 0;
 }
-
-#define SSL_HS_CLIENT_HELLO            1
-#define SSL_HS_SERVER_HELLO            2
-#define SSL_HS_SERVER_KEY_EXCHANGE     12
-#define SSL_HS_CLIENT_KEY_EXCHANGE     16
-
-#define TLS_SRP_SHA_WITH_AES_256_CBC_SHA 0xC020
-#define TLS_SRP_SHA_WITH_AES_128_CBC_SHA 0xC01D
-
-#define SSL_MSG_CHANGE_CIPHER_SPEC     20
-#define SSL_MSG_ALERT                  21
-#define SSL_MSG_HANDSHAKE              22
-#define SSL_MSG_APPLICATION_DATA       23
-#define SSL_MSG_CID                    25
 
 static void ssl_srp_start_protocol_msg(struct ssl_sts_connection *ssl, size_t *header_pos)
 {
@@ -509,6 +514,7 @@ static int ssl_srp_write_change_cipher_spec(struct ssl_sts_connection *ssl)
 
     array_add(ssl->write, 1);
 
+    fprintf(stderr, "====> This state is incorrect\n");
     ssl->state = AWAIT_CLIENT_FINISHED;
     return 0;
 }
@@ -565,7 +571,7 @@ static int parse_server_hello(struct ssl_sts_connection *ssl, const uint8_t *dat
     if (data[0] != SSL_HS_SERVER_HELLO)
         return ERR_SSL_UNEXPECTED_MESSAGE;
 
-    uint32_t content_len = be24dec(&data[1]);
+    size_t content_len = be24dec(&data[1]);
     if ((length - MIN_LEN) != content_len) {
         // At this point, we should already know we have the complete data.
         return ERR_SSL_BAD_INPUT_DATA;
@@ -654,7 +660,7 @@ static int parse_server_key_exchange(struct server_key *key, const uint8_t *data
     if (data[0] != SSL_HS_SERVER_KEY_EXCHANGE)
         return ERR_SSL_UNEXPECTED_MESSAGE;
 
-    uint32_t content_len = be24dec(&data[1]);
+    size_t content_len = be24dec(&data[1]);
     if ((length - MIN_LEN) != content_len) {
         // At this point, we should already know we have the complete data.
         return ERR_SSL_BAD_INPUT_DATA;
@@ -983,12 +989,11 @@ static int ssl_sts_connection_setup_ciphers(struct ssl_sts_connection *ssl)
         return 1;
     }
 
-    uint8_t client_finished[12];
     ret = tls_prf_sha256(
         master_secret, sizeof(master_secret),
         client_finished_lbl, sizeof(client_finished_lbl) - 1,
         checksum, sizeof(checksum),
-        client_finished, sizeof(client_finished));
+        ssl->client_finished, sizeof(ssl->client_finished));
 
     if (ret != 0)
         return ret;

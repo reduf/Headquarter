@@ -275,7 +275,7 @@ int sts_connection_connect(struct sts_connection *sts, const char *hostname)
     }
 
     if (it == array_end(sts->addresses)) {
-        fprintf(stderr, "Couldn't connect to '%s:%hu\n", hostname, 6112);
+        fprintf(stderr, "Couldn't connect to '%s:%d\n", hostname, 6112);
         return 1;
     }
 

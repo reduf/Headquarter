@@ -40,5 +40,7 @@ if (MSVC)
   # - C4057: nonstandard extension used: nameless struct/union
   # - C4115: named type definition in parentheses
   target_compile_options(portal PRIVATE /W4 /WX /wd4201 /wd4115)
+else()
+  target_compile_options(portal PRIVATE -Wall -Werror)
 endif()
 
