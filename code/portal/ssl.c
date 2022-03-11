@@ -19,7 +19,7 @@
 #define SSL_MSG_CID                    25
 
 // This hash is computed, but was never used as far as I know
-// temporarilly disabling it to prevent "unused function" warning.
+// temporarily disabling it to prevent "unused function" warning.
 #if 0
 static void sha1_swap_word(const void *data, size_t size, uint8_t *digest)
 {
