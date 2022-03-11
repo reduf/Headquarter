@@ -973,7 +973,7 @@ static int ssl_sts_connection_setup_ciphers(struct ssl_sts_connection *ssl)
     const uint8_t *cipher_enc_key = key_expansion + 40;
     const uint8_t *cipher_dec_key = key_expansion + 72;
 
-    const uint16_t CIPHER_KEY_BITS = 20 * 8;
+    const uint16_t CIPHER_KEY_BITS = 32 * 8;
     if ((ret = mbedtls_aes_setkey_enc(&ssl->cipher_enc, cipher_enc_key, CIPHER_KEY_BITS)) != 0)
         return 1;
     if ((ret = mbedtls_aes_setkey_dec(&ssl->cipher_dec, cipher_dec_key, CIPHER_KEY_BITS)) != 0)
