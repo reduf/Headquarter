@@ -519,6 +519,20 @@ static int ssl_srp_write_change_cipher_spec(struct ssl_sts_connection *ssl)
     return 0;
 }
 
+static int ssl_srp_write_finished(struct ssl_sts_connection *ssl)
+{
+    size_t header_pos;
+    ssl_srp_start_handshake_msg(ssl, &header_pos, SSL_HS_FINISHED);
+
+    array_insert(ssl->write, sizeof(ssl->client_finished), ssl->client_finished);
+
+    if (ssl_srp_finish_handshake_msg(ssl, header_pos, SSL_HS_CLIENT_KEY_EXCHANGE) != 0) {
+        return 1;
+    }
+
+    return 0;
+}
+
 static int parse_tls12_handshake(
     struct ssl_sts_connection *ssl, uint8_t content_type,
     const uint8_t **subdata, size_t *sublen)
@@ -1070,6 +1084,11 @@ int ssl_sts_connection_handshake(struct ssl_sts_connection *ssl)
 
     if ((ret = ssl_sts_connection_setup_ciphers(ssl)) != 0) {
         fprintf(stderr, "ssl_sts_connection_setup_ciphers failed: %d\n", ret);
+        return 1;
+    }
+
+    if ((ret = ssl_srp_write_finished(ssl)) != 0) {
+        fprintf(stderr, "ssl_srp_write_finished failed: %d\n", ret);
         return 1;
     }
 
