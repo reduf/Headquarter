@@ -41,6 +41,7 @@
 # define SOCKET_ERROR -1
 #endif
 
+#include <mbedtls/aes.h>
 #include <mbedtls/bignum.h>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
