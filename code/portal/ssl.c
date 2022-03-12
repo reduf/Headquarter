@@ -1126,6 +1126,14 @@ static int ssl_srp_build_message_to_encrypt(
     return 0;
 }
 
+static size_t ssl_srp_get_msg_with_hmac_len(size_t msg_len)
+{
+    const size_t AES_BLOCK_SIZE = 16;
+    size_t msg_hmac_len = msg_len + SHA1_DIGEST_SIZE;
+    size_t aligned = (msg_hmac_len + (AES_BLOCK_SIZE - 1)) & ~(AES_BLOCK_SIZE - 1);
+    return aligned;
+}
+
 static int ssl_sts_connection_send_internal(
     struct ssl_sts_connection *ssl,
     uint8_t message_type,
@@ -1141,7 +1149,9 @@ static int ssl_sts_connection_send_internal(
 
     size_t size_at_start = array_size(ssl->write);
 
-    if ((ret = ssl_srp_write_protocol_header(ssl, message_type, data_len)) != 0)
+    size_t msg_hmac_len = ssl_srp_get_msg_with_hmac_len(data_len);
+    size_t protocol_msg_len = msg_hmac_len + sizeof(ssl->iv_enc);
+    if ((ret = ssl_srp_write_protocol_header(ssl, message_type, protocol_msg_len)) != 0)
         return 0;
 
     // The MAC is computed as follow:
@@ -1176,7 +1186,7 @@ static int ssl_sts_connection_send_internal(
     iv_buffer = NULL;
 
     array_uint8_t buffer;
-    array_init(buffer, (data_len + 20 + 16));
+    array_init(buffer, msg_hmac_len);
     if ((ret = ssl_srp_build_message_to_encrypt(&buffer, &ssl->mac_enc, data, data_len)) != 0) {
         array_reset(buffer);
         return 1;
