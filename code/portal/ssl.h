@@ -45,8 +45,9 @@ struct ssl_sts_connection {
     mbedtls_ctr_drbg_context prng;
     mbedtls_sha256_context checksum;
 
+    uint8_t packet_number_write[8];
     uint8_t iv_enc[16];
-    uint8_t iv_dec[16];
+    // uint8_t iv_dec[16];
 
     // AES256-CBC
     mbedtls_aes_context cipher_enc;
@@ -82,3 +83,5 @@ int ssl_sts_connection_init_srp(struct ssl_sts_connection *ssl, const char *user
 int ssl_sts_connection_seed(struct ssl_sts_connection *ssl, mbedtls_entropy_context *entropy);
 
 int ssl_sts_connection_handshake(struct ssl_sts_connection *ssl);
+
+int ssl_sts_connection_send(struct ssl_sts_connection *ssl, const uint8_t *data, size_t data_len);
