@@ -9,3 +9,6 @@ target_link_libraries(test_prf PRIVATE portal utest)
 
 add_executable(test_transform test_transform.c)
 target_link_libraries(test_transform PRIVATE mbedcrypto utest)
+
+add_executable(test_sls test_sls.c)
+target_link_libraries(test_sls PRIVATE portal mbedcrypto utest common)

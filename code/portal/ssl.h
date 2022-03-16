@@ -81,7 +81,13 @@ void ssl_sts_connection_free(struct ssl_sts_connection *ssl);
 
 int ssl_sts_connection_init_srp(struct ssl_sts_connection *ssl, const char *username, const char *password);
 int ssl_sts_connection_seed(struct ssl_sts_connection *ssl, mbedtls_entropy_context *entropy);
+int ssl_sts_connection_seed_test(
+    struct ssl_sts_connection *ssl,
+    const uint8_t *client_private, size_t client_private_len,
+    const uint8_t *client_random, size_t client_random_len,
+    const uint8_t *iv, size_t iv_len);
+
+int ssl_srp_compute_premaster_secret(struct ssl_sts_connection *ssl);
 
 int ssl_sts_connection_handshake(struct ssl_sts_connection *ssl);
-
 int ssl_sts_connection_send(struct ssl_sts_connection *ssl, const uint8_t *data, size_t data_len);

@@ -248,6 +248,37 @@ int ssl_sts_connection_seed(struct ssl_sts_connection *ssl, mbedtls_entropy_cont
     return 0;
 }
 
+int ssl_sts_connection_seed_test(
+    struct ssl_sts_connection *ssl,
+    const uint8_t *client_private, size_t client_private_len,
+    const uint8_t *client_random, size_t client_random_len,
+    const uint8_t *iv, size_t iv_len)
+{
+    if (sizeof(ssl->client_key.private) < client_private_len) {
+        fprintf(stderr, "Couldn't initialize client private, too many bytes\n");
+        return 1;
+    }
+
+    size_t zero_count = sizeof(ssl->client_key.private) - client_private_len;
+    memcpy(ssl->client_key.private + zero_count, client_private, client_private_len);
+
+    if (sizeof(ssl->client_random) != client_random_len) {
+        fprintf(stderr, "'client_random_len' must be %zu bytes\n", sizeof(ssl->client_random));
+        return 1;
+    }
+
+    ssl->client_random.time = be32dec(client_random);
+    memcpy(&ssl->client_random.bytes, client_random + 4, client_random_len - 4);
+
+    if (sizeof(ssl->iv_enc) != iv_len) {
+        fprintf(stderr, "'iv' must be %zu bytes\n", sizeof(ssl->iv_enc));
+        return 1;
+    }
+
+    memcpy(&ssl->iv_enc, iv, iv_len);
+    return 0;
+}
+
 static int ssl_srp_write_protocol_header(struct ssl_sts_connection *ssl, uint8_t msg_type, size_t msg_size)
 {
     if ((size_t)UINT16_MAX < msg_size)
@@ -805,7 +836,7 @@ static int sts_process_server_done(struct ssl_sts_connection *ssl)
     return 0;
 }
 
-static int ssl_srp_compute_premaster_secret(struct ssl_sts_connection *ssl)
+int ssl_srp_compute_premaster_secret(struct ssl_sts_connection *ssl)
 {
     int ret;
 
