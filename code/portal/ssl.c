@@ -978,6 +978,12 @@ cleanup:;
     return ret;
 }
 
+static void serialize_tls12_random(uint8_t *buffer, struct tls12_random *random)
+{
+    be32enc(buffer, random->time);
+    memcpy(buffer + 4, random->bytes, sizeof(random->bytes));
+}
+
 static int ssl_sts_connection_setup_ciphers(struct ssl_sts_connection *ssl)
 {
     int ret;
@@ -991,8 +997,8 @@ static int ssl_sts_connection_setup_ciphers(struct ssl_sts_connection *ssl)
     // For the master secret, the "random buffer" is the concatenation
     // of the client random followed by the server random.
     uint8_t random[sizeof(struct tls12_random) * 2];
-    memcpy(random, &ssl->client_random, sizeof(struct tls12_random));
-    memcpy(random + sizeof(struct tls12_random), &ssl->server_random, sizeof(struct tls12_random));
+    serialize_tls12_random(random, &ssl->client_random);
+    serialize_tls12_random(random + sizeof(struct tls12_random), &ssl->server_random);
 
     uint8_t master_secret[48];
     ret = tls_prf_sha256(
@@ -1008,8 +1014,8 @@ static int ssl_sts_connection_setup_ciphers(struct ssl_sts_connection *ssl)
 
     // For the master secret, the "random" buffer is the concatenation
     // of the server random followed by the client random.
-    memcpy(random, &ssl->server_random, sizeof(struct tls12_random));
-    memcpy(random + sizeof(struct tls12_random), &ssl->client_random, sizeof(struct tls12_random));
+    serialize_tls12_random(random, &ssl->server_random);
+    serialize_tls12_random(random + sizeof(struct tls12_random), &ssl->client_random);
 
     uint8_t key_expansion[104];
     ret = tls_prf_sha256(
