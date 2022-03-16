@@ -1179,13 +1179,13 @@ static int ssl_sts_connection_send_internal(
     }
 
     size_t size_at_start = array_size(ssl->write);
+
+    // We write the header with an length of the specified message, and we need
+    // that to compute the HMAC, but the HMAC is then append to the message and
+    // we need to update this length.  We will update the actual length, just
+    // before encrypting the message.
     if ((ret = ssl_srp_write_protocol_header(ssl, message_type, data_len)) != 0)
         return 0;
-
-    // The MAC is computed as follow:
-    // Process the packet number encoded as `uint64be_t`.
-    // Process the protocol header.
-    // Process the message to be sent.
 
     if ((ret = mbedtls_md_hmac_update(&ssl->mac_enc,
             ssl->packet_number_write, sizeof(ssl->packet_number_write))) != 0) {
@@ -1234,8 +1234,14 @@ static int ssl_sts_connection_send_internal(
         return 1;
     }
 
-    const uint8_t *send_data = ssl->write.data + size_at_start;
+    uint8_t *send_data = ssl->write.data + size_at_start;
     size_t send_size = array_size(ssl->write) - size_at_start;
+
+    // Update the header size containing the HMAC
+    size_t content_size = send_size - HEADER_SIZE;
+    assert(content_size <= (size_t)UINT16_MAX);
+    be16enc(send_data + 3, (uint16_t)content_size);
+
     if ((ret = send_full(ssl->fd, send_data, send_size)) != 0) {
         return ret;
     }
