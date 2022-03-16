@@ -152,6 +152,7 @@ void ssl_sts_connection_init(struct ssl_sts_connection *ssl)
 
     mbedtls_ctr_drbg_init(&ssl->prng);
     mbedtls_sha256_init(&ssl->checksum);
+    mbedtls_sha256_starts(&ssl->checksum, 0);
 
     mbedtls_aes_init(&ssl->cipher_enc);
     mbedtls_aes_init(&ssl->cipher_dec);
