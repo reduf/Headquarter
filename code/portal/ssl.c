@@ -1093,6 +1093,7 @@ static int ssl_sts_issue_next_iv(struct ssl_sts_connection *ssl, uint8_t *iv, si
     if (mbedtls_internal_aes_encrypt(&ssl->cipher_enc, ssl->iv_enc, iv) != 0)
         return 1;
 
+    memcpy(ssl->iv_enc, iv, iv_len);
     return 0;
 }
 
