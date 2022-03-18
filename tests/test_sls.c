@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     return ret;
 }
 
-UTEST(toto, aabbcc)
+UTEST(test_with_fake_server, ensure_handhsake_work)
 {
     const uint8_t client_private[] = \
         "\x72\x61\x6A\xE5\xD8\xC0\xF7\xB7\x8E\x1B\x10\x9B\xAA\x18\x7D\x1D"
@@ -70,7 +70,7 @@ UTEST(toto, aabbcc)
 
     ssl_sts_connection_init(&ssl);
     ssl.fd = fd;
-    ret = ssl_sts_connection_init_srp(&ssl, "email", "password");
+    ret = ssl_sts_connection_init_srp(&ssl, "test@gmail.com", "root");
     ASSERT_EQ(ret, 0);
     ret = ssl_sts_connection_seed_test(
         &ssl,

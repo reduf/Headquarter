@@ -1105,13 +1105,6 @@ static void increment_be(uint8_t *bytes, size_t len)
     }
 }
 
-// HEADER
-// IV
-// Encrypted
-//  Packet
-//  HMAC
-//  Padded with pkcs7
-
 static int ssl_srp_build_message_to_encrypt(
     array_uint8_t *buffer,
     mbedtls_md_context_t *hmac,
