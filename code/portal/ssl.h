@@ -15,6 +15,9 @@ enum ssl_sts_state {
     AWAIT_SERVER_HELLO_DONE,
     AWAIT_CLIENT_KEY_EXCHANGE,
     AWAIT_CLIENT_CHANGE_CIPHER_SPEC,
+    AWAIT_CLIENT_HANDSHAKE,
+    AWAIT_SERVER_CHANGE_CIPHER_SPEC,
+    AWAIT_SERVER_ENC_HANDSHAKE,
     AWAIT_CLIENT_FINISHED,
 };
 
@@ -45,9 +48,17 @@ struct ssl_sts_connection {
     mbedtls_ctr_drbg_context prng;
     mbedtls_sha256_context checksum;
 
-    uint8_t packet_number_write[8];
+    // Those ids are values incrementing on every messages, used in the
+    // calculation of the HMAC. They don't seem to have any other usage.
+    // In addition, they increment, but always from BE endian point of view.
+    uint8_t next_read_id[8];
+    uint8_t next_write_id[8];
+
+    // We don't strictly need the IV for the encryption, because the IV is
+    // always sent with the packet. In fact, this is why we don't store the
+    // iv for decrypting. We keep it, to reproduce the official implementation
+    // behavior.
     uint8_t iv_enc[16];
-    // uint8_t iv_dec[16];
 
     // AES256-CBC
     mbedtls_aes_context cipher_enc;

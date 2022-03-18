@@ -572,13 +572,14 @@ static int ssl_srp_write_change_cipher_spec(struct ssl_sts_connection *ssl)
 
     array_add(ssl->write, 1);
 
-    fprintf(stderr, "====> This state is incorrect\n");
-    ssl->state = AWAIT_CLIENT_FINISHED;
+    ssl->state = AWAIT_CLIENT_HANDSHAKE;
     return 0;
 }
 
 static int ssl_srp_write_finished(struct ssl_sts_connection *ssl)
 {
+    assert(ssl->state == AWAIT_CLIENT_HANDSHAKE);
+
     size_t len = sizeof(ssl->client_finished);
 
     array_add(ssl->write, SSL_HS_FINISHED);
@@ -588,6 +589,8 @@ static int ssl_srp_write_finished(struct ssl_sts_connection *ssl)
     p[2] = len & 0xFF;
 
     array_insert(ssl->write, sizeof(ssl->client_finished), ssl->client_finished);
+
+    ssl->state = AWAIT_SERVER_CHANGE_CIPHER_SPEC;
     return 0;
 }
 
@@ -811,7 +814,7 @@ static int ssl_srp_process_server_key_exchange(struct ssl_sts_connection *ssl)
     return 0;
 }
 
-static int sts_process_server_done(struct ssl_sts_connection *ssl)
+static int ssl_srp_process_server_done(struct ssl_sts_connection *ssl)
 {
     assert(ssl->state == AWAIT_SERVER_HELLO_DONE);
 
@@ -823,7 +826,7 @@ static int sts_process_server_done(struct ssl_sts_connection *ssl)
         return ret;
     }
 
-    char expected[] = "\x0e\x00\x00\x00";
+    uint8_t expected[] = "\x0e\x00\x00\x00";
     if (inner_len != (sizeof(expected) - 1))
         return ERR_SSL_BAD_INPUT_DATA;
 
@@ -833,6 +836,86 @@ static int sts_process_server_done(struct ssl_sts_connection *ssl)
     size_t processed = (inner_data - ssl->read.data) + inner_len;
     array_remove_range_ordered(ssl->read, 0, processed);
     ssl->state = AWAIT_CLIENT_KEY_EXCHANGE;
+    return 0;
+}
+
+static int ssl_srp_process_change_cipher_spec(struct ssl_sts_connection *ssl)
+{
+    assert(ssl->state == AWAIT_SERVER_CHANGE_CIPHER_SPEC);
+
+    int ret;
+    const uint8_t *inner_data;
+    size_t inner_len;
+
+    if ((ret = parse_tls12_handshake(ssl, SSL_MSG_CHANGE_CIPHER_SPEC, &inner_data, &inner_len)) != 0) {
+        return ret;
+    }
+
+    uint8_t expected[] = "\x01";
+    if (inner_len != (sizeof(expected) - 1))
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    if (memcmp(inner_data, expected, inner_len) != 0)
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    size_t processed = (inner_data - ssl->read.data) + inner_len;
+    array_remove_range_ordered(ssl->read, 0, processed);
+    ssl->state = AWAIT_SERVER_ENC_HANDSHAKE;
+
+    return 0;
+}
+
+static int ssl_srp_process_encrypted_handshake(struct ssl_sts_connection *ssl)
+{
+    assert(ssl->state == AWAIT_SERVER_ENC_HANDSHAKE);
+
+    int ret;
+    const uint8_t *inner_data;
+    size_t inner_len;
+
+    if ((ret = parse_tls12_handshake(ssl, SSL_MSG_HANDSHAKE, &inner_data, &inner_len)) != 0) {
+        return ret;
+    }
+
+    uint8_t iv[16];
+    if (inner_len < sizeof(iv)) {
+        fprintf(stderr, "Not enough bytes to contain the IV\n");
+        return ERR_SSL_BAD_INPUT_DATA;
+    }
+
+    memcpy(iv, inner_data, sizeof(iv));
+
+    const uint8_t *enc_data = inner_data + sizeof(iv);
+    size_t enc_len = inner_len - sizeof(iv);
+
+    const size_t AES_BLOCK_SIZE = 16;
+    if (((enc_len / AES_BLOCK_SIZE) * AES_BLOCK_SIZE) != enc_len) {
+        fprintf(stderr, "Encrypted length isn't a multiple of 'AES_BLOCK_SIZE'\n");
+        return ERR_SSL_BAD_INPUT_DATA;
+    }
+
+    uint8_t buffer[1024];
+    if (sizeof(buffer) < enc_len) {
+        fprintf(stderr, "Not enough bytes on the stack, quiting...\n");
+        return ERR_SSL_UNSUPPORTED_PROTOCOL;
+    }
+
+    ret = mbedtls_aes_crypt_cbc(
+        &ssl->cipher_dec,
+        MBEDTLS_AES_DECRYPT,
+        enc_len,
+        iv,
+        enc_data,
+        buffer);
+
+    // @Cleanup:
+    // We don't do anything with the buffer right now.
+    // We should also check the hmac computed by the server.
+
+    size_t processed = (inner_data - ssl->read.data) + inner_len;
+    array_remove_range_ordered(ssl->read, 0, processed);
+    ssl->state = AWAIT_CLIENT_FINISHED;
+
     return 0;
 }
 
@@ -1166,10 +1249,10 @@ static int ssl_sts_connection_send_internal(
 {
     int ret;
 
-    if (ssl->state != AWAIT_CLIENT_FINISHED) {
-        fprintf(stderr, "Handshake wasn't completed successfully\n");
-        return 1;
-    }
+    // if (ssl->state != AWAIT_CLIENT_FINISHED) {
+    //     fprintf(stderr, "Handshake wasn't completed successfully\n");
+    //     return 1;
+    // }
 
     size_t size_at_start = array_size(ssl->write);
 
@@ -1180,13 +1263,12 @@ static int ssl_sts_connection_send_internal(
     if ((ret = ssl_srp_write_protocol_header(ssl, message_type, data_len)) != 0)
         return 0;
 
-    if ((ret = mbedtls_md_hmac_update(&ssl->mac_enc,
-            ssl->packet_number_write, sizeof(ssl->packet_number_write))) != 0) {
+    if ((ret = mbedtls_md_hmac_update(&ssl->mac_enc, ssl->next_write_id, sizeof(ssl->next_write_id))) != 0) {
         return 1;
     }
 
     // Increment the packet number for next update.
-    increment_be(ssl->packet_number_write, sizeof(ssl->packet_number_write));
+    increment_be(ssl->next_write_id, sizeof(ssl->next_write_id));
 
     const size_t HEADER_SIZE = 5;
     assert((size_at_start + HEADER_SIZE) <= array_size(ssl->write));
@@ -1300,8 +1382,8 @@ int ssl_sts_connection_handshake(struct ssl_sts_connection *ssl)
         return 1;
     }
 
-    if ((ret = wait_for_server_step(sts_process_server_done, ssl)) != 0) {
-        fprintf(stderr, "'sts_process_server_done' failed: %d\n", ret);
+    if ((ret = wait_for_server_step(ssl_srp_process_server_done, ssl)) != 0) {
+        fprintf(stderr, "'ssl_srp_process_server_done' failed: %d\n", ret);
         return 1;
     }
 
@@ -1330,6 +1412,17 @@ int ssl_sts_connection_handshake(struct ssl_sts_connection *ssl)
         return 1;
     }
 
+    if ((ret = wait_for_server_step(ssl_srp_process_change_cipher_spec, ssl)) != 0) {
+        fprintf(stderr, "'ssl_srp_process_change_cipher_spec' failed: %d\n", ret);
+        return 1;
+    }
+
+    if ((ret = wait_for_server_step(ssl_srp_process_encrypted_handshake, ssl)) != 0) {
+        fprintf(stderr, "'ssl_srp_process_encrypted_handshake' failed: %d\n", ret);
+        return 1;
+    }
+
+    array_clear(ssl->read);
     array_clear(ssl->write);
     ssl->state = AWAIT_CLIENT_FINISHED;
     return 0;

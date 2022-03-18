@@ -3,6 +3,12 @@
 #endif
 #define PORTAL_STS_H
 
+#define STSE_SUCCESS                 0
+#define STSE_INCOMPLETE_CONTENT      1
+#define STSE_INCOMPLETE_HEADER       2
+#define STSE_UNSUPPORTED_HEADER      3
+#define STSE_UNSUPPORTED_PROTOCOL    4
+
 struct sts_connection {
     SOCKET           fd;
     array_sockaddr_t addresses;
@@ -14,12 +20,6 @@ void sts_connection_free(struct sts_connection *sts);
 
 int sts_connection_connect(struct sts_connection *sts, const char *hostname);
 int sts_connection_start_tls(struct sts_connection *sts, struct ssl_sts_connection *ssl);
-
-#define STSE_SUCCESS                 0
-#define STSE_INCOMPLETE_CONTENT      1
-#define STSE_INCOMPLETE_HEADER       2
-#define STSE_UNSUPPORTED_HEADER      3
-#define STSE_UNSUPPORTED_PROTOCOL    4
 
 struct sts_header {
     unsigned status_code;
