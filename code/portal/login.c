@@ -16,6 +16,121 @@ void portal_free()
     mbedtls_entropy_free(&g_entropy);
 }
 
+static int auth_login_finish(struct ssl_sts_connection *ssl)
+{
+    const char url[] = "/Auth/LoginFinish";
+    const size_t url_len = sizeof(url) - 1;
+
+    const uint32_t timeout = 29 * 1000;
+
+    array_uint8_t content;
+    array_init(content, 1024);
+    appendf(&content, "<Request>\n");
+    appendf(&content, "<Language>en</Language>\n");
+    appendf(&content, "</Request>\n");
+
+    array_uint8_t request;
+    array_init(request, 1024);
+    int ret = sts_write_request_with_sequence_number(
+        &request,
+        url, url_len,
+        2,
+        timeout,
+        content.data, content.size);
+
+    array_reset(content);
+
+    if (ret != 0) {
+        return ret;
+    }
+
+    ret = ssl_sts_connection_send(ssl, request.data, request.size);
+    array_reset(request);
+
+    if (ret != 0) {
+        return ret;
+    }
+
+    return 0;
+}
+
+static int auth_list_game_accounts(struct ssl_sts_connection *ssl)
+{
+    const char url[] = "/Auth/ListMyGameAccounts";
+    const size_t url_len = sizeof(url) - 1;
+
+    const uint32_t timeout = 29 * 1000;
+
+    array_uint8_t content;
+    array_init(content, 1024);
+    appendf(&content, "<Request>\n");
+    appendf(&content, "<GameCode>gw1</GameCode>\n");
+    appendf(&content, "</Request>\n");
+
+    array_uint8_t request;
+    array_init(request, 1024);
+    int ret = sts_write_request_with_sequence_number(
+        &request,
+        url, url_len,
+        2,
+        timeout,
+        content.data, content.size);
+
+    array_reset(content);
+
+    if (ret != 0) {
+        return ret;
+    }
+
+    ret = ssl_sts_connection_send(ssl, request.data, request.size);
+    array_reset(request);
+
+    if (ret != 0) {
+        return ret;
+    }
+
+    return 0;
+}
+
+static int auth_request_game_token(struct ssl_sts_connection *ssl)
+{
+    const char url[] = "/Auth/RequestGameToken";
+    const size_t url_len = sizeof(url) - 1;
+
+    const uint32_t timeout = 29 * 1000;
+
+    array_uint8_t content;
+    array_init(content, 1024);
+    appendf(&content, "<Request>\n");
+    appendf(&content, "<GameCode>gw1</GameCode>\n");
+    appendf(&content, "<AccountAlias>gw1</AccountAlias>\n");
+    appendf(&content, "</Request>\n");
+
+    array_uint8_t request;
+    array_init(request, 1024);
+    int ret = sts_write_request_with_sequence_number(
+        &request,
+        url, url_len,
+        2,
+        timeout,
+        content.data, content.size);
+
+    array_reset(content);
+
+    if (ret != 0) {
+        return ret;
+    }
+
+    ret = ssl_sts_connection_send(ssl, request.data, request.size);
+    array_reset(request);
+
+    if (ret != 0) {
+        return ret;
+    }
+
+    return 0;
+}
+
 int portal_login(const char *username, const char *password)
 {
     int ret;
@@ -65,7 +180,24 @@ int portal_login(const char *username, const char *password)
         return 1;
     }
 
-    fprintf(stderr, "We are ready to initiate secured connection");
+    // At this point, we have a secured connection and we are authenticathed.
+    // We need to use the STS protocol, over TLS-SRP to retrieve a user id and
+    // a game token.
+
+    if ((ret = auth_login_finish(&ssl)) != 0) {
+        ssl_sts_connection_free(&ssl);
+        return 1;
+    }
+
+    if ((ret = auth_list_game_accounts(&ssl)) != 0) {
+        ssl_sts_connection_free(&ssl);
+        return 1;
+    }
+
+    if ((ret = auth_request_game_token(&ssl)) != 0) {
+        ssl_sts_connection_free(&ssl);
+        return 1;
+    }
 
     ssl_sts_connection_free(&ssl);
     return 0;

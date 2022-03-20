@@ -7,6 +7,7 @@
 #define ERR_SSL_UNEXPECTED_MESSAGE     2
 #define ERR_SSL_UNSUPPORTED_PROTOCOL   3
 #define ERR_SSL_BAD_INPUT_DATA         4
+#define ERR_SSL_BUFFER_TOO_SMALL       5
 
 enum ssl_sts_state {
     AWAIT_CLIENT_HELLO,
@@ -101,3 +102,4 @@ int ssl_srp_compute_premaster_secret(struct ssl_sts_connection *ssl);
 
 int ssl_sts_connection_handshake(struct ssl_sts_connection *ssl);
 int ssl_sts_connection_send(struct ssl_sts_connection *ssl, const uint8_t *data, size_t data_len);
+int ssl_sts_connection_recv(struct ssl_sts_connection *ssl, uint8_t *buffer, size_t buffer_len, size_t *retlen);

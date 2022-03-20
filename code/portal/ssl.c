@@ -390,7 +390,359 @@ static int ssl_srp_finish_handshake_msg(struct ssl_sts_connection *ssl, size_t h
     return 0;
 }
 
-static void ssl_srp_write_srp(array_uint8_t *buffer,
+static void increment_be(uint8_t *bytes, size_t len)
+{
+    for (size_t i = len - 1; i < len; ++i) {
+        if (++bytes[i] != 0)
+            break;
+    }
+}
+
+static int ssl_sts_issue_next_iv(struct ssl_sts_connection *ssl, uint8_t *iv, size_t iv_len)
+{
+    if (iv_len != sizeof(ssl->iv_enc))
+        return 1;
+
+    // We increment the `uint128_t` by 1.
+    for (size_t i = 0; i < sizeof(ssl->iv_enc); ++i) {
+        if (++ssl->iv_enc[i] != 0)
+            break;
+    }
+
+    if (mbedtls_internal_aes_encrypt(&ssl->cipher_enc, ssl->iv_enc, iv) != 0)
+        return 1;
+
+    memcpy(ssl->iv_enc, iv, iv_len);
+    return 0;
+}
+
+static int ssl_srp_build_message_to_encrypt(
+    array_uint8_t *buffer,
+    mbedtls_md_context_t *hmac,
+    const uint8_t *msg,
+    size_t msg_size)
+{
+    int ret;
+
+    assert(array_size(*buffer) == 0);
+
+    // Write the message in the output.
+    array_insert(*buffer, msg_size, msg);
+
+    // Write the hmac in the output.
+    uint8_t *p = array_push(*buffer, SHA1_DIGEST_SIZE);
+    if ((ret = mbedtls_md_hmac_finish(hmac, p)) != 0)
+        return 1;
+
+    // Reset the hmac structure to allow re-using for the next packet.
+    if ((ret = mbedtls_md_hmac_reset(hmac)) != 0)
+        return 1;
+
+    // Write the padding with the modified PKCS7.
+    // We use AES, so the block size is 16, we pad to this value.
+    const size_t AES_BLOCK_SIZE = 16;
+
+    // We compute the next alignment size. If the buffer is already
+    // aligned, the aligned size will be the same as the size. This
+    // is incorrect, because it could be ambiguous whether there is
+    // a padding or not.
+    size_t size = array_size(*buffer);
+    size_t alligned = (size + (AES_BLOCK_SIZE - 1)) & ~(AES_BLOCK_SIZE - 1);
+
+    // When the buffer was already aligned, we simply pad it with
+    // an extra complete block.
+    if (size == alligned)
+        alligned = size + AES_BLOCK_SIZE;
+
+    assert(size < alligned);
+    assert((alligned - size) <= AES_BLOCK_SIZE);
+
+    // PKCS7 padding value should be the number of bytes padded, but
+    // portal use a custom? one similar, but the padded value is the
+    // number of bytes - 1.
+    uint8_t padval = (uint8_t)(alligned - size) - 1;
+
+    array_reserve(*buffer, padval + 1);
+    for (uint8_t i = 0; i < (padval + 1); ++i)
+        array_add(*buffer, padval);
+
+    return 0;
+}
+
+static int ssl_sts_connection_send_internal(
+    struct ssl_sts_connection *ssl,
+    uint8_t message_type,
+    const uint8_t *data,
+    size_t data_len)
+{
+    int ret;
+
+    // if (ssl->state != AWAIT_CLIENT_FINISHED) {
+    //     fprintf(stderr, "Handshake wasn't completed successfully\n");
+    //     return 1;
+    // }
+
+    size_t size_at_start = array_size(ssl->write);
+
+    // We write the header with an length of the specified message, and we need
+    // that to compute the HMAC, but the HMAC is then append to the message and
+    // we need to update this length.  We will update the actual length, just
+    // before encrypting the message.
+    if ((ret = ssl_srp_write_protocol_header(ssl, message_type, data_len)) != 0)
+        return 0;
+
+    if ((ret = mbedtls_md_hmac_update(&ssl->mac_enc, ssl->next_write_id, sizeof(ssl->next_write_id))) != 0) {
+        return 1;
+    }
+
+    // Increment the packet number for next update.
+    increment_be(ssl->next_write_id, sizeof(ssl->next_write_id));
+
+    const size_t HEADER_SIZE = 5;
+    assert((size_at_start + HEADER_SIZE) <= array_size(ssl->write));
+    const uint8_t *header_bytes = &array_at(ssl->write, size_at_start);
+    if ((ret = mbedtls_md_hmac_update(&ssl->mac_enc, header_bytes, HEADER_SIZE)) != 0) {
+        return 1;
+    }
+
+    if ((ret = mbedtls_md_hmac_update(&ssl->mac_enc, data, data_len)) != 0) {
+        return 1;
+    }
+
+    uint8_t *iv_buffer = array_push(ssl->write, sizeof(ssl->iv_enc));
+    if ((ret = ssl_sts_issue_next_iv(ssl, iv_buffer, sizeof(ssl->iv_enc))) != 0)
+        return ret;
+
+    // Invalidate pointer to avoid re-using it after pushing in the array.
+    iv_buffer = NULL;
+
+    array_uint8_t buffer;
+    array_init(buffer, data_len + 32);
+    if ((ret = ssl_srp_build_message_to_encrypt(&buffer, &ssl->mac_enc, data, data_len)) != 0) {
+        array_reset(buffer);
+        return 1;
+    }
+
+    uint8_t *output = array_push(ssl->write, buffer.size);
+    ret = mbedtls_aes_crypt_cbc(
+        &ssl->cipher_enc,
+        MBEDTLS_AES_ENCRYPT,
+        buffer.size,
+        ssl->iv_enc,
+        buffer.data,
+        output);
+
+    array_reset(buffer);
+    if (ret != 0) {
+        return 1;
+    }
+
+    uint8_t *send_data = ssl->write.data + size_at_start;
+    size_t send_size = array_size(ssl->write) - size_at_start;
+
+    // Update the header size containing the HMAC
+    size_t content_size = send_size - HEADER_SIZE;
+    assert(content_size <= (size_t)UINT16_MAX);
+    be16enc(send_data + 3, (uint16_t)content_size);
+
+    if ((ret = send_full(ssl->fd, send_data, send_size)) != 0) {
+        return ret;
+    }
+
+    // Reset the vector to the size at start
+    ssl->write.size = size_at_start;
+    // array_resize(ssl->write, size_at_start);
+
+    return 0;
+}
+
+static int parse_tls12_handshake(
+    struct ssl_sts_connection *ssl,
+    uint8_t content_type,
+    const uint8_t **subdata, size_t *sublen)
+{
+    const size_t HEADER_LEN = 5;
+
+    const uint8_t *data = ssl->read.data;
+    size_t length = array_size(ssl->read);
+
+    // The packet starts with 1 byte defining the content type, 2 bytes defining
+    // the version and 2 bytes defining the length of the payload.
+    if (length < HEADER_LEN)
+        return ERR_SSL_CONTINUE_PROCESSING;
+
+    if (data[0] != content_type)
+        return ERR_SSL_UNEXPECTED_MESSAGE;
+
+    if (data[1] != 3 && data[2] != 3)
+        return ERR_SSL_UNSUPPORTED_PROTOCOL;
+
+    uint16_t client_sublen = be16dec(&data[3]);
+
+    // This can't overflow, we checked it before.
+    // We ensure we have all the data in the header to ensure we will not
+    // try to parse the same packet because of incomplete data. This is done
+    // to ensure we don't calculate the checksum on the packet twice.
+    if ((length - HEADER_LEN) < client_sublen)
+        return ERR_SSL_CONTINUE_PROCESSING;
+
+    *subdata = &data[HEADER_LEN];
+    *sublen = client_sublen;
+
+    int ret;
+    if ((ret = mbedtls_sha256_update(&ssl->checksum, *subdata, *sublen)) != 0) {
+        return 1;
+    }
+
+    return 0;
+}
+
+int ssl_sts_connection_recv_internal(
+    struct ssl_sts_connection *ssl,
+    uint8_t message_type,
+    uint8_t *buffer, size_t buffer_len,
+    size_t *retlen)
+{
+    int ret;
+
+    const uint8_t *inner_data;
+    size_t inner_len;
+
+    for (;;) {
+        ret = parse_tls12_handshake(ssl, message_type, &inner_data, &inner_len);
+
+        if (ret == 0)
+            break;
+
+        if (ret != ERR_SSL_CONTINUE_PROCESSING) {
+            return ret;
+        }
+
+        if ((ret = recv_to_buffer(ssl->fd, &ssl->read)) != 0) {
+            fprintf(stderr, "Failed to recv data from network: %d\n", ret);
+            return ret;
+        }
+    }
+
+    uint8_t iv[16];
+    if (inner_len < sizeof(iv)) {
+        fprintf(stderr, "Not enough bytes to contain the IV\n");
+        return ERR_SSL_BAD_INPUT_DATA;
+    }
+
+    memcpy(iv, inner_data, sizeof(iv));
+
+    const uint8_t *enc_data = inner_data + sizeof(iv);
+    size_t enc_len = inner_len - sizeof(iv);
+
+    const size_t AES_BLOCK_SIZE = 16;
+    if (((enc_len / AES_BLOCK_SIZE) * AES_BLOCK_SIZE) != enc_len) {
+        fprintf(stderr, "Encrypted length isn't a multiple of 'AES_BLOCK_SIZE'\n");
+        return ERR_SSL_BAD_INPUT_DATA;
+    }
+
+    // The message will always be padded with the slight modification of PKCS7,
+    // so we ensure the the `enc_len` is not 0 which would means there is no
+    // paddding which isn't possible.
+    if (enc_len == 0) {
+        fprintf(stderr, "Encrypted message is too small to contain a padding");
+        return ERR_SSL_BAD_INPUT_DATA;
+    }
+
+    // @Cleanup:
+    // Not enough bytes in the output buffer to read the complete output
+    // records. This isn't a great solution, we should simply keep an internal
+    // buffer with the decrypted content and return as much as the user wants.
+    if (buffer_len < enc_len) {
+        return ERR_SSL_BUFFER_TOO_SMALL;
+    }
+
+    // We decrypt the data with the given IV.
+    ret = mbedtls_aes_crypt_cbc(
+        &ssl->cipher_dec,
+        MBEDTLS_AES_DECRYPT,
+        enc_len,
+        iv,
+        enc_data,
+        buffer);
+
+    if (ret != 0) {
+        return ERR_SSL_BAD_INPUT_DATA;
+    }
+
+    uint8_t pad_val = buffer[enc_len - 1];
+    uint8_t pad_len = pad_val + 1;
+
+    if (enc_len < pad_len) {
+        fprintf(stderr, "The padding length is larger than the actual message\n");
+        return ERR_SSL_BAD_INPUT_DATA;
+    }
+
+    for (size_t i = (enc_len - pad_len); i < enc_len; ++i) {
+        if (buffer[i] != pad_val) {
+            fprintf(stderr, "Invalid padding value at %zu\n", i);
+            return ERR_SSL_BAD_INPUT_DATA;
+        }
+    }
+
+    // The padding is valid, we substract it from the acutal message len.
+    enc_len -= pad_len;
+
+    // Ensure the authenticity of the message by computing the HMAC.
+    if ((ret = mbedtls_md_hmac_update(&ssl->mac_dec, ssl->next_read_id, sizeof(ssl->next_read_id))) != 0) {
+        return 1;
+    }
+
+    // Increment the packet number for next update.
+    increment_be(ssl->next_read_id, sizeof(ssl->next_read_id));
+
+    uint8_t ssl_header[5];
+    assert(sizeof(ssl_header) <= ssl->read.size);
+    memcpy(ssl_header, ssl->read.data, sizeof(ssl_header));
+
+    // Not sure if it's on purpose, but the size of the IV and the HMAC are
+    // substracted from the header before computing the HMAC. This is kind of
+    // odd, seems unnecessary complexity and could be a bug in the implem of
+    // ANet. Could also be part of the standard, to be confirmed.
+    be16enc(ssl_header + 3, be16dec(ssl_header + 3) - 0x30);
+
+    if ((ret = mbedtls_md_hmac_update(&ssl->mac_dec, ssl_header, sizeof(ssl_header))) != 0) {
+        return 1;
+    }
+
+    if (enc_len < SHA1_DIGEST_SIZE) {
+        fprintf(stderr, "Message is too small to contain an HMAC\n");
+        return ERR_SSL_BAD_INPUT_DATA;
+    }
+
+    size_t msg_len = enc_len - SHA1_DIGEST_SIZE;
+    if ((ret = mbedtls_md_hmac_update(&ssl->mac_dec, buffer, msg_len)) != 0) {
+        return 1;
+    }
+
+    // Write the hmac in the output.
+    uint8_t hmac[SHA1_DIGEST_SIZE];
+    if ((ret = mbedtls_md_hmac_finish(&ssl->mac_dec, hmac)) != 0)
+        return 1;
+
+    // Reset the hmac structure to allow re-using for the next packet.
+    if ((ret = mbedtls_md_hmac_reset(&ssl->mac_dec)) != 0)
+        return 1;
+
+    if (memcmp(buffer + msg_len, hmac, SHA1_DIGEST_SIZE) != 0) {
+        fprintf(stderr, "The HMAC doesn't match\n");
+        return ERR_SSL_BAD_INPUT_DATA;
+    }
+
+    size_t processed = (inner_data - ssl->read.data) + inner_len;
+    array_remove_range_ordered(ssl->read, 0, processed);
+
+    *retlen = msg_len;
+    return 0;
+}
+
+static void ssl_srp_write_srp(
+    array_uint8_t *buffer,
     const char *username, size_t length)
 {
     assert(length < (UINT8_MAX - 1));
@@ -596,46 +948,6 @@ static int ssl_srp_write_finished(struct ssl_sts_connection *ssl)
     array_insert(ssl->write, sizeof(ssl->client_finished), ssl->client_finished);
 
     ssl->state = AWAIT_SERVER_CHANGE_CIPHER_SPEC;
-    return 0;
-}
-
-static int parse_tls12_handshake(
-    struct ssl_sts_connection *ssl, uint8_t content_type,
-    const uint8_t **subdata, size_t *sublen)
-{
-    const size_t HEADER_LEN = 5;
-
-    const uint8_t *data = ssl->read.data;
-    size_t length = array_size(ssl->read);
-
-    // The packet starts with 1 byte defining the content type, 2 bytes defining
-    // the version and 2 bytes defining the length of the payload.
-    if (length < HEADER_LEN)
-        return ERR_SSL_CONTINUE_PROCESSING;
-
-    if (data[0] != content_type)
-        return ERR_SSL_UNEXPECTED_MESSAGE;
-
-    if (data[1] != 3 && data[2] != 3)
-        return ERR_SSL_UNSUPPORTED_PROTOCOL;
-
-    uint16_t client_sublen = be16dec(&data[3]);
-
-    // This can't overflow, we checked it before.
-    // We ensure we have all the data in the header to ensure we will not
-    // try to parse the same packet because of incomplete data. This is done
-    // to ensure we don't calculate the checksum on the packet twice.
-    if ((length - HEADER_LEN) < client_sublen)
-        return ERR_SSL_CONTINUE_PROCESSING;
-
-    *subdata = &data[HEADER_LEN];
-    *sublen = client_sublen;
-
-    int ret;
-    if ((ret = mbedtls_sha256_update(&ssl->checksum, *subdata, *sublen)) != 0) {
-        return 1;
-    }
-
     return 0;
 }
 
@@ -874,53 +1186,28 @@ static int ssl_srp_process_encrypted_handshake(struct ssl_sts_connection *ssl)
 {
     assert(ssl->state == AWAIT_SERVER_ENC_HANDSHAKE);
 
-    int ret;
-    const uint8_t *inner_data;
-    size_t inner_len;
+    uint8_t buffer[16];
+    size_t msg_len;
+    int ret = ssl_sts_connection_recv_internal(
+        ssl,
+        SSL_MSG_HANDSHAKE,
+        buffer, sizeof(buffer),
+        &msg_len);
 
-    if ((ret = parse_tls12_handshake(ssl, SSL_MSG_HANDSHAKE, &inner_data, &inner_len)) != 0) {
+    if (ret != 0) {
         return ret;
     }
 
-    uint8_t iv[16];
-    if (inner_len < sizeof(iv)) {
-        fprintf(stderr, "Not enough bytes to contain the IV\n");
+    if (msg_len != sizeof(buffer)) {
         return ERR_SSL_BAD_INPUT_DATA;
     }
 
-    memcpy(iv, inner_data, sizeof(iv));
+    // The message should starts with, followed by the checksum computed
+    // by the server. Didn't reverse this part yet, but it's not important
+    // from a functioning point of view.
+    // Msg: "\x14\x00\x00\x0C..."
 
-    const uint8_t *enc_data = inner_data + sizeof(iv);
-    size_t enc_len = inner_len - sizeof(iv);
-
-    const size_t AES_BLOCK_SIZE = 16;
-    if (((enc_len / AES_BLOCK_SIZE) * AES_BLOCK_SIZE) != enc_len) {
-        fprintf(stderr, "Encrypted length isn't a multiple of 'AES_BLOCK_SIZE'\n");
-        return ERR_SSL_BAD_INPUT_DATA;
-    }
-
-    uint8_t buffer[1024];
-    if (sizeof(buffer) < enc_len) {
-        fprintf(stderr, "Not enough bytes on the stack, quiting...\n");
-        return ERR_SSL_UNSUPPORTED_PROTOCOL;
-    }
-
-    ret = mbedtls_aes_crypt_cbc(
-        &ssl->cipher_dec,
-        MBEDTLS_AES_DECRYPT,
-        enc_len,
-        iv,
-        enc_data,
-        buffer);
-
-    // @Cleanup:
-    // We don't do anything with the buffer right now.
-    // We should also check the hmac computed by the server.
-
-    size_t processed = (inner_data - ssl->read.data) + inner_len;
-    array_remove_range_ordered(ssl->read, 0, processed);
     ssl->state = AWAIT_CLIENT_FINISHED;
-
     return 0;
 }
 
@@ -1167,171 +1454,6 @@ static int ssl_sts_connection_setup_ciphers(struct ssl_sts_connection *ssl)
     return 0;
 }
 
-static int ssl_sts_issue_next_iv(struct ssl_sts_connection *ssl, uint8_t *iv, size_t iv_len)
-{
-    if (iv_len != sizeof(ssl->iv_enc))
-        return 1;
-
-    // We increment the `uint128_t` by 1.
-    for (size_t i = 0; i < sizeof(ssl->iv_enc); ++i) {
-        if (++ssl->iv_enc[i] != 0)
-            break;
-    }
-
-    if (mbedtls_internal_aes_encrypt(&ssl->cipher_enc, ssl->iv_enc, iv) != 0)
-        return 1;
-
-    memcpy(ssl->iv_enc, iv, iv_len);
-    return 0;
-}
-
-static void increment_be(uint8_t *bytes, size_t len)
-{
-    for (size_t i = len - 1; i < len; ++i) {
-        if (++bytes[i] != 0)
-            break;
-    }
-}
-
-static int ssl_srp_build_message_to_encrypt(
-    array_uint8_t *buffer,
-    mbedtls_md_context_t *hmac,
-    const uint8_t *msg,
-    size_t msg_size)
-{
-    int ret;
-
-    assert(array_size(*buffer) == 0);
-
-    // Write the message in the output.
-    array_insert(*buffer, msg_size, msg);
-
-    // Write the hmac in the output.
-    uint8_t *p = array_push(*buffer, SHA1_DIGEST_SIZE);
-    if ((ret = mbedtls_md_hmac_finish(hmac, p)) != 0)
-        return 1;
-
-    // Reset the hmac structure to allow re-using for the next packet.
-    if ((ret = mbedtls_md_hmac_reset(hmac)) != 0)
-        return 1;
-
-    // Write the padding with the modified PKCS7.
-    // We use AES, so the block size is 16, we pad to this value.
-    const size_t AES_BLOCK_SIZE = 16;
-
-    // We compute the next alignment size. If the buffer is already
-    // aligned, the aligned size will be the same as the size. This
-    // is incorrect, because it could be ambiguous whether there is
-    // a padding or not.
-    size_t size = array_size(*buffer);
-    size_t alligned = (size + (AES_BLOCK_SIZE - 1)) & ~(AES_BLOCK_SIZE - 1);
-
-    // When the buffer was already aligned, we simply pad it with
-    // an extra complete block.
-    if (size == alligned)
-        alligned = size + AES_BLOCK_SIZE;
-
-    assert(size < alligned);
-    assert((alligned - size) <= AES_BLOCK_SIZE);
-
-    // PKCS7 padding value should be the number of bytes padded, but
-    // portal use a custom? one similar, but the padded value is the
-    // number of bytes - 1.
-    uint8_t padval = (uint8_t)(alligned - size) - 1;
-
-    array_reserve(*buffer, padval + 1);
-    for (uint8_t i = 0; i < (padval + 1); ++i)
-        array_add(*buffer, padval);
-
-    return 0;
-}
-
-static int ssl_sts_connection_send_internal(
-    struct ssl_sts_connection *ssl,
-    uint8_t message_type,
-    const uint8_t *data,
-    size_t data_len)
-{
-    int ret;
-
-    // if (ssl->state != AWAIT_CLIENT_FINISHED) {
-    //     fprintf(stderr, "Handshake wasn't completed successfully\n");
-    //     return 1;
-    // }
-
-    size_t size_at_start = array_size(ssl->write);
-
-    // We write the header with an length of the specified message, and we need
-    // that to compute the HMAC, but the HMAC is then append to the message and
-    // we need to update this length.  We will update the actual length, just
-    // before encrypting the message.
-    if ((ret = ssl_srp_write_protocol_header(ssl, message_type, data_len)) != 0)
-        return 0;
-
-    if ((ret = mbedtls_md_hmac_update(&ssl->mac_enc, ssl->next_write_id, sizeof(ssl->next_write_id))) != 0) {
-        return 1;
-    }
-
-    // Increment the packet number for next update.
-    increment_be(ssl->next_write_id, sizeof(ssl->next_write_id));
-
-    const size_t HEADER_SIZE = 5;
-    assert((size_at_start + HEADER_SIZE) <= array_size(ssl->write));
-    const uint8_t *header_bytes = &array_at(ssl->write, size_at_start);
-    if ((ret = mbedtls_md_hmac_update(&ssl->mac_enc, header_bytes, HEADER_SIZE)) != 0) {
-        return 1;
-    }
-
-    if ((ret = mbedtls_md_hmac_update(&ssl->mac_enc, data, data_len)) != 0) {
-        return 1;
-    }
-
-    uint8_t *iv_buffer = array_push(ssl->write, sizeof(ssl->iv_enc));
-    if ((ret = ssl_sts_issue_next_iv(ssl, iv_buffer, sizeof(ssl->iv_enc))) != 0)
-        return ret;
-
-    // Invalidate pointer to avoid re-using it after pushing in the array.
-    iv_buffer = NULL;
-
-    array_uint8_t buffer;
-    array_init(buffer, data_len + 32);
-    if ((ret = ssl_srp_build_message_to_encrypt(&buffer, &ssl->mac_enc, data, data_len)) != 0) {
-        array_reset(buffer);
-        return 1;
-    }
-
-    uint8_t *output = array_push(ssl->write, buffer.size);
-    ret = mbedtls_aes_crypt_cbc(
-        &ssl->cipher_enc,
-        MBEDTLS_AES_ENCRYPT,
-        buffer.size,
-        ssl->iv_enc,
-        buffer.data,
-        output);
-
-    array_reset(buffer);
-    if (ret != 0) {
-        return 1;
-    }
-
-    uint8_t *send_data = ssl->write.data + size_at_start;
-    size_t send_size = array_size(ssl->write) - size_at_start;
-
-    // Update the header size containing the HMAC
-    size_t content_size = send_size - HEADER_SIZE;
-    assert(content_size <= (size_t)UINT16_MAX);
-    be16enc(send_data + 3, (uint16_t)content_size);
-
-    if ((ret = send_full(ssl->fd, send_data, send_size)) != 0) {
-        return ret;
-    }
-
-    // Reset the vector to the size at start
-    array_resize(ssl->write, size_at_start);
-
-    return 0;
-}
-
 static int wait_for_server_step(int (*stepf)(struct ssl_sts_connection *ssl), struct ssl_sts_connection *ssl)
 {
     int ret;
@@ -1440,4 +1562,16 @@ int ssl_sts_connection_send(struct ssl_sts_connection *ssl, const uint8_t *data,
         SSL_MSG_APPLICATION_DATA,
         data,
         data_len);
+}
+
+int ssl_sts_connection_recv(
+    struct ssl_sts_connection *ssl,
+    uint8_t *buffer, size_t buffer_len,
+    size_t *retlen)
+{
+    return ssl_sts_connection_recv_internal(
+        ssl,
+        SSL_MSG_APPLICATION_DATA,
+        buffer, buffer_len,
+        retlen);
 }
