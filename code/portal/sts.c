@@ -34,7 +34,7 @@ static void skip_line(const char **data, size_t *length, size_t line_len)
     *length -= (line_len + 2);
 }
 
-int parse_sts_header(struct sts_header *header, const uint8_t *raw, size_t length)
+int sts_parse_header(struct sts_header *header, const uint8_t *raw, size_t length)
 {
     int ret;
     size_t line_len;
@@ -100,16 +100,13 @@ int parse_sts_header(struct sts_header *header, const uint8_t *raw, size_t lengt
 void sts_connection_init(struct sts_connection *sts)
 {
     memset(sts, 0, sizeof(*sts));
-
     sts->fd = INVALID_SOCKET;
-    array_init(sts->addresses, 1);
 }
 
 void sts_connection_free(struct sts_connection *sts)
 {
     if (sts->fd != INVALID_SOCKET)
         closesocket(sts->fd);
-    array_reset(sts->addresses);
 }
 
 static uint64_t anet_epoch()
@@ -120,37 +117,6 @@ static uint64_t anet_epoch()
 
     time_t epoch = time(NULL);
     return (uint64_t)(epoch - EPOCH_OFFSET);
-}
-
-static int set_sockname(struct sts_connection *sts)
-{
-    struct sockaddr_storage sa;
-    socklen_t len = sizeof(sa);
-    int ret = getsockname(sts->fd, (struct sockaddr *)&sa, &len);
-    if (ret != 0) {
-        fprintf(stderr, "'getsockname' failed\n");
-        return 1;
-    }
-
-    void *addr = NULL;
-    switch (sa.ss_family)
-    {
-        case AF_INET:
-            addr = &((struct sockaddr_in *)&sa)->sin_addr;
-            break;
-        case AF_INET6:
-            addr = &((struct sockaddr_in6 *)&sa)->sin6_addr;
-            break;
-        default:
-            return 1;
-    }
-
-    if (inet_ntop(sa.ss_family, addr, sts->sockname, sizeof(sts->sockname)) == NULL) {
-        fprintf(stdout, "Couldn't parse ip address\n");
-        return 1;
-    }
-
-    return 0;
 }
 
 static int sts_write_header(array_uint8_t *request,
@@ -216,20 +182,20 @@ static int sts_write_request(
     return 0;
 }
 
-static int sts_write_request_with_sequence_number(
-    struct sts_connection *sts, const char *url, size_t url_len,
-    size_t seq_number, uint32_t timeout_ms, const uint8_t *content, size_t content_len)
+int sts_write_request_with_sequence_number(
+    array_uint8_t *request,
+    const char *url, size_t url_len,
+    size_t seq_number,
+    uint32_t timeout_ms,
+    const uint8_t *content, size_t content_len)
 {
     int ret;
 
-    array_uint8_t request;
-    array_init(request, 1024);
-
-    if ((ret = sts_write_header(&request, url, url_len, content_len)) != 0) {
+    if ((ret = sts_write_header(request, url, url_len, content_len)) != 0) {
         return 1;
     }
 
-    array_insert(request, 2, "\r\n");
+    array_insert(*request, 2, "\r\n");
 
     char seq_number_buffer[64];
     ret = snprintf(
@@ -238,19 +204,46 @@ static int sts_write_request_with_sequence_number(
         (uint32_t)seq_number, timeout_ms);
 
     if (ret < 0) {
-        array_reset(request);
         return 1;
     }
 
-    array_insert(request, (size_t)ret, seq_number_buffer);
-    sts_finish_request(&request, content, content_len);
+    array_insert(*request, (size_t)ret, seq_number_buffer);
+    sts_finish_request(request, content, content_len);
 
-    if ((ret = send_full(sts->fd, request.data, request.size)) != 0) {
+    return 0;
+}
+
+int sts_send_request_with_sequence_number(
+    struct sts_connection *sts,
+    const char *url, size_t url_len,
+    size_t seq_number,
+    uint32_t timeout_ms,
+    const uint8_t *content, size_t content_len)
+{
+    int ret;
+
+    array_uint8_t request;
+    array_init(request, 1024);
+
+    if ((ret = sts_write_request_with_sequence_number(
+            &request,
+            url, url_len,
+            seq_number,
+            timeout_ms,
+            content, content_len)) != 0) {
+
         array_reset(request);
         return ret;
     }
 
+    ret = send_full(sts->fd, request.data, request.size);
     array_reset(request);
+
+    if (ret != 0) {
+        fprintf(stderr, "Failed to send the data\n");
+        return ret;
+    }
+
     return 0;
 }
 
@@ -258,28 +251,36 @@ int sts_connection_connect(struct sts_connection *sts, const char *hostname)
 {
     int ret;
 
-    if ((ret = resolve_dns4(&sts->addresses, hostname, 6112)) != 0)
-        return ret;
-
     sts->fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sts->fd == INVALID_SOCKET) {
         fprintf(stderr, "'socket' failed\n");
         return 1;
     }
 
+    array_sockaddr_t addresses;
+    array_init(addresses, 8);
+    if ((ret = resolve_dns4(&addresses, hostname, 6112)) != 0) {
+        fprintf(stderr, "Failed to resolve the DNS name\n");
+        return ret;
+    }
+
     struct sockaddr *it;
-    array_foreach(it, sts->addresses) {
+    array_foreach(it, addresses) {
         if ((ret = connect(sts->fd, it, sizeof(*it))) == 0) {
             break;
         }
     }
 
-    if (it == array_end(sts->addresses)) {
+    if (it == array_end(addresses)) {
         fprintf(stderr, "Couldn't connect to '%s:%d\n", hostname, 6112);
+        array_reset(addresses);
         return 1;
     }
 
-    if ((ret = set_sockname(sts)) != 0) {
+    array_reset(addresses);
+
+    char sockname[MAX(INET_ADDRSTRLEN, INET6_ADDRSTRLEN)];
+    if ((ret = get_sockname(sts->fd, sockname, sizeof(sockname))) != 0) {
         return ret;
     }
 
@@ -288,7 +289,7 @@ int sts_connection_connect(struct sts_connection *sts, const char *hostname)
 
     appendf(&content, "<Connect>\n");
     appendf(&content, "<ConnType>400</ConnType>\n");
-    appendf(&content, "<Address>%s</Address>\n", sts->sockname);
+    appendf(&content, "<Address>%s</Address>\n", sockname);
     appendf(&content, "<ProductType>0</ProductType>\n");
     appendf(&content, "<ProductName>Gw</ProductName>\n");
     appendf(&content, "<AppIndex>1</AppIndex>\n");
@@ -316,8 +317,14 @@ int sts_connection_start_tls(struct sts_connection *sts, struct ssl_sts_connecti
     const uint8_t content[] = "";
     size_t content_len = ARRAY_SIZE(content) - 1;
 
-    if ((ret = sts_write_request_with_sequence_number(
-        sts, url, url_len, 1, 4000, content, content_len)) != 0) {
+    const uint32_t timeout = 4000;
+
+    if ((ret = sts_send_request_with_sequence_number(
+            sts,
+            url, url_len,
+            1,
+            timeout,
+            content, content_len)) != 0) {
 
         return ret;
     }
@@ -332,7 +339,7 @@ int sts_connection_start_tls(struct sts_connection *sts, struct ssl_sts_connecti
             return ret;
         }
 
-        ret = parse_sts_header(&header, buffer.data, buffer.size);
+        ret = sts_parse_header(&header, buffer.data, buffer.size);
 
         // We wait till we receive all the header and all the content.
         if (ret != STSE_INCOMPLETE_CONTENT && ret != STSE_INCOMPLETE_HEADER) {

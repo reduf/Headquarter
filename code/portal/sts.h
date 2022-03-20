@@ -10,9 +10,7 @@
 #define STSE_UNSUPPORTED_PROTOCOL    4
 
 struct sts_connection {
-    SOCKET           fd;
-    array_sockaddr_t addresses;
-    char             sockname[MAX(INET_ADDRSTRLEN, INET6_ADDRSTRLEN)];
+    SOCKET fd;
 };
 
 void sts_connection_init(struct sts_connection *sts);
@@ -28,4 +26,10 @@ struct sts_header {
     const uint8_t *content;
 };
 
-int parse_sts_header(struct sts_header *request, const uint8_t *raw, size_t length);
+int sts_parse_header(struct sts_header *request, const uint8_t *raw, size_t length);
+int sts_write_request_with_sequence_number(
+    array_uint8_t *request,
+    const char *url, size_t url_len,
+    size_t seq_number,
+    uint32_t timeout_ms,
+    const uint8_t *content, size_t content_len);

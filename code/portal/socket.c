@@ -67,3 +67,40 @@ int resolve_dns4(array_sockaddr_t *addresses, const char *hostname, uint16_t por
 {
     return resolve_dns(addresses, AF_INET, hostname, port);
 }
+
+int get_sockname(SOCKET fd, char *buffer, size_t buffer_len)
+{
+    const size_t MIN_BUF_LEN = MAX(INET_ADDRSTRLEN, INET6_ADDRSTRLEN);
+    if (buffer_len < MIN_BUF_LEN) {
+        fprintf(stderr, "The minimum buffer length is %zu\n", MIN_BUF_LEN);
+        return 1;
+    }
+
+    struct sockaddr_storage sa;
+    socklen_t len = sizeof(sa);
+    int ret = getsockname(fd, (struct sockaddr *)&sa, &len);
+    if (ret != 0) {
+        fprintf(stderr, "'getsockname' failed\n");
+        return 1;
+    }
+
+    void *addr = NULL;
+    switch (sa.ss_family)
+    {
+        case AF_INET:
+            addr = &((struct sockaddr_in *)&sa)->sin_addr;
+            break;
+        case AF_INET6:
+            addr = &((struct sockaddr_in6 *)&sa)->sin6_addr;
+            break;
+        default:
+            return 1;
+    }
+
+    if (inet_ntop(sa.ss_family, addr, buffer, buffer_len) == NULL) {
+        fprintf(stdout, "Couldn't parse ip address\n");
+        return 1;
+    }
+
+    return 0;
+}
