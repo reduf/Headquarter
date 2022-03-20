@@ -150,7 +150,6 @@ void ssl_sts_connection_init(struct ssl_sts_connection *ssl)
     ssl->fd = INVALID_SOCKET;
     ssl->state = AWAIT_CLIENT_HELLO;
 
-    mbedtls_ctr_drbg_init(&ssl->prng);
     mbedtls_sha256_init(&ssl->checksum);
     mbedtls_sha256_starts(&ssl->checksum, 0);
 
@@ -170,7 +169,6 @@ void ssl_sts_connection_free(struct ssl_sts_connection *ssl)
         ssl->fd = INVALID_SOCKET;
     }
 
-    mbedtls_ctr_drbg_free(&ssl->prng);
     mbedtls_sha256_free(&ssl->checksum);
 
     mbedtls_aes_free(&ssl->cipher_enc);
@@ -206,8 +204,11 @@ int ssl_sts_connection_seed(struct ssl_sts_connection *ssl, mbedtls_entropy_cont
 {
     const uint8_t custom[] = "Master Togo";
 
+    mbedtls_ctr_drbg_context prng;
+    mbedtls_ctr_drbg_init(&prng);
+
     int ret = mbedtls_ctr_drbg_seed(
-        &ssl->prng,
+        &prng,
         mbedtls_entropy_func,
         entropy,
         custom,
@@ -215,37 +216,41 @@ int ssl_sts_connection_seed(struct ssl_sts_connection *ssl, mbedtls_entropy_cont
 
     if (ret != 0) {
         fprintf(stderr, "Failed to see the prng\n");
-        return 1;
+        goto cleanup;
     }
 
     ret = mbedtls_ctr_drbg_random(
-        &ssl->prng,
+        &prng,
         (uint8_t *)&ssl->client_random,
         sizeof(ssl->client_random));
 
     if (ret != 0) {
-        return 1;
+        goto cleanup;
     }
 
     ret = mbedtls_ctr_drbg_random(
-        &ssl->prng,
+        &prng,
         ssl->client_key.private,
         sizeof(ssl->client_key.private));
 
     if (ret != 0) {
-        return 1;
+        goto cleanup;
     }
 
     ret = mbedtls_ctr_drbg_random(
-        &ssl->prng,
+        &prng,
         ssl->iv_enc,
         sizeof(ssl->iv_enc));
 
     if (ret != 0) {
-        return 1;
+        goto cleanup;
     }
 
-    return 0;
+cleanup:
+    mbedtls_ctr_drbg_free(&prng);
+    if (ret != 0)
+        ret = 1;
+    return ret;
 }
 
 int ssl_sts_connection_seed_test(

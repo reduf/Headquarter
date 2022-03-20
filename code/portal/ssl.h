@@ -45,7 +45,6 @@ struct ssl_sts_connection {
     SOCKET fd;
     enum ssl_sts_state state;
 
-    mbedtls_ctr_drbg_context prng;
     mbedtls_sha256_context checksum;
 
     // Those ids are values incrementing on every messages, used in the
