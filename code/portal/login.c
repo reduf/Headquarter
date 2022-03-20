@@ -16,12 +16,54 @@ void portal_free()
     mbedtls_entropy_free(&g_entropy);
 }
 
+static int recv_sts_response(
+    struct ssl_sts_connection *ssl,
+    array_uint8_t *response,
+    struct sts_header *header,
+    size_t expected_seq_number)
+{
+    int ret;
+
+    for (;;) {
+        const size_t BUFFER_SIZE = 1024;
+        uint8_t *ptr = array_push(*response, BUFFER_SIZE);
+
+        size_t retlen;
+        if ((ret = ssl_sts_connection_recv(ssl, ptr, BUFFER_SIZE, &retlen)) != 0)
+            return 1;
+
+        response->size = array_size(*response) - (BUFFER_SIZE - retlen);
+
+        ret = sts_parse_header(header, response->data, response->size);
+        if (ret != STSE_INCOMPLETE_CONTENT && ret != STSE_INCOMPLETE_HEADER) {
+            break;
+        }
+    }
+
+    if (ret != STSE_SUCCESS) {
+        return 1;
+    }
+
+    if (header->status_code != 200) {
+        fprintf(stderr, "Unexpected status code %u", header->status_code);
+        return 1;
+    }
+
+    if (header->sequence_number != expected_seq_number) {
+        fprintf(stderr, "Sequence number doesn't match expected sequence number");
+        return 1;
+    }
+
+    return 0;
+}
+
 static int auth_login_finish(struct ssl_sts_connection *ssl)
 {
     const char url[] = "/Auth/LoginFinish";
     const size_t url_len = sizeof(url) - 1;
 
     const uint32_t timeout = 29 * 1000;
+    const size_t seq_number = 2;
 
     array_uint8_t content;
     array_init(content, 1024);
@@ -34,7 +76,7 @@ static int auth_login_finish(struct ssl_sts_connection *ssl)
     int ret = sts_write_request_with_sequence_number(
         &request,
         url, url_len,
-        2,
+        seq_number,
         timeout,
         content.data, content.size);
 
@@ -51,6 +93,17 @@ static int auth_login_finish(struct ssl_sts_connection *ssl)
         return ret;
     }
 
+    struct sts_header header = {0};
+    array_uint8_t response;
+    array_init(response, 1024);
+
+    if ((ret = recv_sts_response(ssl, &response, &header, seq_number)) != 0) {
+        array_reset(response);
+        return ret;
+    }
+
+    // Parse response
+
     return 0;
 }
 
@@ -60,6 +113,7 @@ static int auth_list_game_accounts(struct ssl_sts_connection *ssl)
     const size_t url_len = sizeof(url) - 1;
 
     const uint32_t timeout = 29 * 1000;
+    const size_t seq_number = 3;
 
     array_uint8_t content;
     array_init(content, 1024);
@@ -72,7 +126,7 @@ static int auth_list_game_accounts(struct ssl_sts_connection *ssl)
     int ret = sts_write_request_with_sequence_number(
         &request,
         url, url_len,
-        2,
+        seq_number,
         timeout,
         content.data, content.size);
 
@@ -89,6 +143,15 @@ static int auth_list_game_accounts(struct ssl_sts_connection *ssl)
         return ret;
     }
 
+    struct sts_header header = {0};
+    array_uint8_t response;
+    array_init(response, 1024);
+
+    if ((ret = recv_sts_response(ssl, &response, &header, seq_number)) != 0) {
+        array_reset(response);
+        return ret;
+    }
+
     return 0;
 }
 
@@ -98,6 +161,7 @@ static int auth_request_game_token(struct ssl_sts_connection *ssl)
     const size_t url_len = sizeof(url) - 1;
 
     const uint32_t timeout = 29 * 1000;
+    const size_t seq_number = 4;
 
     array_uint8_t content;
     array_init(content, 1024);
@@ -111,7 +175,7 @@ static int auth_request_game_token(struct ssl_sts_connection *ssl)
     int ret = sts_write_request_with_sequence_number(
         &request,
         url, url_len,
-        2,
+        seq_number,
         timeout,
         content.data, content.size);
 
@@ -125,6 +189,15 @@ static int auth_request_game_token(struct ssl_sts_connection *ssl)
     array_reset(request);
 
     if (ret != 0) {
+        return ret;
+    }
+
+    struct sts_header header = {0};
+    array_uint8_t response;
+    array_init(response, 1024);
+
+    if ((ret = recv_sts_response(ssl, &response, &header, seq_number)) != 0) {
+        array_reset(response);
         return ret;
     }
 

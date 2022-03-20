@@ -1186,7 +1186,7 @@ static int ssl_srp_process_encrypted_handshake(struct ssl_sts_connection *ssl)
 {
     assert(ssl->state == AWAIT_SERVER_ENC_HANDSHAKE);
 
-    uint8_t buffer[16];
+    uint8_t buffer[1024];
     size_t msg_len;
     int ret = ssl_sts_connection_recv_internal(
         ssl,
@@ -1198,7 +1198,8 @@ static int ssl_srp_process_encrypted_handshake(struct ssl_sts_connection *ssl)
         return ret;
     }
 
-    if (msg_len != sizeof(buffer)) {
+    const size_t EXPECTED_LEN = 16;
+    if (msg_len != EXPECTED_LEN) {
         return ERR_SSL_BAD_INPUT_DATA;
     }
 
