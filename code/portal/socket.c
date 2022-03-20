@@ -27,12 +27,13 @@ int recv_to_buffer(SOCKET fd, array_uint8_t *buffer)
 
     if ((ret = recv(fd, (char *)ptr, BUFFER_SIZE, 0)) <= 0) {
         size_t size = array_size(*buffer) - BUFFER_SIZE;
-        array_resize(*buffer, size);
+        buffer->size = size;
+        // array_resize(*buffer, size);
         return ret;
     }
 
-    size_t size = array_size(*buffer) - (BUFFER_SIZE - (size_t)ret);
-    array_resize(*buffer, size);
+    buffer->size = array_size(*buffer) - (BUFFER_SIZE - (size_t)ret);
+    // array_resize(*buffer, size);
     return 0;
 }
 
