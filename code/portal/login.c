@@ -19,7 +19,7 @@ void portal_free()
 static int recv_sts_response(
     struct ssl_sts_connection *ssl,
     array_uint8_t *response,
-    struct sts_header *header,
+    struct sts_reply *reply,
     size_t expected_seq_number)
 {
     int ret;
@@ -34,7 +34,7 @@ static int recv_sts_response(
 
         response->size = array_size(*response) - (BUFFER_SIZE - retlen);
 
-        ret = sts_parse_header(header, response->data, response->size);
+        ret = sts_parse_reply(reply, response->data, response->size);
         if (ret != STSE_INCOMPLETE_CONTENT && ret != STSE_INCOMPLETE_HEADER) {
             break;
         }
@@ -44,12 +44,12 @@ static int recv_sts_response(
         return 1;
     }
 
-    if (header->status_code != 200) {
-        fprintf(stderr, "Unexpected status code %u", header->status_code);
+    if (reply->status_code != 200) {
+        fprintf(stderr, "Unexpected status code %u", reply->status_code);
         return 1;
     }
 
-    if (header->sequence_number != expected_seq_number) {
+    if (reply->sequence_number != expected_seq_number) {
         fprintf(stderr, "Sequence number doesn't match expected sequence number");
         return 1;
     }
@@ -93,16 +93,23 @@ static int auth_login_finish(struct ssl_sts_connection *ssl)
         return ret;
     }
 
-    struct sts_header header = {0};
+    struct sts_reply reply = {0};
     array_uint8_t response;
     array_init(response, 1024);
 
-    if ((ret = recv_sts_response(ssl, &response, &header, seq_number)) != 0) {
+    if ((ret = recv_sts_response(ssl, &response, &reply, seq_number)) != 0) {
         array_reset(response);
         return ret;
     }
 
-    // Parse response
+    // The reply has the following format:
+    // <Reply>
+    // <UserId>{GUID}</UserId>
+    // <UserCenter>{Integer}</UserCenter>
+    // <UserName>{Gw2 Username}</UserName>
+    // <ResumeToken>{GUID}</ResumeToken>
+    // <EmailVerified>{0|1}</EmailVerified>
+    // </Reply>
 
     return 0;
 }
@@ -143,14 +150,23 @@ static int auth_list_game_accounts(struct ssl_sts_connection *ssl)
         return ret;
     }
 
-    struct sts_header header = {0};
+    struct sts_reply reply = {0};
     array_uint8_t response;
     array_init(response, 1024);
 
-    if ((ret = recv_sts_response(ssl, &response, &header, seq_number)) != 0) {
+    if ((ret = recv_sts_response(ssl, &response, &reply, seq_number)) != 0) {
         array_reset(response);
         return ret;
     }
+
+    // The reply has the following format:
+    // <Reply type="array">
+    // <Row>
+    // <GameCode>gw1</GameCode>
+    // <Alias>gw1</Alias>
+    // <Created>{ISO8601 time}</Created>
+    // </Row>
+    // </Reply>
 
     return 0;
 }
@@ -162,6 +178,9 @@ static int auth_request_game_token(struct ssl_sts_connection *ssl)
 
     const uint32_t timeout = 29 * 1000;
     const size_t seq_number = 4;
+
+    // It seems that the 'GameCode' and 'AccountAlias' values are directly
+    // taked from the previous packet. It returns an array of such information.
 
     array_uint8_t content;
     array_init(content, 1024);
@@ -192,14 +211,20 @@ static int auth_request_game_token(struct ssl_sts_connection *ssl)
         return ret;
     }
 
-    struct sts_header header = {0};
+    struct sts_reply reply = {0};
     array_uint8_t response;
     array_init(response, 1024);
 
-    if ((ret = recv_sts_response(ssl, &response, &header, seq_number)) != 0) {
+    if ((ret = recv_sts_response(ssl, &response, &reply, seq_number)) != 0) {
         array_reset(response);
         return ret;
     }
+
+    // The reply has the following format.
+    // We need the game token to connect to Guild Wars 1.
+    // <Reply>
+    // <Token>{UUID}</Token>
+    // </Reply>
 
     return 0;
 }

@@ -34,7 +34,7 @@ static void skip_line(const char **data, size_t *length, size_t line_len)
     *length -= (line_len + 2);
 }
 
-int sts_parse_header(struct sts_header *header, const uint8_t *raw, size_t length)
+int sts_parse_reply(struct sts_reply *reply, const uint8_t *raw, size_t length)
 {
     int ret;
     size_t line_len;
@@ -48,7 +48,7 @@ int sts_parse_header(struct sts_header *header, const uint8_t *raw, size_t lengt
     unsigned version_minor;
     char separator;
     ret = sscanf(data, "STS/%1u.%1u%c%3u", &version_major, &version_minor,
-                 &separator, &header->status_code);
+                 &separator, &reply->status_code);
 
     if (ret != 4) {
         return STSE_UNSUPPORTED_PROTOCOL;
@@ -75,11 +75,11 @@ int sts_parse_header(struct sts_header *header, const uint8_t *raw, size_t lengt
 
         // We only care about the two "header" we saw. (i.e., 's' and 'l')
         if (data[0] == 's') {
-            if (sscanf(data, "s:%uR", &header->sequence_number) != 1) {
+            if (sscanf(data, "s:%uR", &reply->sequence_number) != 1) {
                 return STSE_UNSUPPORTED_HEADER;
             }
         } else if (data[0] == 'l') {
-            if (sscanf(data, "l:%u", &header->content_length) != 1) {
+            if (sscanf(data, "l:%u", &reply->content_length) != 1) {
                 return STSE_UNSUPPORTED_HEADER;
             }
         } else {
@@ -89,11 +89,11 @@ int sts_parse_header(struct sts_header *header, const uint8_t *raw, size_t lengt
         skip_line(&data, &length, line_len);
     }
 
-    if (length < header->content_length) {
+    if (length < reply->content_length) {
         return STSE_INCOMPLETE_CONTENT;
     }
 
-    header->content = (const uint8_t *)data;
+    reply->content = (const uint8_t *)data;
     return 0;
 }
 
@@ -332,14 +332,14 @@ int sts_connection_start_tls(struct sts_connection *sts, struct ssl_sts_connecti
     array_uint8_t buffer;
     array_init(buffer, 1024);
 
-    struct sts_header header = {0};
+    struct sts_reply reply = {0};
     for (;;) {
         if ((ret = recv_to_buffer(sts->fd, &buffer)) != 0) {
             array_reset(buffer);
             return ret;
         }
 
-        ret = sts_parse_header(&header, buffer.data, buffer.size);
+        ret = sts_parse_reply(&reply, buffer.data, buffer.size);
 
         // We wait till we receive all the header and all the content.
         if (ret != STSE_INCOMPLETE_CONTENT && ret != STSE_INCOMPLETE_HEADER) {
@@ -354,8 +354,8 @@ int sts_connection_start_tls(struct sts_connection *sts, struct ssl_sts_connecti
         return ret;
     }
 
-    if (header.status_code != 400) {
-        fprintf(stderr, "Couldn't start a STS connection, status: %d\n", header.status_code);
+    if (reply.status_code != 400) {
+        fprintf(stderr, "Couldn't start a STS connection, status: %d\n", reply.status_code);
         return 1;
     }
 

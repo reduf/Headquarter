@@ -19,14 +19,14 @@ void sts_connection_free(struct sts_connection *sts);
 int sts_connection_connect(struct sts_connection *sts, const char *hostname);
 int sts_connection_start_tls(struct sts_connection *sts, struct ssl_sts_connection *ssl);
 
-struct sts_header {
+struct sts_reply {
     unsigned status_code;
     unsigned sequence_number;
     unsigned content_length;
     const uint8_t *content;
 };
 
-int sts_parse_header(struct sts_header *request, const uint8_t *raw, size_t length);
+int sts_parse_reply(struct sts_reply *reply, const uint8_t *raw, size_t length);
 int sts_write_request_with_sequence_number(
     array_uint8_t *request,
     const char *url, size_t url_len,

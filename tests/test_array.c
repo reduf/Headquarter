@@ -34,6 +34,7 @@ UTEST(array_init, array_reserve_increase_capacity)
     for (size_t i = 0; i < RESERVE_SIZE; ++i)
         array_add(a, 0xDE);
     ASSERT_EQ(ptr, a.data);
+    array_reset(a);
 }
 
 UTEST(array_init, array_reserve_on_non_empty_array)
@@ -47,4 +48,42 @@ UTEST(array_init, array_reserve_on_non_empty_array)
 
     ASSERT_EQ(a.size, 1);
     ASSERT_GE(a.capacity, capacity + 1);
+    array_reset(a);
 }
+
+#if 0
+UTEST(array_resize, resize_and_grow)
+{
+    array_int_t a;
+    array_init(a, 0);
+
+    const size_t new_size = 4;
+    array_resize(a, new_size);
+
+    ASSERT_EQ(a.size, new_size);
+    for (size_t i = 0; i < a.size; ++i) {
+        ASSERT_EQ(a.data[i], 0);
+    }
+
+    array_reset(a);
+}
+
+UTEST(array_resize, resize_to_a_smaller_size)
+{
+    array_int_t a;
+    array_init(a, 0);
+
+    for (int i = 0; i < 8; ++i)
+        array_add(a, i);
+
+    ASSERT_EQ(a.size, 8);
+    array_resize(a, 4);
+
+    ASSERT_EQ(a.size, 4);
+    for (int i = 0; i < 4; ++i) {
+        ASSERT_EQ(a.data[i], i);
+    }
+
+    array_reset(a);
+}
+#endif

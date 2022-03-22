@@ -90,11 +90,12 @@ UTEST(sts, sts_write_request)
         "\x0A\x3C\x2F\x43\x6F\x6E\x6E\x65\x63\x74\x3E\x0A";
 
     sts_write_request(&request, url, ARRAY_SIZE(url) - 1, content, ARRAY_SIZE(content) - 1);
-    ASSERT_EQ(header.size, ARRAY_SIZE(expected) - 1);
-    ASSERT_TRUE(!memcmp(header.data, expected, header.size));
+    ASSERT_EQ(reply.size, ARRAY_SIZE(expected) - 1);
+    ASSERT_TRUE(!memcmp(reply.data, expected, reply.size));
 }
+#endif
 
-UTEST(sts, sts_write_sequenced_request)
+UTEST(sts, sts_write_request_with_sequence_number)
 {
     array_uint8_t request;
     array_init(request, 1024);
@@ -106,11 +107,17 @@ UTEST(sts, sts_write_sequenced_request)
         "\x3B\x74\x69\x6D\x65\x6F\x75\x74\x3D\x34\x30\x30\x30\x0D\x0A\x0D"
         "\x0A";
 
-    sts_write_sequenced_request(&request, 1, 4000, url, ARRAY_SIZE(url) - 1, "", 0);
-    ASSERT_EQ(header.size, ARRAY_SIZE(expected) - 1);
-    ASSERT_TRUE(!memcmp(header.data, expected, header.size));
+    uint8_t content[] = "";
+    int ret = sts_write_request_with_sequence_number(
+        &request,
+        url, ARRAY_SIZE(url) - 1,
+        1, 4000,
+        content, 0);
+
+    ASSERT_NE(ret, 0);
+    ASSERT_EQ(request.size, ARRAY_SIZE(expected) - 1);
+    ASSERT_TRUE(!memcmp(request.data, expected, request.size));
 }
-#endif
 
 UTEST(sts, portal_login)
 {
@@ -123,63 +130,63 @@ UTEST(sts, portal_login)
     portal_free();
 }
 
-UTEST(sts_parse_header, parse_request_without_content)
+UTEST(sts_parse_reply, parse_request_without_content)
 {
     const uint8_t raw[] = "STS/1.0 400 Success\r\ns:1R\r\nl:0\r\n\r\n";
-    struct sts_header header = {0};
-    int ret = sts_parse_header(&header, raw, sizeof(raw) - 1);
+    struct sts_reply reply = {0};
+    int ret = sts_parse_reply(&reply, raw, sizeof(raw) - 1);
     ASSERT_EQ(ret, STSE_SUCCESS);
-    ASSERT_EQ(header.status_code, 400);
-    ASSERT_EQ(header.sequence_number, 1);
-    ASSERT_EQ(header.content_length, 0);
+    ASSERT_EQ(reply.status_code, 400);
+    ASSERT_EQ(reply.sequence_number, 1);
+    ASSERT_EQ(reply.content_length, 0);
 }
 
-UTEST(sts_parse_header, parse_request_with_unsupported_version)
+UTEST(sts_parse_reply, parse_request_with_unsupported_version)
 {
     const uint8_t raw[] = "STS/1.1 400 Success\r\ns:1R\r\nl:0\r\n\r\n";
-    struct sts_header header = {0};
-    int ret = sts_parse_header(&header, raw, sizeof(raw) - 1);
+    struct sts_reply reply = {0};
+    int ret = sts_parse_reply(&reply, raw, sizeof(raw) - 1);
     ASSERT_EQ(ret, STSE_UNSUPPORTED_PROTOCOL);
 }
 
-UTEST(sts_parse_header, parse_request_with_content)
+UTEST(sts_parse_reply, parse_request_with_content)
 {
     const char expected[] = "Hello World!\0Hello Sailor!";
     const uint8_t raw[] = "STS/1.0 400 Success\r\ns:1R\r\nl:26\r\n\r\nHello World!\0Hello Sailor!";
-    struct sts_header header = {0};
-    int ret = sts_parse_header(&header, raw, sizeof(raw) - 1);
+    struct sts_reply reply = {0};
+    int ret = sts_parse_reply(&reply, raw, sizeof(raw) - 1);
 
     ASSERT_EQ(ret, STSE_SUCCESS);
-    ASSERT_EQ(header.content_length, sizeof(expected) - 1);
-    ASSERT_TRUE(!memcmp(header.content, expected, sizeof(expected) - 1));
+    ASSERT_EQ(reply.content_length, sizeof(expected) - 1);
+    ASSERT_TRUE(!memcmp(reply.content, expected, sizeof(expected) - 1));
 }
 
-UTEST(sts_parse_header, parse_request_with_incomplete_status_line)
+UTEST(sts_parse_reply, parse_request_with_incomplete_status_line)
 {
     const uint8_t raw[] = "STS/1.";
-    struct sts_header header = {0};
-    int ret = sts_parse_header(&header, raw, sizeof(raw) - 1);
+    struct sts_reply reply = {0};
+    int ret = sts_parse_reply(&reply, raw, sizeof(raw) - 1);
     ASSERT_EQ(ret, STSE_INCOMPLETE_HEADER);
 }
 
-UTEST(sts_parse_header, parse_request_with_incomplete_header)
+UTEST(sts_parse_reply, parse_request_with_incomplete_header)
 {
     const uint8_t raw[] = "STS/1.0 400 Success\r\n\r";
-    struct sts_header header = {0};
-    int ret = sts_parse_header(&header, raw, sizeof(raw) - 1);
+    struct sts_reply reply = {0};
+    int ret = sts_parse_reply(&reply, raw, sizeof(raw) - 1);
     ASSERT_EQ(ret, STSE_INCOMPLETE_HEADER);
 }
 
 #if 0
-UTEST(sts_parse_header, parse_request_with_incomplete_content)
+UTEST(sts_parse_reply, parse_request_with_incomplete_content)
 {
     const uint8_t raw[] = "STS/1.0 400 Success\r\ns:1R\r\nl:26\r\n\r\nHello World!\0Hello";
-    struct sts_header header = {0};
-    int ret = sts_parse_header(&header, raw, sizeof(raw) - 1);
+    struct sts_reply reply = {0};
+    int ret = sts_parse_reply(&reply, raw, sizeof(raw) - 1);
     ASSERT_EQ(ret, STSE_INCOMPLETE_CONTENT);
-    ASSERT_EQ(header.status_code, 400);
-    ASSERT_EQ(header.sequence_number, 1);
-    ASSERT_EQ(header.content_length, 26);
+    ASSERT_EQ(reply.status_code, 400);
+    ASSERT_EQ(reply.sequence_number, 1);
+    ASSERT_EQ(reply.content_length, 26);
 }
 
 UTEST(sts_process_server_hello, process_valid_message)
