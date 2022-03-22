@@ -9,6 +9,7 @@
 
 #include <common/array.h>
 #include <common/macro.h>
+#include <common/uuid.h>
 
 #include <portal/stream.h>
 #include <portal/socket.h>

@@ -11,6 +11,9 @@
 
 struct sts_connection {
     SOCKET fd;
+    size_t seq_number;
+    struct uuid user_id;
+    struct uuid token;
 };
 
 void sts_connection_init(struct sts_connection *sts);

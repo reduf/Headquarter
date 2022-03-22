@@ -322,7 +322,7 @@ int sts_connection_start_tls(struct sts_connection *sts, struct ssl_sts_connecti
     if ((ret = sts_send_request_with_sequence_number(
             sts,
             url, url_len,
-            1,
+            ++sts->seq_number,
             timeout,
             content, content_len)) != 0) {
 

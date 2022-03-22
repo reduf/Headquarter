@@ -53,6 +53,7 @@
 #include <common/endian.h>
 #include <common/macro.h>
 #include <common/process.h>
+#include <common/uuid.h>
 
 #include "stream.h"
 #include "socket.h"
