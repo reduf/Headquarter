@@ -3,9 +3,6 @@
 #endif
 #define PORTAL_LOGIN_H
 
-int portal_init();
-void portal_free();
-
 struct portal_login_result {
     struct uuid user_id;
     struct uuid token;

@@ -12,7 +12,6 @@ struct str {
 };
 
 static const uint32_t TIMEOUT_MS = 29 * 1000;
-static mbedtls_entropy_context g_entropy;
 
 static struct str s_from_unsigned_utf8(const uint8_t *ptr, size_t len)
 {
@@ -106,17 +105,6 @@ static int find_between(struct str *dest, struct str *src, const char *left, con
 
     *dest = s_substr(&rem, 0, right_pos);
     return 0;
-}
-
-int portal_init()
-{
-    mbedtls_entropy_init(&g_entropy);
-    return 0;
-}
-
-void portal_free()
-{
-    mbedtls_entropy_free(&g_entropy);
 }
 
 static int recv_sts_response(
@@ -460,6 +448,9 @@ int portal_login(struct portal_login_result *result, const char *username, const
         return ret;
     }
 
+    mbedtls_entropy_context entropy;
+    mbedtls_entropy_init(&entropy);
+
     struct ssl_sts_connection ssl;
     ssl_sts_connection_init(&ssl);
 
@@ -469,7 +460,7 @@ int portal_login(struct portal_login_result *result, const char *username, const
 
     // We "seed" the ssl structure effectively allowing it to generate
     // a random private key.
-    if ((ret = ssl_sts_connection_seed(&ssl, &g_entropy)) != 0) {
+    if ((ret = ssl_sts_connection_seed(&ssl, &entropy)) != 0) {
         goto cleanup;
     }
 
@@ -515,6 +506,7 @@ int portal_login(struct portal_login_result *result, const char *username, const
 cleanup:
     ssl_sts_connection_free(&ssl);
     sts_connection_free(&sts);
+    mbedtls_entropy_free(&entropy);
     if (ret != 0)
         ret = 1;
     return ret;
