@@ -4,10 +4,11 @@
 #define PORTAL_STS_H
 
 #define STSE_SUCCESS                 0
-#define STSE_INCOMPLETE_CONTENT      1
-#define STSE_INCOMPLETE_HEADER       2
-#define STSE_UNSUPPORTED_HEADER      3
-#define STSE_UNSUPPORTED_PROTOCOL    4
+#define STSE_UNSUCCESSFUL            1
+#define STSE_INCOMPLETE_CONTENT      2
+#define STSE_INCOMPLETE_HEADER       3
+#define STSE_UNSUPPORTED_HEADER      4
+#define STSE_UNSUPPORTED_PROTOCOL    5
 
 struct sts_connection {
     SOCKET fd;

@@ -125,7 +125,7 @@ static int sts_write_header(array_uint8_t *request,
     const char version[] = " STS/1.0\r\n";
 
     if ((size_t)UINT32_MAX < content_len) {
-        return 1;
+        return STSE_UNSUCCESSFUL;
     }
 
     uint32_t content_len_as_u32 = (uint32_t)content_len;
@@ -142,7 +142,7 @@ static int sts_write_header(array_uint8_t *request,
     int ret = snprintf(content_length_buffer, sizeof(content_length_buffer),
                        "l:%" PRIu32, (uint32_t)content_len_as_u32);
     if (ret < 0)
-        return 1;
+        return STSE_UNSUCCESSFUL;
 
     array_insert(*request, (size_t)ret, content_length_buffer);
     return 0;
@@ -168,7 +168,7 @@ static int sts_write_request(
 
     if ((ret = sts_write_header(&request, url, url_len, content_len)) != 0) {
         array_reset(request);
-        return 1;
+        return STSE_UNSUCCESSFUL;
     }
 
     sts_finish_request(&request, content, content_len);
@@ -192,7 +192,7 @@ int sts_write_request_with_sequence_number(
     int ret;
 
     if ((ret = sts_write_header(request, url, url_len, content_len)) != 0) {
-        return 1;
+        return STSE_UNSUCCESSFUL;
     }
 
     array_insert(*request, 2, "\r\n");
@@ -204,7 +204,7 @@ int sts_write_request_with_sequence_number(
         (uint32_t)seq_number, timeout_ms);
 
     if (ret < 0) {
-        return 1;
+        return STSE_UNSUCCESSFUL;
     }
 
     array_insert(*request, (size_t)ret, seq_number_buffer);
@@ -254,7 +254,7 @@ int sts_connection_connect(struct sts_connection *sts, const char *hostname)
     sts->fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sts->fd == INVALID_SOCKET) {
         fprintf(stderr, "'socket' failed\n");
-        return 1;
+        return STSE_UNSUCCESSFUL;
     }
 
     array_sockaddr_t addresses;
@@ -274,7 +274,7 @@ int sts_connection_connect(struct sts_connection *sts, const char *hostname)
     if (it == array_end(addresses)) {
         fprintf(stderr, "Couldn't connect to '%s:%d\n", hostname, 6112);
         array_reset(addresses);
-        return 1;
+        return STSE_UNSUCCESSFUL;
     }
 
     array_reset(addresses);
@@ -356,7 +356,7 @@ int sts_connection_start_tls(struct sts_connection *sts, struct ssl_sts_connecti
 
     if (reply.status_code != 400) {
         fprintf(stderr, "Couldn't start a STS connection, status: %d\n", reply.status_code);
-        return 1;
+        return STSE_UNSUCCESSFUL;
     }
 
     // If we were successful, we transfer the connection to the
