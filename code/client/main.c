@@ -130,8 +130,8 @@ int main(int argc, const char *argv[])
     Network_Init();
 
     if (options.newauth) {
-        if (!portal_init()) {
-            LogError("portal_init failed");
+        if (!portal_dll_init()) {
+            LogError("portal_dll_init failed");
             return 1;
         }
     }
@@ -182,7 +182,7 @@ int main(int argc, const char *argv[])
     }
 
     if (options.newauth) {
-        portal_cleanup();
+        portal_dll_cleanup();
     }
 
     Network_Shutdown();

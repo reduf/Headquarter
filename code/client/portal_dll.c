@@ -66,7 +66,7 @@ static void OnPortalNotify(uint32_t msgid, uint32_t unk1, void *data, void *para
     }
 }
 
-bool portal_init(void)
+bool portal_dll_init(void)
 {
     char file_path[1024];
     int length = 0;
@@ -105,7 +105,7 @@ bool portal_init(void)
     return true;
 }
 
-void portal_cleanup(void)
+void portal_dll_cleanup(void)
 {
     if (!hPortal) return;
     PortalStartCleanup();
@@ -113,7 +113,7 @@ void portal_cleanup(void)
     FreeLibrary(hPortal);
 }
 
-void portal_login(struct kstr *email, struct kstr *password)
+void portal_dll_login(struct kstr *email, struct kstr *password)
 {
     wchar_t wemail[64];
     wchar_t wpassword[100];
@@ -147,16 +147,16 @@ bool   portal_received_key;
 uuid_t portal_user_id;
 uuid_t portal_session_id;
 
-bool portal_init(void)
+bool portal_dll_init(void)
 {
     return false;
 }
 
-void portal_cleanup(void)
+void portal_dll_cleanup(void)
 {
 }
 
-void portal_login(struct kstr *email, struct kstr *password)
+void portal_dll_login(struct kstr *email, struct kstr *password)
 {
     assert(!"Portal not supported on linux");
 }
