@@ -115,10 +115,10 @@ static int sha1_of_two_values_with_padding(
     uint8_t buffer2[256];
 
     if ((sizeof(buffer1) < padding) && (sizeof(buffer2) < padding))
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     if ((padding < part1_len) || (padding < part2_len))
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     size_t number_of_zeroes = padding - part1_len;
     memset(buffer1, 0, number_of_zeroes);
@@ -191,7 +191,7 @@ int ssl_sts_connection_init_srp(struct ssl_sts_connection *ssl, const char *user
     }
 
     if (sizeof(ssl->srp_username) < username_len) {
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     memcpy(ssl->srp_username, username, username_len);
@@ -261,7 +261,7 @@ int ssl_sts_connection_seed_test(
 {
     if (sizeof(ssl->client_key.private) < client_private_len) {
         fprintf(stderr, "Couldn't initialize client private, too many bytes\n");
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     size_t zero_count = sizeof(ssl->client_key.private) - client_private_len;
@@ -269,7 +269,7 @@ int ssl_sts_connection_seed_test(
 
     if (sizeof(ssl->client_random) != client_random_len) {
         fprintf(stderr, "'client_random_len' must be %zu bytes\n", sizeof(ssl->client_random));
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     ssl->client_random.time = be32dec(client_random);
@@ -277,7 +277,7 @@ int ssl_sts_connection_seed_test(
 
     if (sizeof(ssl->iv_enc) != iv_len) {
         fprintf(stderr, "'iv' must be %zu bytes\n", sizeof(ssl->iv_enc));
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     memcpy(&ssl->iv_enc, iv, iv_len);
@@ -287,7 +287,7 @@ int ssl_sts_connection_seed_test(
 static int ssl_srp_write_protocol_header(struct ssl_sts_connection *ssl, uint8_t msg_type, size_t msg_size)
 {
     if ((size_t)UINT16_MAX < msg_size)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     array_add(ssl->write, msg_type);
 
@@ -326,12 +326,12 @@ static int ssl_srp_finish_protocol_msg(struct ssl_sts_connection *ssl, uint8_t m
     size_t msg_offset = header_pos + MSG_HDR_LEN;
     size_t msg_size = array_size(ssl->write) - msg_offset;
     if ((size_t)UINT16_MAX < msg_size)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     // The HMAC is computed on everything following the initial header.
     const uint8_t *msg_start = &array_at(ssl->write, msg_offset);
     if ((ret = mbedtls_sha256_update(&ssl->checksum, msg_start, msg_size)) != 0) {
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     uint8_t *p = &array_at(ssl->write, header_pos + 3);
@@ -376,7 +376,7 @@ static int ssl_srp_finish_handshake_msg(struct ssl_sts_connection *ssl, size_t h
 
     const size_t UINT24_MAX = 0xFFFFFF;
     if (UINT24_MAX <= content_length)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     uint8_t *hs_len_ptr = array_begin(ssl->write) + 1;
     hs_len_ptr[header_pos + 0] = (content_length >> 16) & 0xFF;
@@ -401,7 +401,7 @@ static void increment_be(uint8_t *bytes, size_t len)
 static int ssl_sts_issue_next_iv(struct ssl_sts_connection *ssl, uint8_t *iv, size_t iv_len)
 {
     if (iv_len != sizeof(ssl->iv_enc))
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     // We increment the `uint128_t` by 1.
     for (size_t i = 0; i < sizeof(ssl->iv_enc); ++i) {
@@ -410,7 +410,7 @@ static int ssl_sts_issue_next_iv(struct ssl_sts_connection *ssl, uint8_t *iv, si
     }
 
     if (mbedtls_internal_aes_encrypt(&ssl->cipher_enc, ssl->iv_enc, iv) != 0)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     memcpy(ssl->iv_enc, iv, iv_len);
     return 0;
@@ -432,11 +432,11 @@ static int ssl_srp_build_message_to_encrypt(
     // Write the hmac in the output.
     uint8_t *p = array_push(*buffer, SHA1_DIGEST_SIZE);
     if ((ret = mbedtls_md_hmac_finish(hmac, p)) != 0)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     // Reset the hmac structure to allow re-using for the next packet.
     if ((ret = mbedtls_md_hmac_reset(hmac)) != 0)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     // Write the padding with the modified PKCS7.
     // We use AES, so the block size is 16, we pad to this value.
@@ -479,7 +479,7 @@ static int ssl_sts_connection_send_internal(
 
     // if (ssl->state != AWAIT_CLIENT_FINISHED) {
     //     fprintf(stderr, "Handshake wasn't completed successfully\n");
-    //     return 1;
+    //     return ERR_SSL_UNSUCCESSFUL;
     // }
 
     size_t size_at_start = array_size(ssl->write);
@@ -492,7 +492,7 @@ static int ssl_sts_connection_send_internal(
         return 0;
 
     if ((ret = mbedtls_md_hmac_update(&ssl->mac_enc, ssl->next_write_id, sizeof(ssl->next_write_id))) != 0) {
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     // Increment the packet number for next update.
@@ -502,11 +502,11 @@ static int ssl_sts_connection_send_internal(
     assert((size_at_start + HEADER_SIZE) <= array_size(ssl->write));
     const uint8_t *header_bytes = &array_at(ssl->write, size_at_start);
     if ((ret = mbedtls_md_hmac_update(&ssl->mac_enc, header_bytes, HEADER_SIZE)) != 0) {
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = mbedtls_md_hmac_update(&ssl->mac_enc, data, data_len)) != 0) {
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     uint8_t *iv_buffer = array_push(ssl->write, sizeof(ssl->iv_enc));
@@ -520,7 +520,7 @@ static int ssl_sts_connection_send_internal(
     array_init(buffer, data_len + 32);
     if ((ret = ssl_srp_build_message_to_encrypt(&buffer, &ssl->mac_enc, data, data_len)) != 0) {
         array_reset(buffer);
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     uint8_t *output = array_push(ssl->write, buffer.size);
@@ -534,7 +534,7 @@ static int ssl_sts_connection_send_internal(
 
     array_reset(buffer);
     if (ret != 0) {
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     uint8_t *send_data = ssl->write.data + size_at_start;
@@ -591,7 +591,7 @@ static int parse_tls12_handshake(
 
     int ret;
     if ((ret = mbedtls_sha256_update(&ssl->checksum, *subdata, *sublen)) != 0) {
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     return 0;
@@ -690,7 +690,7 @@ int ssl_sts_connection_recv_internal(
 
     // Ensure the authenticity of the message by computing the HMAC.
     if ((ret = mbedtls_md_hmac_update(&ssl->mac_dec, ssl->next_read_id, sizeof(ssl->next_read_id))) != 0) {
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     // Increment the packet number for next update.
@@ -708,7 +708,7 @@ int ssl_sts_connection_recv_internal(
     size_t msg_len = enc_len - SHA1_DIGEST_SIZE;
     if ((size_t)UINT16_MAX < msg_len) {
         fprintf(stderr, "msg_len too large to fit a uint16_t");
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     // Not sure if it's on purpose, but the size of the IV and the HMAC are
@@ -718,21 +718,21 @@ int ssl_sts_connection_recv_internal(
     be16enc(ssl_header + 3, (uint16_t)msg_len);
 
     if ((ret = mbedtls_md_hmac_update(&ssl->mac_dec, ssl_header, sizeof(ssl_header))) != 0) {
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = mbedtls_md_hmac_update(&ssl->mac_dec, buffer, msg_len)) != 0) {
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     // Write the hmac in the output.
     uint8_t hmac[SHA1_DIGEST_SIZE];
     if ((ret = mbedtls_md_hmac_finish(&ssl->mac_dec, hmac)) != 0)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     // Reset the hmac structure to allow re-using for the next packet.
     if ((ret = mbedtls_md_hmac_reset(&ssl->mac_dec)) != 0)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     if (memcmp(buffer + msg_len, hmac, SHA1_DIGEST_SIZE) != 0) {
         fprintf(stderr, "The HMAC doesn't match\n");
@@ -781,7 +781,7 @@ static int ssl_srp_write_extension(struct ssl_sts_connection *ssl)
 
     size_t extension_len = array_size(ssl->write) - (extensions_len_pos + 2);
     if ((size_t)UINT16_MAX < extension_len)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     be16enc(&array_at(ssl->write, extensions_len_pos), (uint16_t)extension_len);
     return 0;
@@ -830,7 +830,7 @@ static int ssl_srp_write_client_hello_body(struct ssl_sts_connection *ssl)
     array_add(ssl->write, 0);
 
     if (ssl_srp_write_extension(ssl) != 0) {
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     return 0;
@@ -844,11 +844,11 @@ static int ssl_srp_write_client_hello(struct ssl_sts_connection *ssl)
     ssl_srp_start_handshake_msg(ssl, &header_pos, SSL_HS_CLIENT_HELLO);
 
     if (ssl_srp_write_client_hello_body(ssl) != 0) {
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     if (ssl_srp_finish_handshake_msg(ssl, header_pos, SSL_HS_CLIENT_HELLO) != 0) {
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     // @Cleanup: We need to calculate the checksum for the hashmac.
@@ -914,7 +914,7 @@ static int ssl_srp_write_client_key_exchange(struct ssl_sts_connection *ssl)
     array_insert(ssl->write, keylen, ssl->client_key.public);
 
     if (ssl_srp_finish_handshake_msg(ssl, header_pos, SSL_HS_CLIENT_KEY_EXCHANGE) != 0) {
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     ssl->state = AWAIT_CLIENT_CHANGE_CIPHER_SPEC;
@@ -1420,32 +1420,32 @@ static int ssl_sts_connection_setup_ciphers(struct ssl_sts_connection *ssl)
 
     const uint16_t CIPHER_KEY_BITS = 32 * 8;
     if ((ret = mbedtls_aes_setkey_enc(&ssl->cipher_enc, cipher_enc_key, CIPHER_KEY_BITS)) != 0)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     if ((ret = mbedtls_aes_setkey_dec(&ssl->cipher_dec, cipher_dec_key, CIPHER_KEY_BITS)) != 0)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     const mbedtls_md_info_t *md_info;
     if ((md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA1)) == NULL)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     const int is_hmac = 1;
     const size_t HMAC_KEY_LEN = 20;
 
     if ((ret = mbedtls_md_setup(&ssl->mac_enc, md_info, is_hmac)) != 0)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     if ((ret = mbedtls_md_hmac_starts(&ssl->mac_enc, mac_enc_key, HMAC_KEY_LEN)) != 0)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     if ((ret = mbedtls_md_setup(&ssl->mac_dec, md_info, is_hmac)) != 0)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     if ((ret = mbedtls_md_hmac_starts(&ssl->mac_dec, mac_dec_key, HMAC_KEY_LEN)) != 0)
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
 
     const char client_finished_lbl[] = "client finished";
 
     uint8_t checksum[32];
     if ((ret = mbedtls_sha256_finish(&ssl->checksum, checksum)) != 0) {
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     ret = tls_prf_sha256(
@@ -1496,63 +1496,63 @@ int ssl_sts_connection_handshake(struct ssl_sts_connection *ssl)
 {
     if (ssl->state != AWAIT_CLIENT_HELLO) {
         fprintf(stderr, "Invalid state (%d) the proceed to the handshake\n", (int)ssl->state);
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     int ret;
     if ((ret = send_client_step(ssl_srp_write_client_hello, ssl)) != 0) {
         fprintf(stderr, "'ssl_srp_write_client_hello' failed: %d\n", ret);
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = wait_for_server_step(ssl_srp_process_server_hello, ssl)) != 0) {
         fprintf(stderr, "'ssl_srp_process_server_hello' failed: %d\n", ret);
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = wait_for_server_step(ssl_srp_process_server_key_exchange, ssl)) != 0) {
         fprintf(stderr, "'ssl_srp_process_server_key_exchange' failed: %d\n", ret);
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = wait_for_server_step(ssl_srp_process_server_done, ssl)) != 0) {
         fprintf(stderr, "'ssl_srp_process_server_done' failed: %d\n", ret);
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = send_client_step(ssl_srp_write_client_key_exchange, ssl)) != 0) {
         fprintf(stderr, "'ssl_srp_write_client_key_exchange' failed: %d\n", ret);
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = send_client_step(ssl_srp_write_change_cipher_spec, ssl)) != 0) {
         fprintf(stderr, "'ssl_srp_write_change_cipher_spec' failed: %d\n", ret);
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = ssl_sts_connection_setup_ciphers(ssl)) != 0) {
         fprintf(stderr, "ssl_sts_connection_setup_ciphers failed: %d\n", ret);
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = ssl_srp_write_finished(ssl)) != 0) {
         fprintf(stderr, "ssl_srp_write_finished failed: %d\n", ret);
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = ssl_sts_connection_send_internal(ssl, SSL_MSG_HANDSHAKE, ssl->write.data, ssl->write.size)) != 0) {
         fprintf(stderr, "ssl_sts_connection_send_internal failed: %d\n", ret);
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = wait_for_server_step(ssl_srp_process_change_cipher_spec, ssl)) != 0) {
         fprintf(stderr, "'ssl_srp_process_change_cipher_spec' failed: %d\n", ret);
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = wait_for_server_step(ssl_srp_process_encrypted_handshake, ssl)) != 0) {
         fprintf(stderr, "'ssl_srp_process_encrypted_handshake' failed: %d\n", ret);
-        return 1;
+        return ERR_SSL_UNSUCCESSFUL;
     }
 
     array_clear(ssl->read);
