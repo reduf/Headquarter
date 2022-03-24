@@ -3,6 +3,9 @@
 #endif
 #define PORTAL_LOGIN_C
 
+#define PORTAL_ERR_UKNOWN_ERROR 1
+#define PORTAL_ERR_REQUIRE_TOTP 2
+
 struct str {
     const char *ptr;
     size_t      len;
@@ -81,6 +84,28 @@ static bool s_parse_uuid(struct str *str, struct uuid *u)
         return false;
 
     return true;
+}
+
+static int find_between(struct str *dest, struct str *src, const char *left, const char *right)
+{
+    struct str l = s_from_c_str(left);
+    struct str r = s_from_c_str(right);
+
+    size_t left_pos = s_find(src, &l);
+    if (left_pos == (size_t)-1) {
+        fprintf(stderr, "Failed to find '%s'\n", left);
+        return 1;
+    }
+
+    struct str rem = s_substr(src, (left_pos + l.len), SIZE_MAX);
+    size_t right_pos = s_find(&rem, &r);
+    if (right_pos == (size_t)-1) {
+        fprintf(stderr, "Failed to find '%s'\n", right);
+        return 1;
+    }
+
+    *dest = s_substr(&rem, 0, right_pos);
+    return 0;
 }
 
 int portal_init()
@@ -183,7 +208,24 @@ static int auth_login_finish(struct sts_connection *sts, struct ssl_sts_connecti
         return 1;
     }
 
-    // The reply has the following format:
+    struct str reply_content = s_from_unsigned_utf8(reply.content, reply.content_length);
+
+    struct str auth_type;
+    if (find_between(&auth_type, &reply_content, "<AuthType>", "</AuthType>") == 0) {
+        // This mean we need to complete a 2fa.
+        struct str totp = s_from_c_str("Totp");
+        if (s_cmp(&auth_type, &totp) == 0) {
+            ret = PORTAL_ERR_REQUIRE_TOTP;
+        } else {
+            fprintf(stderr, "Unknown AuthType: '%.*s'\n", (int)auth_type.len, auth_type.ptr);
+            ret = 1;
+        }
+
+        array_reset(response);
+        return ret;
+    }
+
+    // In case we don't need to do the 2fa, the reply has the following format:
     // <Reply>
     // <UserId>{GUID}</UserId>
     // <UserCenter>{Integer}</UserCenter>
@@ -192,26 +234,13 @@ static int auth_login_finish(struct sts_connection *sts, struct ssl_sts_connecti
     // <EmailVerified>{0|1}</EmailVerified>
     // </Reply>
 
-    struct str reply_content = s_from_unsigned_utf8(reply.content, reply.content_length);
-    struct str userid_open = s_from_c_str("<UserId>");
-    struct str userid_close = s_from_c_str("</UserId>");
-
-    size_t open_pos = s_find(&reply_content, &userid_open);
-    if (open_pos == (size_t)-1) {
-        fprintf(stderr, "Failed to find '<UserId>'\n");
+    struct str user_id;
+    if (find_between(&user_id, &reply_content, "<UserId>", "</UserId>") != 0) {
+        fprintf(stderr, "Failed to find UserId\n");
         array_reset(response);
         return 1;
     }
 
-    struct str rem = s_substr(&reply_content, (open_pos + userid_open.len), SIZE_MAX);
-    size_t close_pos = s_find(&rem, &userid_close);
-    if (close_pos == (size_t)-1) {
-        fprintf(stderr, "Failed to find '</UserId>'\n");
-        array_reset(response);
-        return 1;
-    }
-
-    struct str user_id = s_substr(&rem, 0, close_pos);
     if (!s_parse_uuid(&user_id, &sts->user_id)) {
         fprintf(stderr, "Failed to parse the user_id uuid '%.*s'\n", (int)user_id.len, user_id.ptr);
         array_reset(response);
@@ -399,25 +428,14 @@ static int auth_request_game_token(struct sts_connection *sts, struct ssl_sts_co
     // <Token>{UUID}</Token>
     // </Reply>
     struct str reply_content = s_from_unsigned_utf8(reply.content, reply.content_length);
-    struct str token_open = s_from_c_str("<Token>");
-    struct str token_close = s_from_c_str("</Token>");
 
-    size_t open_pos = s_find(&reply_content, &token_open);
-    if (open_pos == (size_t)-1) {
-        fprintf(stderr, "Failed to find '<Token>'\n");
+    struct str token;
+    if (find_between(&token, &reply_content, "<Token>", "</Token>") != 0) {
+        fprintf(stderr, "Failed to find Token\n");
         array_reset(response);
         return 1;
     }
 
-    struct str rem = s_substr(&reply_content, (open_pos + token_open.len), SIZE_MAX);
-    size_t close_pos = s_find(&rem, &token_close);
-    if (close_pos == (size_t)-1) {
-        fprintf(stderr, "Failed to find '</Token>'\n");
-        array_reset(response);
-        return 1;
-    }
-
-    struct str token = s_substr(&rem, 0, close_pos);
     if (!s_parse_uuid(&token, &sts->token)) {
         fprintf(stderr, "Failed to parse the token uuid '%.*s'\n", (int)token.len, token.ptr);
         array_reset(response);
@@ -468,12 +486,19 @@ int portal_login(const char *username, const char *password)
         goto cleanup;
     }
 
-    // At this point, we have a secured connection and we are authenticathed.
+    // At this point, we have a secured connection and we are authenticated.
     // We need to use the STS protocol, over TLS-SRP to retrieve a user id and
     // a game token.
 
     if ((ret = auth_login_finish(&sts, &ssl)) != 0) {
-        goto cleanup;
+        // This is not necessarily a unrecoverable error. We may need
+        // to send a code, because of 2fa.
+        if (ret == PORTAL_ERR_REQUIRE_TOTP) {
+            fprintf(stderr, "2fa isn't implemented yet!!\n");
+            goto cleanup;
+        } else {
+            goto cleanup;
+        }
     }
 
     if ((ret = auth_list_game_accounts(&sts, &ssl)) != 0) {
@@ -487,5 +512,7 @@ int portal_login(const char *username, const char *password)
 cleanup:
     ssl_sts_connection_free(&ssl);
     sts_connection_free(&sts);
+    if (ret != 0)
+        ret = 1;
     return ret;
 }
