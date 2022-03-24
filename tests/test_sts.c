@@ -124,9 +124,11 @@ UTEST(sts, portal_login)
 {
     int ret;
 
+    struct portal_login_result result;
+
     ret = portal_init();
     ASSERT_EQ(ret, 0);
-    ret = portal_login("user@email.com", "otot");
+    ret = portal_login(&result, "user@email.com", "otot");
     ASSERT_EQ(ret, 0);
     portal_free();
 }

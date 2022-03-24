@@ -6,4 +6,9 @@
 int portal_init();
 void portal_free();
 
-int portal_login(const char *username, const char *password);
+struct portal_login_result {
+    struct uuid user_id;
+    struct uuid token;
+};
+
+int portal_login(struct portal_login_result *result, const char *username, const char *password);

@@ -446,7 +446,7 @@ static int auth_request_game_token(struct sts_connection *sts, struct ssl_sts_co
     return 0;
 }
 
-int portal_login(const char *username, const char *password)
+int portal_login(struct portal_login_result *result, const char *username, const char *password)
 {
     int ret;
 
@@ -508,6 +508,9 @@ int portal_login(const char *username, const char *password)
     if ((ret = auth_request_game_token(&sts, &ssl)) != 0) {
         goto cleanup;
     }
+
+    result->token = sts.token;
+    result->user_id = sts.user_id;
 
 cleanup:
     ssl_sts_connection_free(&ssl);
