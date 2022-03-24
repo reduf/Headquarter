@@ -700,22 +700,27 @@ int ssl_sts_connection_recv_internal(
     assert(sizeof(ssl_header) <= ssl->read.size);
     memcpy(ssl_header, ssl->read.data, sizeof(ssl_header));
 
-    // Not sure if it's on purpose, but the size of the IV and the HMAC are
-    // substracted from the header before computing the HMAC. This is kind of
-    // odd, seems unnecessary complexity and could be a bug in the implem of
-    // ANet. Could also be part of the standard, to be confirmed.
-    be16enc(ssl_header + 3, be16dec(ssl_header + 3) - 0x30);
-
-    if ((ret = mbedtls_md_hmac_update(&ssl->mac_dec, ssl_header, sizeof(ssl_header))) != 0) {
-        return 1;
-    }
-
     if (enc_len < SHA1_DIGEST_SIZE) {
         fprintf(stderr, "Message is too small to contain an HMAC\n");
         return ERR_SSL_BAD_INPUT_DATA;
     }
 
     size_t msg_len = enc_len - SHA1_DIGEST_SIZE;
+    if ((size_t)UINT16_MAX < msg_len) {
+        fprintf(stderr, "msg_len too large to fit a uint16_t");
+        return 1;
+    }
+
+    // Not sure if it's on purpose, but the size of the IV and the HMAC are
+    // substracted from the header before computing the HMAC. This is kind of
+    // odd, seems unnecessary complexity and could be a bug in the implem of
+    // ANet. Could also be part of the standard, to be confirmed.
+    be16enc(ssl_header + 3, (uint16_t)msg_len);
+
+    if ((ret = mbedtls_md_hmac_update(&ssl->mac_dec, ssl_header, sizeof(ssl_header))) != 0) {
+        return 1;
+    }
+
     if ((ret = mbedtls_md_hmac_update(&ssl->mac_dec, buffer, msg_len)) != 0) {
         return 1;
     }
