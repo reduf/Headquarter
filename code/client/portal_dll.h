@@ -1,7 +1,7 @@
-#ifdef PORTAL_H
-#error "portal.h included more than once"
+#ifdef PORTAL_DLL_H
+#error "portal_dll.h included more than once"
 #endif
-#define PORTAL_H
+#define PORTAL_DLL_H
 
 bool portal_init(void);
 void portal_cleanup(void);

@@ -54,8 +54,8 @@ set(
   player.h
   plugins.c
   plugins.h
-  portal.c
-  portal.h
+  portal_dll.c
+  portal_dll.h
   quest.c
   quest.h
   skill.c

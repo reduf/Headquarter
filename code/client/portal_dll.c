@@ -1,7 +1,7 @@
-#ifdef PORTAL_C
-#error "portal.c included more than once"
+#ifdef PORTAL_DLL_C
+#error "portal_dll.c included more than once"
 #endif
-#define PORTAL_C
+#define PORTAL_DLL_C
 
 #ifdef _WIN32
 typedef void (*OnPortalNotify_t)(uint32_t msgid, uint32_t unk1, void *data, void *param);

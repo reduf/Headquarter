@@ -67,7 +67,7 @@
 #include "error.h"
 #include "kstr.h"
 
-#include "portal.h"
+#include "portal_dll.h"
 #include "opcodes.h"
 #include "packets.h"
 #include "network.h"
@@ -130,7 +130,7 @@ typedef struct GwClient GwClient;
 #include "event.c"
 #include "client.c"
 
-#include "portal.c"
+#include "portal_dll.c"
 #include "packets.c"
 #include "network.c"
 
