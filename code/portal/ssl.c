@@ -18,23 +18,6 @@
 #define SSL_MSG_APPLICATION_DATA       23
 #define SSL_MSG_CID                    25
 
-// This hash is computed, but was never used as far as I know
-// temporarily disabling it to prevent "unused function" warning.
-#if 0
-static void sha1_swap_word(const void *data, size_t size, uint8_t *digest)
-{
-    const uint8_t *bytes = (const uint8_t *)data;
-    // @Robustness: Type aliasing
-    mbedtls_sha1(bytes, size, digest);
-
-    le32enc(digest,      be32dec(digest));
-    le32enc(digest + 4,  be32dec(digest + 4));
-    le32enc(digest + 8,  be32dec(digest + 8));
-    le32enc(digest + 12, be32dec(digest + 12));
-    le32enc(digest + 16, be32dec(digest + 16));
-}
-#endif
-
 #define SHA1_DIGEST_SIZE 20
 
 static int compute_srp_hash(
