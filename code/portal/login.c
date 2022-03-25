@@ -239,6 +239,7 @@ static int auth_login_finish(struct sts_connection *sts, struct ssl_sts_connecti
     return 0;
 }
 
+#if 0
 static int auth2f_upgrade_totp(
     struct sts_connection *sts,
     struct ssl_sts_connection *ssl,
@@ -296,6 +297,7 @@ static int auth2f_upgrade_totp(
     array_reset(&response);
     return 0;
 }
+#endif
 
 static int auth_list_game_accounts(struct sts_connection *sts, struct ssl_sts_connection *ssl)
 {
