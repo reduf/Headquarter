@@ -151,7 +151,7 @@ void OldAccountConnect(GwClient *client, struct kstr *email, struct kstr *pswd, 
     SendPacket(auth, sizeof(packet), &packet);
 }
 
-void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, struct kstr *charname)
+void PortalAccountConnect(GwClient *client, struct uuid *user_id, struct uuid *token, struct kstr *charname)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -177,8 +177,18 @@ void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, s
 
     PortalAccountLogin packet = NewPacket(AUTH_CMSG_PORTAL_ACCOUNT_LOGIN);
     packet.transaction_id = trans_id;
-    uuid_enc_le(packet.user_id, user_id);
-    uuid_enc_le(packet.session_id, session_id);
+
+    // @Cleanup:
+    // This is totally meaningless, but we currently have to do that, because
+    // `uuid_t` is defined as an array of characters. We should just use
+    // `struct uuid`.
+    uuid_t token_buffer;
+    memcpy(&token_buffer, token, sizeof(token_buffer));
+    uuid_t user_id_buffer;
+    memcpy(&user_id_buffer, user_id, sizeof(user_id_buffer));
+
+    uuid_enc_le(packet.user_id, token_buffer);
+    uuid_enc_le(packet.session_id, user_id_buffer);
     
     assert(ARRAY_SIZE(packet.charname1) == ARRAY_SIZE(packet.charname2));
     if (ARRAY_SIZE(packet.charname1) < charname->length) {
@@ -203,7 +213,7 @@ void AccountLogin(GwClient *client)
             LogError("GwLoginClient didn't replied with the connection key yet");
             return;
         }
-        PortalAccountConnect(client, portal_user_id, portal_session_id, &client->charname);
+        PortalAccountConnect(client, &client->portal_user_id, &client->portal_token, &client->charname);
     } else {
         OldAccountConnect(client, &client->email, NULL, &client->charname);
     }

@@ -102,6 +102,9 @@ typedef struct GwClient {
     uint16_t            email_buffer[100];
     uint16_t            charname_buffer[64];
 
+    struct uuid         portal_token;
+    struct uuid         portal_user_id;
+
     AwaitState          state;
     bool                ingame;
     bool                loading;
@@ -169,7 +172,7 @@ void compute_pswd_hash(struct kstr *email, struct kstr *pswd, char digest[20]);
 void AccountLogin(GwClient *client);
 void AccountLogout(GwClient *client);
 void OldAccountConnect(GwClient *client, struct kstr *email, struct kstr *pswd, struct kstr *pseudo);
-void PortalAccountConnect(GwClient *client, uuid_t user_id, uuid_t session_id, struct kstr *charname);
+void PortalAccountConnect(GwClient *client, struct uuid *user_id, struct uuid *token, struct kstr *charname);
 
 void PlayCharacter(GwClient *client, struct kstr *name, PlayerStatus status);
 

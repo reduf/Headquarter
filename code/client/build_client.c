@@ -61,6 +61,8 @@
 #include <common/endian.h>
 #include <common/rbtree.h>
 
+#include <portal/login.h>
+
 #include <client/Headquarter.h>
 
 #include "arc4.h"
