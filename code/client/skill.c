@@ -11,7 +11,7 @@ static Skillbar *get_skillbar_safe(GwClient *client, AgentId agent_id)
     if (!(client && client->world.hash))
         return NULL;
     Skillbar *sb;
-    array_foreach(sb, client->world.skillbars) {
+    array_foreach(sb, &client->world.skillbars) {
         if (sb->owner_agent_id == agent_id)
             return sb;
     }
@@ -79,7 +79,7 @@ void HandleSkillbarUpdate(Connection *conn, size_t psize, Packet *packet)
 
     Skillbar *sb = get_skillbar_safe(client, pack->agent_id);
     if (sb == NULL) {
-        sb = array_push(client->world.skillbars, 1);
+        sb = array_push(&client->world.skillbars, 1);
     }
 
     sb->owner_agent_id = pack->agent_id;
@@ -362,7 +362,7 @@ void GameSrv_LoadAttributes(GwClient* client, AgentId agent_id, ArrayAttribute a
     packet.n_attribute_ids = attributes.size;
     packet.n_attribute_values = attributes.size;
     for (size_t i = 0; i < attributes.size; i++) {
-        Attribute attribute = array_at(attributes, i);
+        Attribute attribute = array_at(&attributes, i);
         packet.attribute_ids[i] = attribute.attribute_id;
         packet.attribute_values[i] = attribute.rank_base;
     }
@@ -500,7 +500,7 @@ void HandleAgentUpdateAttribute(Connection *conn, size_t psize, Packet *packet)
 
     ArraySkillbar *skillbars = &client->world.skillbars;
     Skillbar *sb;
-    array_foreach(sb, *skillbars) {
+    array_foreach(sb, skillbars) {
         if (sb->owner_agent_id == pack->agent_id)
             break;
     }
@@ -519,7 +519,7 @@ void HandleAgentUpdateAttribute(Connection *conn, size_t psize, Packet *packet)
         return;
     }
 
-    Attribute *attrs = array_push(sb->attributes, count);
+    Attribute *attrs = array_push(&sb->attributes, count);
     for (size_t i = 0; i < count; i++) {
         attrs[i].attribute_id = data[i + 0*count];
         attrs[i].rank_base    = data[i + 1*count];
@@ -609,8 +609,8 @@ static SkillTemplate* template_decode(const char* temp) {
         return NULL;
     }
     
-    array_init(result->attributes, attribute_count);
-    array_resize(result->attributes, attribute_count);
+    array_init(&result->attributes, attribute_count);
+    array_resize(&result->attributes, attribute_count);
 
     result->attributes.size = attribute_count;
     int bits_per_attr = _ReadBits(&it, 4) + 4;
@@ -622,10 +622,10 @@ static SkillTemplate* template_decode(const char* temp) {
             LogError("attribute id out of range");
             return NULL;
         }
-        Attribute attribute = array_at(result->attributes, i);
+        Attribute attribute = array_at(&result->attributes, i);
         attribute.attribute_id = attribute_id;
         attribute.rank_base = attribute_value;
-        array_set(result->attributes, i, attribute);
+        array_set(&result->attributes, i, attribute);
     }
 
     int bits_per_skill = _ReadBits(&it, 4) + 8;

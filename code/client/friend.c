@@ -6,7 +6,7 @@
 Friend* get_friend(uint8_t* uuid, uint16_t* name) {
     Friend* gwfriend;
     if (uuid) {
-        array_foreach(gwfriend, client->friends) {
+        array_foreach(gwfriend, &client->friends) {
             if (memcmp(uuid, gwfriend->uuid, 16) == 0)
                 return gwfriend;
         }
@@ -16,7 +16,7 @@ Friend* get_friend(uint8_t* uuid, uint16_t* name) {
         size_t length = 0;
         for (length = 0; length < 20 && name[length]; length++) {};
         kstr_init(&name_kstr, name, length, 20);
-        array_foreach(gwfriend, client->friends) {
+        array_foreach(gwfriend, &client->friends) {
             if (kstr_compare(&gwfriend->name, &name_kstr) == 0 || kstr_compare(&gwfriend->account, &name_kstr) == 0)
                 return gwfriend;
         }
@@ -27,7 +27,7 @@ Friend* get_or_create_friend(uint8_t* uuid, uint16_t* name) {
     Friend* gwfriend = get_friend(uuid, name);
     if (gwfriend)
         return gwfriend;
-    gwfriend = array_push(client->friends, 1);
+    gwfriend = array_push(&client->friends, 1);
     if (!gwfriend) {
         return NULL;
     }

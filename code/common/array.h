@@ -58,42 +58,42 @@ union {                         \
     };                          \
 }
 
-#define array_init(a, s)        _array_init( &(a).base, (s), sizeof(*(a).data))
-#define array_reset(a)          _array_reset(&(a).base);
+#define array_init(a, s)        _array_init(&(a)->base, (s), sizeof(*(a)->data))
+#define array_reset(a)          _array_reset(&(a)->base);
 
-#define array_reserve(a, s)     _array_reserve(&(a).base, (s), sizeof(*(a).data))
-#define array_resize(a, s)      _array_resize( &(a).base, (s), sizeof(*(a).data))
-#define array_remove(a, i)      _array_remove( &(a).base, (i), sizeof(*(a).data))
-#define array_insert(a, c, p)   _array_insert( &(a).base, (c), (p), sizeof(*(a).data))
-#define array_copy(d, s)        _array_copy(&(d).base, &(s).base, sizeof(*(s).data))
-#define array_push(a, n)        _array_push(&(a).base, (n), sizeof(*(a).data))
+#define array_reserve(a, s)     _array_reserve(&(a)->base, (s), sizeof(*(a)->data))
+#define array_resize(a, s)      _array_resize(&(a)->base, (s), sizeof(*(a)->data))
+#define array_remove(a, i)      _array_remove(&(a)->base, (i), sizeof(*(a)->data))
+#define array_insert(a, c, p)   _array_insert(&(a)->base, (c), (p), sizeof(*(a)->data))
+#define array_copy(d, s)        _array_copy(&(d)->base, &(s)->base, sizeof(*(s)->data))
+#define array_push(a, n)        _array_push(&(a)->base, (n), sizeof(*(a)->data))
 
-#define array_remove_ordered(a, i) _array_remove_range_ordered(&(a).base, (i), 1, sizeof(*(a).data))
-#define array_remove_range_ordered(a, i, c) _array_remove_range_ordered(&(a).base, (i), (c), sizeof(*(a).data))
+#define array_remove_ordered(a, i) _array_remove_range_ordered(&(a)->base, (i), 1, sizeof(*(a)->data))
+#define array_remove_range_ordered(a, i, c) _array_remove_range_ordered(&(a)->base, (i), (c), sizeof(*(a)->data))
 
-#define array_add(a, e)         (array_reserve(a, 1) && (((a).data[(a).size++] = (e)), 1))
-#define array_set(a, i, e)      (array_inside(a, i)  && (((a).data[(i)] = (e)), 1))
-#define array_pop(a)            ((a).data[(a).size ? --(a).size : 0])
-#define array_at(a, i)          ((a).data[(i)])
+#define array_add(a, e)         (array_reserve(a, 1) && (((a)->data[(a)->size++] = (e)), 1))
+#define array_set(a, i, e)      (array_inside(a, i)  && (((a)->data[(i)] = (e)), 1))
+#define array_pop(a)            ((a)->data[(a)->size ? --(a)->size : 0])
+#define array_at(a, i)          ((a)->data[(i)])
 
-#define array_front(a)          ((a).data[0])
-#define array_back(a)           ((a).data[(a).size - 1])
-#define array_peek(a)           ((a).data[(a).size - 1])
+#define array_front(a)          ((a)->data[0])
+#define array_back(a)           ((a)->data[(a)->size - 1])
+#define array_peek(a)           ((a)->data[(a)->size - 1])
 
-#define array_size(a)           ((a).size)
-#define array_data(a)           ((a).data)
-#define array_capacity(a)       ((a).capacity)
+#define array_size(a)           ((a)->size)
+#define array_data(a)           ((a)->data)
+#define array_capacity(a)       ((a)->capacity)
 
-#define array_inside(a, i)      (0 <= (i) && (size_t)(i) < (a).size)
-#define array_full(a)           ((a).size == (a).capacity)
-#define array_empty(a)          ((a).size == 0)
-#define array_clear(a)          ((void)((a).size =  0))
+#define array_inside(a, i)      (0 <= (i) && (size_t)(i) < (a)->size)
+#define array_full(a)           ((a)->size == (a)->capacity)
+#define array_empty(a)          ((a)->size == 0)
+#define array_clear(a)          ((void)((a)->size =  0))
 
-#define array_begin(a)          ((a).data)
-#define array_end(a)            ((a).data + (a).size)
+#define array_begin(a)          ((a)->data)
+#define array_end(a)            ((a)->data + (a)->size)
 
-#define array_rbegin(a)         ((a).data + (a).size - 1)
-#define array_rend(a)           ((a).data - 1)
+#define array_rbegin(a)         ((a)->data + (a)->size - 1)
+#define array_rend(a)           ((a)->data - 1)
 
 #define array_foreach(it, a) \
     for (it = array_begin(a); it != array_end(a); ++it)

@@ -9,9 +9,9 @@ Player *get_player_safe(GwClient *client, uint32_t player_id)
         return NULL;
 
     ArrayPlayer *players = &client->world.players;
-    if (!array_inside(*players, player_id))
+    if (!array_inside(players, player_id))
         return NULL;
-    return array_at(*players, player_id);
+    return array_at(players, player_id);
 }
 
 Party *get_party_safe(GwClient *client, uint32_t party_id)
@@ -19,16 +19,16 @@ Party *get_party_safe(GwClient *client, uint32_t party_id)
     if (!(client && client->ingame && client->world.hash))
         return NULL;
     ArrayParty *parties = &client->world.parties;
-    if (!array_inside(*parties, party_id))
+    if (!array_inside(parties, party_id))
         return NULL;
-    return &array_at(*parties, party_id);
+    return &array_at(parties, party_id);
 }
 
 PartyPlayer *get_party_player(Party *party, uint32_t player_id)
 {
     assert(party);
     PartyPlayer *it;
-    array_foreach(it, party->players) {
+    array_foreach(it, &party->players) {
         if (it->player_id == player_id)
             return it;
     }
@@ -39,7 +39,7 @@ PartyHero *get_party_hero_agent(Party *party, AgentId agent_id)
 {
     assert(party);
     PartyHero *it;
-    array_foreach(it, party->heroes) {
+    array_foreach(it, &party->heroes) {
         if (it->agent_id == agent_id)
             return it;
     }
@@ -100,10 +100,10 @@ void HandlePartyHeroAdd(Connection *conn, size_t psize, Packet *packet)
     HeroAdd *pack = cast(HeroAdd *)packet;
     assert(client && client->game_srv.secured);
 
-    assert(array_inside(client->world.parties, pack->party_id));
-    Party *party = &array_at(client->world.parties, pack->party_id);
+    assert(array_inside(&client->world.parties, pack->party_id));
+    Party *party = &array_at(&client->world.parties, pack->party_id);
 
-    PartyHero *p_hero = array_push(party->heroes, 1);
+    PartyHero *p_hero = array_push(&party->heroes, 1);
     if (!p_hero) {
         LogError("HandlePartyHeroAdd: Couldn't array_push");
         return;
@@ -148,7 +148,7 @@ void HandlePartyHeroRemove(Connection *conn, size_t psize, Packet *packet)
 
     // @Cleanup: Check if it's standard. (e.g. diff between 2 ptr of same type)
     size_t index = p_hero - party->heroes.data;
-    array_remove_ordered(party->heroes, index);
+    array_remove_ordered(&party->heroes, index);
 }
 
 void HandlePartyInviteAdd(Connection *conn, size_t psize, Packet *packet)
@@ -274,7 +274,7 @@ void HandlePartyPlayerAdd(Connection *conn, size_t psize, Packet *packet)
 
     player->party = party;
 
-    PartyPlayer *party_player = array_push(party->players, 1);
+    PartyPlayer *party_player = array_push(&party->players, 1);
     if (!party_player) {
         LogError("HandlePartyPlayerAdd: Couldn't array_push");
         return;
@@ -312,13 +312,13 @@ void HandlePartyPlayerRemove(Connection *conn, size_t psize, Packet *packet)
 
     size_t index = 0;
     PartyPlayer *it;
-    array_foreach(it, party->players) {
+    array_foreach(it, &party->players) {
         if (it->player_id == player->player_id)
             break;
         index++;
     }
 
-    array_remove_ordered(party->players, index);
+    array_remove_ordered(&party->players, index);
     player->party = NULL;
     party->player_count--;
 
@@ -369,18 +369,18 @@ void HandlePartyCreate(Connection *conn, size_t psize, Packet *packet)
     assert(client && client->game_srv.secured);
 
     ArrayParty *parties = &client->world.parties;
-    if (!array_inside(*parties, pack->party_id)) {
-        array_resize(*parties, pack->party_id + 1);
+    if (!array_inside(parties, pack->party_id)) {
+        array_resize(parties, pack->party_id + 1);
         parties->size = parties->capacity;
     }
 
-    Party *party = &array_at(*parties, pack->party_id);
+    Party *party = &array_at(parties, pack->party_id);
     memzero(party, sizeof(*party));
 
     party->party_id = pack->party_id;
-    array_init(party->heroes,    8);
-    array_init(party->players,   8);
-    array_init(party->henchmans, 8);
+    array_init(&party->heroes,    8);
+    array_init(&party->players,   8);
+    array_init(&party->henchmans, 8);
 }
 
 void HandlePartyMemberStreamEnd(Connection *conn, size_t psize, Packet *packet)

@@ -17,16 +17,16 @@ void init_client(GwClient *client)
     client->loading = true;
     client->connected = true;
 
-    array_init(client->characters, 16);
-    array_init(client->merchant_items, 360);
-    array_init(client->trade_session.trader_items, 7);
-    array_init(client->trade_session.player_items, 7);
-    array_init(client->titles, 64);
-    array_resize(client->titles, 64);
-    array_init(client->friends, 150);
+    array_init(&client->characters, 16);
+    array_init(&client->merchant_items, 360);
+    array_init(&client->trade_session.trader_items, 7);
+    array_init(&client->trade_session.player_items, 7);
+    array_init(&client->titles, 64);
+    array_resize(&client->titles, 64);
+    array_init(&client->friends, 150);
 
     // @Cleanup: What is the practical max amount of button in the game.
-    array_init(client->dialog.buttons, 16);
+    array_init(&client->dialog.buttons, 16);
 
     init_chat(&client->chat);
 
@@ -43,7 +43,7 @@ void init_client(GwClient *client)
 
 uint32_t issue_next_transaction(GwClient *client, AsyncType type)
 {
-    AsyncRequest *request = array_push(client->requests, 1);
+    AsyncRequest *request = array_push(&client->requests, 1);
     request->trans_id = ++client->next_transaction_id;
     request->type = type;
     return request->trans_id;

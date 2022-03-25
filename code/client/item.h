@@ -39,17 +39,17 @@ static void api_make_item(ApiItem *dest, Item *src)
     dest->quantity  = src->quantity;
     dest->type      = src->type;
 
-    array_init(dest->mods, array_size(src->mods));
-    array_resize(dest->mods, array_size(src->mods));
+    array_init(&dest->mods, array_size(&src->mods));
+    array_resize(&dest->mods, array_size(&src->mods));
 
     ItemModifier* mod;
-    array_foreach(mod, src->mods) {
+    array_foreach(mod, &src->mods) {
         ApiItemModifier apiMod;
         apiMod.identifier = item_mod_identifier(*mod);
         apiMod.arg1 = item_mod_arg1(*mod);
         apiMod.arg2 = item_mod_arg2(*mod);
 
-        array_add(dest->mods, apiMod);
+        array_add(&dest->mods, apiMod);
     }
 }
 

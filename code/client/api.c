@@ -445,9 +445,9 @@ HQAPI size_t GetPlayerName(uint32_t player_id, uint16_t *buffer, size_t length)
     if (!(client->ingame && client->world.hash))
         goto leave;
     ArrayPlayer players = client->world.players;
-    if (!array_inside(players, player_id))
+    if (!array_inside(&players, player_id))
         goto leave;
-    Player *player = array_at(players, player_id);
+    Player *player = array_at(&players, player_id);
     if (!player) goto leave;
     if (!buffer) {
         written = player->name.length;
@@ -736,9 +736,9 @@ HQAPI bool GetItem(ApiItem *api_item, uint32_t item_id)
     thread_mutex_lock(&client->mutex);
     if (!(client->ingame && client->world.hash))
         goto leave;
-    if (!array_inside(client->world.items, item_id))
+    if (!array_inside(&client->world.items, item_id))
         goto leave;
-    Item *item = array_at(client->world.items, item_id);
+    Item *item = array_at(&client->world.items, item_id);
     if (!item) goto leave;
     api_make_item(api_item, item);
     success = true;
@@ -831,7 +831,7 @@ HQAPI bool RequestItemQuote(uint32_t item_id)
     thread_mutex_lock(&client->mutex);
     if (!client->ingame)
         goto leave;
-    size_t merchant_item_size = array_size(client->merchant_items);
+    size_t merchant_item_size = array_size(&client->merchant_items);
     if (!merchant_item_size)
         goto leave;
     if (!client->merchant_agent_id)
@@ -849,7 +849,7 @@ HQAPI bool RequestItemQuote(uint32_t item_id)
         goto leave; // Too far from merchant
     Item** arr_item = NULL;
     Item* item = NULL;
-    array_foreach(arr_item, client->merchant_items) {
+    array_foreach(arr_item, &client->merchant_items) {
         if (*arr_item && (*arr_item)->item_id == item_id) {
             item = *arr_item;
             break;
@@ -1445,7 +1445,7 @@ HQAPI void LoadHeroSkillTemplate(const char* temp, uint32_t hero_index)
         goto leave;
 
     ArrayPartyHero heroes = client->player->party->heroes;
-    if (!array_inside(heroes, hero_index)) {
+    if (!array_inside(&heroes, hero_index)) {
         goto leave;
     }
     AgentId hero_agent_id = heroes.data[hero_index].agent_id;
@@ -1524,7 +1524,7 @@ HQAPI void HeroFlag(Vec2f pos, uint32_t hero_index)
     if (!(client->player && client->player->party))
         goto leave;
     ArrayPartyHero heroes = client->player->party->heroes;
-    if (!array_inside(heroes, hero_index))
+    if (!array_inside(&heroes, hero_index))
         goto leave;
     AgentId hero_id = heroes.data[hero_index].agent_id;
     GameSrv_FlagHero(client, pos, hero_id);
@@ -1555,7 +1555,7 @@ HQAPI void HeroUseSkill(uint32_t hero_index, uint32_t skill_id, AgentId target_i
     if (!(client->ingame && client->player && client->player->party))
         goto leave;
     ArrayPartyHero heroes = client->player->party->heroes;
-    if (!array_inside(heroes, hero_index))
+    if (!array_inside(&heroes, hero_index))
         goto leave;
     AgentId hero_id = heroes.data[hero_index].agent_id;
     GameSrv_HeroUseSkill(client, hero_id, skill_id, 0, target_id);
@@ -1570,7 +1570,7 @@ HQAPI void HeroEnableSkill(uint32_t hero_index, uint32_t skill_id)
     if (!(client->ingame && client->player && client->player->party))
         goto leave;
     ArrayPartyHero heroes = client->player->party->heroes;
-    if (!array_inside(heroes, hero_index))
+    if (!array_inside(&heroes, hero_index))
         goto leave;
     AgentId hero_id = heroes.data[hero_index].agent_id;
     Skillbar *sb = get_skillbar_safe(client, hero_id);
@@ -1591,7 +1591,7 @@ HQAPI void HeroDisableSkill(uint32_t hero_index, uint32_t skill_id)
     if (!(client->ingame && client->player && client->player->party))
         goto leave;
     ArrayPartyHero heroes = client->player->party->heroes;
-    if (!array_inside(heroes, hero_index))
+    if (!array_inside(&heroes, hero_index))
         goto leave;
     AgentId hero_id = heroes.data[hero_index].agent_id;
     Skillbar *sb = get_skillbar_safe(client, hero_id);
@@ -1612,7 +1612,7 @@ HQAPI void HeroSetBehavior(AgentId hero_index, HeroBehavior behavior)
     if (!(client->ingame && client->player && client->player->party))
         goto leave;
     ArrayPartyHero heroes = client->player->party->heroes;
-    if (!array_inside(heroes, hero_index))
+    if (!array_inside(&heroes, hero_index))
         goto leave;
     AgentId hero_id = heroes.data[hero_index].agent_id;
     GameSrv_HeroSetBehavior(client, hero_id, behavior);

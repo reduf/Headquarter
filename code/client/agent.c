@@ -63,34 +63,34 @@ static Agent *get_agent_safe(GwClient *client, AgentId id)
     if (!(client->ingame && client->world.hash))
         return NULL;
     ArrayAgent agents = client->world.agents;
-    if (!array_inside(agents, id))
+    if (!array_inside(&agents, id))
         return NULL;
-    return array_at(agents, id);
+    return array_at(&agents, id);
 }
 
 static void ensure_agent_exist(GwClient *client, AgentId id)
 {
     ArrayAgent *agents = &client->world.agents;
-    if (array_inside(*agents, id) && array_at(*agents, id))
+    if (array_inside(agents, id) && array_at(agents, id))
         return;
 
-    if (!array_inside(*agents, id)) {
-        array_resize(*agents, id + 1);
+    if (!array_inside(agents, id)) {
+        array_resize(agents, id + 1);
         agents->size = agents->capacity;
     }
 
     Agent *agent = cast(Agent *)game_object_alloc(&client->object_mgr, ObjectType_Agent);
     agent->agent_id = id;
     agent->speed_modifier = 1.f;
-    array_set(*agents, id, agent);
+    array_set(agents, id, agent);
 }
 
 static void remove_agent(GwClient *client, AgentId id)
 {
     ArrayAgent *agents = &client->world.agents;
-    if (!array_inside(*agents, id))
+    if (!array_inside(agents, id))
         return;
-    game_object_free(&client->object_mgr, &array_at(*agents, id)->object);
+    game_object_free(&client->object_mgr, &array_at(agents, id)->object);
     agents->data[id] = NULL;
 }
 
@@ -99,7 +99,7 @@ static void update_agents_position(ArrayAgent *agents, msec_t diff)
     float delta = diff / 1000.f;
 
     Agent **it;
-    array_foreach(it, *agents) {
+    array_foreach(it, agents) {
         Agent *agent = *it;
 
         if (agent && agent->moving) {
@@ -220,7 +220,7 @@ void HandleAgentSpawned(Connection *conn, size_t psize, Packet *packet)
 
     ArrayAgent *agents = &client->world.agents;
     ensure_agent_exist(client, pack->agent_id);
-    Agent *agent = array_at(*agents, pack->agent_id);
+    Agent *agent = array_at(agents, pack->agent_id);
     assert(agent != NULL);
 
     agent->position = pack->position;
@@ -570,8 +570,8 @@ void HandleAgentDestroyPlayer(Connection* conn, size_t psize, Packet* packet) {
     PlayerInfo* pack = cast(PlayerInfo*)packet;
     assert(client&& client->game_srv.secured);
 
-    assert(array_inside(client->world.players, pack->player_id));
-    /*Player* player = array_at(*players, pack->player_id);
+    assert(array_inside(&client->world.players, pack->player_id));
+    /*Player* player = array_at(players, pack->player_id);
     game_object_free(&client->object_mgr, &player->object);*/
 
     client->world.player_count--;
@@ -601,23 +601,23 @@ void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
 
     ArrayAgent *agents = &client->world.agents;
     ensure_agent_exist(client, pack->agent_id);
-    Agent *agent = array_at(*agents, pack->agent_id);
+    Agent *agent = array_at(agents, pack->agent_id);
     assert(agent);
 
     ArrayPlayer *players = &client->world.players;
-    if (!array_inside(*players, pack->player_id)) {
-        array_resize(*players, pack->player_id + 1);
+    if (!array_inside(players, pack->player_id)) {
+        array_resize(players, pack->player_id + 1);
         players->size = players->capacity;
     }
 
-    assert(array_inside(*players, pack->player_id));
-    Player *player = array_at(*players, pack->player_id);
+    assert(array_inside(players, pack->player_id));
+    Player *player = array_at(players, pack->player_id);
 
     if (player == NULL) {
         player = cast(Player *)game_object_alloc(&client->object_mgr, ObjectType_Player);
         assert(player != NULL);
         init_player(player);
-        array_set(*players, pack->player_id, player);
+        array_set(players, pack->player_id, player);
     }
 
     client->world.player_count++;
@@ -650,7 +650,7 @@ void HandleAgentUpdateProfession(Connection *conn, size_t psize, Packet *packet)
 
     ArrayAgent *agents = &client->world.agents;
     ensure_agent_exist(client, pack->agent_id);
-    Agent *agent = array_at(*agents, pack->agent_id);
+    Agent *agent = array_at(agents, pack->agent_id);
     assert(agent);
     
     agent->prof1 = (Profession)pack->prof1;
@@ -683,7 +683,7 @@ void HandleAgentAttrUpdateInt(Connection *conn, size_t psize, Packet *packet)
 
     ArrayAgent *agents = &client->world.agents;
     ensure_agent_exist(client, pack->agent_id);
-    Agent *agent = array_at(*agents, pack->agent_id);
+    Agent *agent = array_at(agents, pack->agent_id);
     assert(agent);
 
     switch (pack->attr_id) {
@@ -768,7 +768,7 @@ void HandleAgentAttrUpdateFloat(Connection *conn, size_t psize, Packet *packet)
     }
 
     ArrayAgent *agents = &client->world.agents;
-    Agent* agent = array_inside(*agents, pack->agent_id) ? array_at(*agents, pack->agent_id) : NULL;
+    Agent* agent = array_inside(agents, pack->agent_id) ? array_at(agents, pack->agent_id) : NULL;
     if (!agent) {
         LogError("HandleAgentAttrUpdateFloat: received for agent '%d' not spawned", pack->agent_id);
         return;
@@ -813,12 +813,12 @@ void HandleAgentAttrUpdateFloatTarget(Connection *conn, size_t psize, Packet *pa
     }
 
     ArrayAgent *agents = &client->world.agents;
-    if (!array_inside(*agents, pack->target_id)) {
+    if (!array_inside(agents, pack->target_id)) {
         LogError("HandleAgentAttrUpdateFloatTarget: received for target '%d' not spawned", pack->target_id);
         return;
     }
 
-    Agent *target = array_at(*agents, pack->target_id);
+    Agent *target = array_at(agents, pack->target_id);
     if (target == NULL) {
         LogError("HandleAgentAttrUpdateFloatTarget: received for target '%d' not spawned", pack->target_id);
         return;
@@ -959,7 +959,7 @@ void HandlePlayerUpdateProfession(Connection *conn, size_t psize, Packet *packet
 
     // @Remark: The agent structure profession are updated by GAME_SMSG_AGENT_UPDATE_PROFESSION
     Skillbar *sb;
-    array_foreach(sb, client->world.skillbars) {
+    array_foreach(sb, &client->world.skillbars) {
         if (sb->owner_agent_id == pack->agent_id)
             break;
     }
@@ -1016,7 +1016,7 @@ void GameSrv_MoveToCoord(GwClient *client, float x, float y)
 
     SendPacket(&client->game_srv, sizeof(move_pack), &move_pack);
 
-    Agent *player = array_at(client->world.agents, client->player_agent_id);
+    Agent *player = array_at(&client->world.agents, client->player_agent_id);
     assert(player != NULL);
     player->maybe_moving = true;
 }

@@ -141,8 +141,8 @@ void ssl_sts_connection_init(struct ssl_sts_connection *ssl)
     mbedtls_md_init(&ssl->mac_enc);
     mbedtls_md_init(&ssl->mac_dec);
 
-    array_init(ssl->read, 1024);
-    array_init(ssl->write, 1024);
+    array_init(&ssl->read, 1024);
+    array_init(&ssl->write, 1024);
 }
 
 void ssl_sts_connection_free(struct ssl_sts_connection *ssl)
@@ -159,8 +159,8 @@ void ssl_sts_connection_free(struct ssl_sts_connection *ssl)
     mbedtls_md_free(&ssl->mac_enc);
     mbedtls_md_free(&ssl->mac_dec);
 
-    array_reset(ssl->read);
-    array_reset(ssl->write);
+    array_reset(&ssl->read);
+    array_reset(&ssl->write);
 }
 
 int ssl_sts_connection_init_srp(struct ssl_sts_connection *ssl, const char *username, const char *password)
@@ -272,30 +272,31 @@ static int ssl_srp_write_protocol_header(struct ssl_sts_connection *ssl, uint8_t
     if ((size_t)UINT16_MAX < msg_size)
         return ERR_SSL_UNSUCCESSFUL;
 
-    array_add(ssl->write, msg_type);
+    array_add(&ssl->write, msg_type);
 
     // The version is always "\x03\x03". (i.e., TLS v1.2)
-    array_add(ssl->write, 0x03);
-    array_add(ssl->write, 0x03);
+    array_add(&ssl->write, 0x03);
+    array_add(&ssl->write, 0x03);
 
     // Reserve two bytes to later write the length.
-    void *p = array_push(ssl->write, 2);
+    void *p = array_push(&ssl->write, 2);
     be16enc(p, (uint16_t)msg_size);
     return 0;
 }
 
 static void ssl_srp_start_protocol_msg(struct ssl_sts_connection *ssl, uint8_t msg_type, size_t *header_pos)
 {
-    *header_pos = array_size(ssl->write);
+    *header_pos = array_size(&ssl->write);
+    // *header_pos = (&ssl->write)->size;
 
-    array_add(ssl->write, msg_type);
+    array_add(&ssl->write, msg_type);
 
     // The version is always "\x03\x03". (i.e., TLS v1.2)
-    array_add(ssl->write, 0x03);
-    array_add(ssl->write, 0x03);
+    array_add(&ssl->write, 0x03);
+    array_add(&ssl->write, 0x03);
 
     // Reserve two bytes to later write the length.
-    (void)array_push(ssl->write, 2);
+    (void)array_push(&ssl->write, 2);
 }
 
 static int ssl_srp_finish_protocol_msg(struct ssl_sts_connection *ssl, uint8_t msg_type, size_t header_pos)
@@ -303,21 +304,21 @@ static int ssl_srp_finish_protocol_msg(struct ssl_sts_connection *ssl, uint8_t m
     int ret;
 
     const size_t MSG_HDR_LEN = 5;
-    assert((header_pos + MSG_HDR_LEN) <= array_size(ssl->write));
-    assert(array_at(ssl->write, header_pos) == msg_type);
+    assert((header_pos + MSG_HDR_LEN) <= array_size(&ssl->write));
+    assert(array_at(&ssl->write, header_pos) == msg_type);
 
     size_t msg_offset = header_pos + MSG_HDR_LEN;
-    size_t msg_size = array_size(ssl->write) - msg_offset;
+    size_t msg_size = array_size(&ssl->write) - msg_offset;
     if ((size_t)UINT16_MAX < msg_size)
         return ERR_SSL_UNSUCCESSFUL;
 
     // The HMAC is computed on everything following the initial header.
-    const uint8_t *msg_start = &array_at(ssl->write, msg_offset);
+    const uint8_t *msg_start = &array_at(&ssl->write, msg_offset);
     if ((ret = mbedtls_sha256_update(&ssl->checksum, msg_start, msg_size)) != 0) {
         return ERR_SSL_UNSUCCESSFUL;
     }
 
-    uint8_t *p = &array_at(ssl->write, header_pos + 3);
+    uint8_t *p = &array_at(&ssl->write, header_pos + 3);
     be16enc(p, (uint16_t)msg_size);
     return 0;
 }
@@ -330,7 +331,7 @@ static void ssl_srp_start_handshake_msg(struct ssl_sts_connection *ssl, size_t *
     // We assume this offset when we finish the handhsake message.
     // There should be more elegant solution, but that's what we
     // have for now.
-    assert((array_size(ssl->write) - header_pos) == 5);
+    assert((array_size(&ssl->write) - header_pos) == 5);
 
     //
     // Reserve 4 bytes for hanshake header.
@@ -341,27 +342,27 @@ static void ssl_srp_start_handshake_msg(struct ssl_sts_connection *ssl, size_t *
     //
 
     // Save the position of the header to later write the appropriate size.
-    *pos = array_size(ssl->write);
+    *pos = array_size(&ssl->write);
 
-    array_add(ssl->write, hs_type);
-    (void)array_push(ssl->write, 3);
+    array_add(&ssl->write, hs_type);
+    (void)array_push(&ssl->write, 3);
 }
 
 static int ssl_srp_finish_handshake_msg(struct ssl_sts_connection *ssl, size_t header_pos, uint8_t hs_type)
 {
     int ret;
     const size_t HANDSHAKE_HDR_LEN = 4;
-    assert((header_pos + HANDSHAKE_HDR_LEN) <= array_size(ssl->write));
-    assert(array_at(ssl->write, header_pos) == hs_type);
+    assert((header_pos + HANDSHAKE_HDR_LEN) <= array_size(&ssl->write));
+    assert(array_at(&ssl->write, header_pos) == hs_type);
 
-    uint8_t *content_begin = array_begin(ssl->write) + header_pos + HANDSHAKE_HDR_LEN;
-    size_t content_length = array_end(ssl->write) - content_begin;
+    uint8_t *content_begin = array_begin(&ssl->write) + header_pos + HANDSHAKE_HDR_LEN;
+    size_t content_length = array_end(&ssl->write) - content_begin;
 
     const size_t UINT24_MAX = 0xFFFFFF;
     if (UINT24_MAX <= content_length)
         return ERR_SSL_UNSUCCESSFUL;
 
-    uint8_t *hs_len_ptr = array_begin(ssl->write) + 1;
+    uint8_t *hs_len_ptr = array_begin(&ssl->write) + 1;
     hs_len_ptr[header_pos + 0] = (content_length >> 16) & 0xFF;
     hs_len_ptr[header_pos + 1] = (content_length >> 8) & 0xFF;
     hs_len_ptr[header_pos + 2] = content_length & 0xFF;
@@ -407,13 +408,13 @@ static int ssl_srp_build_message_to_encrypt(
 {
     int ret;
 
-    assert(array_size(*buffer) == 0);
+    assert(array_size(buffer) == 0);
 
     // Write the message in the output.
-    array_insert(*buffer, msg_size, msg);
+    array_insert(buffer, msg_size, msg);
 
     // Write the hmac in the output.
-    uint8_t *p = array_push(*buffer, SHA1_DIGEST_SIZE);
+    uint8_t *p = array_push(buffer, SHA1_DIGEST_SIZE);
     if ((ret = mbedtls_md_hmac_finish(hmac, p)) != 0)
         return ERR_SSL_UNSUCCESSFUL;
 
@@ -429,7 +430,7 @@ static int ssl_srp_build_message_to_encrypt(
     // aligned, the aligned size will be the same as the size. This
     // is incorrect, because it could be ambiguous whether there is
     // a padding or not.
-    size_t size = array_size(*buffer);
+    size_t size = array_size(buffer);
     size_t alligned = (size + (AES_BLOCK_SIZE - 1)) & ~(AES_BLOCK_SIZE - 1);
 
     // When the buffer was already aligned, we simply pad it with
@@ -445,9 +446,9 @@ static int ssl_srp_build_message_to_encrypt(
     // number of bytes - 1.
     uint8_t padval = (uint8_t)(alligned - size) - 1;
 
-    array_reserve(*buffer, padval + 1);
+    array_reserve(buffer, padval + 1);
     for (uint8_t i = 0; i < (padval + 1); ++i)
-        array_add(*buffer, padval);
+        array_add(buffer, padval);
 
     return 0;
 }
@@ -465,7 +466,7 @@ static int ssl_sts_connection_send_internal(
     //     return ERR_SSL_UNSUCCESSFUL;
     // }
 
-    size_t size_at_start = array_size(ssl->write);
+    size_t size_at_start = array_size(&ssl->write);
 
     // We write the header with an length of the specified message, and we need
     // that to compute the HMAC, but the HMAC is then append to the message and
@@ -482,8 +483,8 @@ static int ssl_sts_connection_send_internal(
     increment_be(ssl->next_write_id, sizeof(ssl->next_write_id));
 
     const size_t HEADER_SIZE = 5;
-    assert((size_at_start + HEADER_SIZE) <= array_size(ssl->write));
-    const uint8_t *header_bytes = &array_at(ssl->write, size_at_start);
+    assert((size_at_start + HEADER_SIZE) <= array_size(&ssl->write));
+    const uint8_t *header_bytes = &array_at(&ssl->write, size_at_start);
     if ((ret = mbedtls_md_hmac_update(&ssl->mac_enc, header_bytes, HEADER_SIZE)) != 0) {
         return ERR_SSL_UNSUCCESSFUL;
     }
@@ -492,7 +493,7 @@ static int ssl_sts_connection_send_internal(
         return ERR_SSL_UNSUCCESSFUL;
     }
 
-    uint8_t *iv_buffer = array_push(ssl->write, sizeof(ssl->iv_enc));
+    uint8_t *iv_buffer = array_push(&ssl->write, sizeof(ssl->iv_enc));
     if ((ret = ssl_sts_issue_next_iv(ssl, iv_buffer, sizeof(ssl->iv_enc))) != 0)
         return ret;
 
@@ -500,13 +501,13 @@ static int ssl_sts_connection_send_internal(
     iv_buffer = NULL;
 
     array_uint8_t buffer;
-    array_init(buffer, data_len + 32);
+    array_init(&buffer, data_len + 32);
     if ((ret = ssl_srp_build_message_to_encrypt(&buffer, &ssl->mac_enc, data, data_len)) != 0) {
-        array_reset(buffer);
+        array_reset(&buffer);
         return ERR_SSL_UNSUCCESSFUL;
     }
 
-    uint8_t *output = array_push(ssl->write, buffer.size);
+    uint8_t *output = array_push(&ssl->write, buffer.size);
     ret = mbedtls_aes_crypt_cbc(
         &ssl->cipher_enc,
         MBEDTLS_AES_ENCRYPT,
@@ -515,13 +516,13 @@ static int ssl_sts_connection_send_internal(
         buffer.data,
         output);
 
-    array_reset(buffer);
+    array_reset(&buffer);
     if (ret != 0) {
         return ERR_SSL_UNSUCCESSFUL;
     }
 
     uint8_t *send_data = ssl->write.data + size_at_start;
-    size_t send_size = array_size(ssl->write) - size_at_start;
+    size_t send_size = array_size(&ssl->write) - size_at_start;
 
     // Update the header size containing the HMAC
     size_t content_size = send_size - HEADER_SIZE;
@@ -547,7 +548,7 @@ static int parse_tls12_handshake(
     const size_t HEADER_LEN = 5;
 
     const uint8_t *data = ssl->read.data;
-    size_t length = array_size(ssl->read);
+    size_t length = array_size(&ssl->read);
 
     // The packet starts with 1 byte defining the content type, 2 bytes defining
     // the version and 2 bytes defining the length of the payload.
@@ -723,7 +724,7 @@ int ssl_sts_connection_recv_internal(
     }
 
     size_t processed = (inner_data - ssl->read.data) + inner_len;
-    array_remove_range_ordered(ssl->read, 0, processed);
+    array_remove_range_ordered(&ssl->read, 0, processed);
 
     *retlen = msg_len;
     return 0;
@@ -741,18 +742,18 @@ static void ssl_srp_write_srp(
     // The length of the extension which effectively encode the length of the
     // username on 1 byte and then the actual username. So, it's length + 1.
     array_add_be_uint16(buffer, (uint16_t)(length + 1));
-    array_add(*buffer, (uint8_t)length);
+    array_add(buffer, (uint8_t)length);
 
     // Add the username.
-    array_insert(*buffer, length, (uint8_t *)username);
+    array_insert(buffer, length, (uint8_t *)username);
 }
 
 static int ssl_srp_write_extension(struct ssl_sts_connection *ssl)
 {
     // We first need to write the length on a `uint16be_t`, but we don't know
     // it yet. Instead, we reserve those bytes and we will write it later.
-    size_t extensions_len_pos = array_size(ssl->write);
-    (void)array_push(ssl->write, 2);
+    size_t extensions_len_pos = array_size(&ssl->write);
+    (void)array_push(&ssl->write, 2);
 
     // The first extension is undocumented and doesn't contain any data.
     // So we simply hardcode it.
@@ -762,32 +763,32 @@ static int ssl_srp_write_extension(struct ssl_sts_connection *ssl)
     // The second extension is SRP specifying the username. (i.e., email)
     ssl_srp_write_srp(&ssl->write, ssl->srp_username, ssl->srp_username_len);
 
-    size_t extension_len = array_size(ssl->write) - (extensions_len_pos + 2);
+    size_t extension_len = array_size(&ssl->write) - (extensions_len_pos + 2);
     if ((size_t)UINT16_MAX < extension_len)
         return ERR_SSL_UNSUCCESSFUL;
 
-    be16enc(&array_at(ssl->write, extensions_len_pos), (uint16_t)extension_len);
+    be16enc(&array_at(&ssl->write, extensions_len_pos), (uint16_t)extension_len);
     return 0;
 }
 
 static int ssl_srp_write_client_hello_body(struct ssl_sts_connection *ssl)
 {
     // The version is always "\x03\x03". (i.e., TLS v1.2)
-    array_add(ssl->write, 0x03);
-    array_add(ssl->write, 0x03);
+    array_add(&ssl->write, 0x03);
+    array_add(&ssl->write, 0x03);
 
     // Write random bytes.
     {
         // This pointer gets invalidated whenever we do anything with the
         // array.
-        uint8_t *random_time_ptr = array_push(ssl->write, 4);
+        uint8_t *random_time_ptr = array_push(&ssl->write, 4);
         be32enc(random_time_ptr, ssl->client_random.time);
     }
 
-    array_insert(ssl->write, sizeof(ssl->client_random.bytes), ssl->client_random.bytes);
+    array_insert(&ssl->write, sizeof(ssl->client_random.bytes), ssl->client_random.bytes);
 
     // The session id is always null
-    array_add(ssl->write, 0);
+    array_add(&ssl->write, 0);
 
     // Write cipher suites
     static const uint16_t ciphers[] = {
@@ -809,8 +810,8 @@ static int ssl_srp_write_client_hello_body(struct ssl_sts_connection *ssl)
     // This is hardcoded and means 1 compression methods named "null".
     // Not sure if required, but simply reproducing the behavior of the
     // official DLL.
-    array_add(ssl->write, 1);
-    array_add(ssl->write, 0);
+    array_add(&ssl->write, 1);
+    array_add(&ssl->write, 0);
 
     if (ssl_srp_write_extension(ssl) != 0) {
         return ERR_SSL_UNSUCCESSFUL;
@@ -894,7 +895,7 @@ static int ssl_srp_write_client_key_exchange(struct ssl_sts_connection *ssl)
 
     const uint16_t keylen = sizeof(ssl->client_key.public);
     array_add_be_uint16(&ssl->write, keylen);
-    array_insert(ssl->write, keylen, ssl->client_key.public);
+    array_insert(&ssl->write, keylen, ssl->client_key.public);
 
     if (ssl_srp_finish_handshake_msg(ssl, header_pos, SSL_HS_CLIENT_KEY_EXCHANGE) != 0) {
         return ERR_SSL_UNSUCCESSFUL;
@@ -906,16 +907,16 @@ static int ssl_srp_write_client_key_exchange(struct ssl_sts_connection *ssl)
 
 static int ssl_srp_write_change_cipher_spec(struct ssl_sts_connection *ssl)
 {
-    array_add(ssl->write, SSL_MSG_CHANGE_CIPHER_SPEC);
+    array_add(&ssl->write, SSL_MSG_CHANGE_CIPHER_SPEC);
 
     // The version is always "\x03\x03". (i.e., TLS v1.2)
-    array_add(ssl->write, 0x03);
-    array_add(ssl->write, 0x03);
+    array_add(&ssl->write, 0x03);
+    array_add(&ssl->write, 0x03);
 
     // We hardcode the length of the message, because we only send one.
     array_add_be_uint16(&ssl->write, 1);
 
-    array_add(ssl->write, 1);
+    array_add(&ssl->write, 1);
 
     ssl->state = AWAIT_CLIENT_HANDSHAKE;
     return 0;
@@ -927,13 +928,13 @@ static int ssl_srp_write_finished(struct ssl_sts_connection *ssl)
 
     size_t len = sizeof(ssl->client_finished);
 
-    array_add(ssl->write, SSL_HS_FINISHED);
-    uint8_t *p = array_push(ssl->write, 3);
+    array_add(&ssl->write, SSL_HS_FINISHED);
+    uint8_t *p = array_push(&ssl->write, 3);
     p[0] = (len >> 16) & 0xFF;
     p[1] = (len >> 8) & 0xFF;
     p[2] = len & 0xFF;
 
-    array_insert(ssl->write, sizeof(ssl->client_finished), ssl->client_finished);
+    array_insert(&ssl->write, sizeof(ssl->client_finished), ssl->client_finished);
 
     ssl->state = AWAIT_SERVER_CHANGE_CIPHER_SPEC;
     return 0;
@@ -1023,7 +1024,7 @@ static int ssl_srp_process_server_hello(struct ssl_sts_connection *ssl)
         return ret;
 
     size_t processed = (inner_data - ssl->read.data) + inner_len;
-    array_remove_range_ordered(ssl->read, 0, processed);
+    array_remove_range_ordered(&ssl->read, 0, processed);
     ssl->state = AWAIT_SERVER_KEY_EXCHANGE;
     return 0;
 }
@@ -1114,7 +1115,7 @@ static int ssl_srp_process_server_key_exchange(struct ssl_sts_connection *ssl)
         return ret;
 
     size_t processed = (inner_data - ssl->read.data) + inner_len;
-    array_remove_range_ordered(ssl->read, 0, processed);
+    array_remove_range_ordered(&ssl->read, 0, processed);
     ssl->state = AWAIT_SERVER_HELLO_DONE;
     return 0;
 }
@@ -1139,7 +1140,7 @@ static int ssl_srp_process_server_done(struct ssl_sts_connection *ssl)
         return ERR_SSL_BAD_INPUT_DATA;
 
     size_t processed = (inner_data - ssl->read.data) + inner_len;
-    array_remove_range_ordered(ssl->read, 0, processed);
+    array_remove_range_ordered(&ssl->read, 0, processed);
     ssl->state = AWAIT_CLIENT_KEY_EXCHANGE;
     return 0;
 }
@@ -1164,7 +1165,7 @@ static int ssl_srp_process_change_cipher_spec(struct ssl_sts_connection *ssl)
         return ERR_SSL_BAD_INPUT_DATA;
 
     size_t processed = (inner_data - ssl->read.data) + inner_len;
-    array_remove_range_ordered(ssl->read, 0, processed);
+    array_remove_range_ordered(&ssl->read, 0, processed);
     ssl->state = AWAIT_SERVER_ENC_HANDSHAKE;
 
     return 0;
@@ -1464,14 +1465,14 @@ static int wait_for_server_step(int (*stepf)(struct ssl_sts_connection *ssl), st
 
 static int send_client_step(int (*stepf)(struct ssl_sts_connection *ssl), struct ssl_sts_connection *ssl)
 {
-    assert(array_size(ssl->write) == 0);
+    assert(array_size(&ssl->write) == 0);
 
     int ret;
     if ((ret = stepf(ssl)) != 0)
         return ret;
     if ((ret = send_full(ssl->fd, ssl->write.data, ssl->write.size)) != 0)
         return ret;
-    array_clear(ssl->write);
+    array_clear(&ssl->write);
     return 0;
 }
 
@@ -1538,8 +1539,8 @@ int ssl_sts_connection_handshake(struct ssl_sts_connection *ssl)
         return ERR_SSL_UNSUCCESSFUL;
     }
 
-    array_clear(ssl->read);
-    array_clear(ssl->write);
+    array_clear(&ssl->read);
+    array_clear(&ssl->write);
     ssl->state = AWAIT_CLIENT_FINISHED;
     return 0;
 }

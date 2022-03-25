@@ -149,13 +149,13 @@ void free_vars_file(VarFile *file)
         free(file->table.slots);
 
     VarSection *section;
-    array_foreach(section, file->sections) {
+    array_foreach(section, &file->sections) {
         if (section->table.slots)
             free(section->table.slots);
-        array_reset(section->vars);
+        array_reset(&section->vars);
     }
 
-    array_reset(file->sections);
+    array_reset(&file->sections);
     free(file->data);
 }
 
@@ -175,14 +175,14 @@ VarFile parse_vars_file(const char *path)
     var_file.data_size = size;
 
     VarSectionArray *sections = &var_file.sections;
-    array_init(*sections, 8);
+    array_init(sections, 8);
 
     VarSection global;
     global.name = "global";
-    array_init(global.vars, 8);
-    array_add(*sections, global);
+    array_init(&global.vars, 8);
+    array_add(sections, global);
 
-    VarSection *current_section = &array_back(*sections);
+    VarSection *current_section = &array_back(sections);
 
     char *line;
     while (data) {
@@ -211,9 +211,9 @@ VarFile parse_vars_file(const char *path)
 
             VarSection sect;
             sect.name = strlwc(name, strlen(name));
-            array_init(sect.vars, 8);
-            array_add(*sections, sect);
-            current_section = &array_back(*sections);
+            array_init(&sect.vars, 8);
+            array_add(sections, sect);
+            current_section = &array_back(sections);
 
             // printf("New section '%s'\n", name);
         } else {
@@ -284,7 +284,7 @@ VarFile parse_vars_file(const char *path)
                 }
             }
 
-            array_add(current_section->vars, var);
+            array_add(&current_section->vars, var);
 
             // printf("Line %u: lhs: '%s', rhs: '%s'\n", line_number, lhs, rhs);
         }
@@ -300,14 +300,14 @@ VarFile parse_vars_file(const char *path)
 
 void create_file_table(VarFile *file)
 {
-    size_t table_size = 2 * array_size(file->sections);
+    size_t table_size = 2 * array_size(&file->sections);
     file->table.slots = cast(HashSlot *)calloc(table_size, sizeof(HashSlot));
     file->table.count = 0;
     file->table.allocated = table_size;
 
     HashSlot *slots = file->table.slots;
-    for (size_t i = 0; i < array_size(file->sections); i++) {
-        VarSection *section = &array_at(file->sections, i);
+    for (size_t i = 0; i < array_size(&file->sections); i++) {
+        VarSection *section = &array_at(&file->sections, i);
 
         uint32_t str_hash = hash_str(section->name);
         uint32_t hash = str_hash;
@@ -334,14 +334,14 @@ void create_file_table(VarFile *file)
 
 void create_section_table(VarSection *section)
 {
-    size_t table_size = 2 * array_size(section->vars);
+    size_t table_size = 2 * array_size(&section->vars);
     section->table.slots = cast(HashSlot *)calloc(table_size, sizeof(HashSlot));
     section->table.count = 0;
     section->table.allocated = table_size;
 
     HashSlot *slots = section->table.slots;
-    for (size_t i = 0; i < array_size(section->vars); i++) {
-        Var *var = &array_at(section->vars, i);
+    for (size_t i = 0; i < array_size(&section->vars); i++) {
+        Var *var = &array_at(&section->vars, i);
 
         uint32_t str_hash = hash_str(var->name);
         uint32_t hash = str_hash;
@@ -374,7 +374,7 @@ VarSection *find_section(VarFile *file, const char *name)
     uint32_t index = hash % table_size;
     while (slots[index].occupied) {
         if (!stricmp(name, slots[index].key)) {
-            return &array_at(file->sections, slots[index].value);
+            return &array_at(&file->sections, slots[index].value);
         }
 
         hash = hash_int32(hash);
@@ -394,7 +394,7 @@ Var *find_var(VarSection *section, const char *name)
     uint32_t index = hash % table_size;
     while (slots[index].occupied) {
         if (!stricmp(name, slots[index].key)) {
-            return &array_at(section->vars, slots[index].value);
+            return &array_at(&section->vars, slots[index].value);
         }
 
         hash = hash_int32(hash);

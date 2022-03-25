@@ -23,17 +23,17 @@ int recv_to_buffer(SOCKET fd, array_uint8_t *buffer)
     int ret;
 
     const size_t BUFFER_SIZE = 1024;
-    uint8_t *ptr = array_push(*buffer, BUFFER_SIZE);
+    uint8_t *ptr = array_push(buffer, BUFFER_SIZE);
 
     if ((ret = recv(fd, (char *)ptr, BUFFER_SIZE, 0)) <= 0) {
-        size_t size = array_size(*buffer) - BUFFER_SIZE;
+        size_t size = array_size(buffer) - BUFFER_SIZE;
         buffer->size = size;
-        // array_resize(*buffer, size);
+        // array_resize(buffer, size);
         return ret;
     }
 
-    buffer->size = array_size(*buffer) - (BUFFER_SIZE - (size_t)ret);
-    // array_resize(*buffer, size);
+    buffer->size = array_size(buffer) - (BUFFER_SIZE - (size_t)ret);
+    // array_resize(buffer, size);
     return 0;
 }
 
@@ -56,7 +56,7 @@ int resolve_dns(array_sockaddr_t *addresses, int af, const char *hostname, uint1
     }
 
     for (struct addrinfo *it = results; it != NULL; it = it->ai_next) {
-        array_add(*addresses, *it->ai_addr);
+        array_add(addresses, *it->ai_addr);
     }
 
     freeaddrinfo(results);

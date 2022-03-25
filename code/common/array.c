@@ -144,7 +144,7 @@ _array_insert(array_void_t *a, size_t count, const void *ptr, const size_t elem_
 int
 _array_copy(array_void_t *dest, array_void_t *src, const size_t elem_size)
 {
-    array_clear(*dest);
+    array_clear(dest);
     return _array_insert(dest, src->size, src->data, elem_size);
 }
 

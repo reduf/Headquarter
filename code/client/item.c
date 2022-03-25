@@ -20,10 +20,10 @@ void remove_item_from_bag(Item *item)
     if (!item->bag) return;
 
     Bag *bag = item->bag;
-    assert(array_inside(bag->items, item->slot));
-    assert(array_at(bag->items, item->slot));
+    assert(array_inside(&bag->items, item->slot));
+    assert(array_at(&bag->items, item->slot));
 
-    array_set(bag->items, item->slot, NULL);
+    array_set(&bag->items, item->slot, NULL);
     item->bag = NULL;
     item->slot = 0;
     bag->item_count--;
@@ -34,9 +34,9 @@ Item *get_item_safe(GwClient *client, int32_t id)
     if (!(client->ingame && client->world.hash))
         return NULL;
     ArrayItem items = client->world.items;
-    if (!array_inside(items, id))
+    if (!array_inside(&items, id))
         return NULL;
-    return array_at(items, id);
+    return array_at(&items, id);
 }
 
 Bag *get_bag_safe(GwClient *client, BagEnum bag_id)
@@ -111,8 +111,8 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
     // LogInfo("ItemGeneralInfo {id: %d, modele: %d}", pack->item_id, pack->model);
 
     ArrayItem *items = &client->world.items;
-    if (!array_inside(*items, pack->item_id)) {
-        array_resize(*items, pack->item_id + 1);
+    if (!array_inside(items, pack->item_id)) {
+        array_resize(items, pack->item_id + 1);
         items->size = items->capacity;
     }
 
@@ -130,10 +130,10 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
     for (uint32_t i = 0; i < pack->n_modifier; i++) {
         uint32_t mod = pack->modifier[i];
         if (mod == 0) continue;
-        array_add(new_item->mods, mod);
+        array_add(&new_item->mods, mod);
     }
 
-    array_set(*items, pack->item_id, new_item);
+    array_set(items, pack->item_id, new_item);
 }
 
 void HandleItemRemove(Connection *conn, size_t psize, Packet *packet)
@@ -157,7 +157,7 @@ void HandleItemRemove(Connection *conn, size_t psize, Packet *packet)
     Item *item = get_item_safe(client, pack->item_id);
     if (!item) return;
 
-    array_set(*items, pack->item_id, NULL);
+    array_set(items, pack->item_id, NULL);
     remove_item_from_bag(item);
     free(item);
 }
@@ -235,32 +235,32 @@ void HandleInventoryItemLocation(Connection *conn, size_t psize, Packet *packet)
     if (!client->world.hash)
         return;
     ArrayItem items = client->world.items;
-    if (!(array_inside(items, pack->item_id) && array_at(items, pack->item_id)))
+    if (!(array_inside(&items, pack->item_id) && array_at(&items, pack->item_id)))
         return;
-    Item *item = array_at(items, pack->item_id);
+    Item *item = array_at(&items, pack->item_id);
 #endif
 
     BagArray *bags = &client->world.bags;
     uint32_t hash = hash_int32(pack->bag_id);
     uint32_t index = hash % bags->size;
-    Bag *bag = &array_at(*bags, index);
+    Bag *bag = &array_at(bags, index);
 
     while (bag->bag_id != pack->bag_id) {
         assert(bag->bag_id != 0);
         hash = hash_int32(hash);
         index = hash % bags->size;
-        bag = &array_at(*bags, index);
+        bag = &array_at(bags, index);
     }
 
     assert(bag->bag_id == pack->bag_id);
-    assert(array_inside(bag->items, pack->slot));
+    assert(array_inside(&bag->items, pack->slot));
 #if 0 // we sometimes receive this
     assert(array_at(bag->items, pack->slot) == NULL);
 #endif
 
     item->bag = bag;
     item->slot = pack->slot;
-    array_set(bag->items, pack->slot, item);
+    array_set(&bag->items, pack->slot, item);
     bag->item_count++;
 }
 
@@ -287,20 +287,20 @@ void HandleInventoryCreateBag(Connection *conn, size_t psize, Packet *packet)
     BagArray *bags = &client->world.bags;
     uint32_t hash = hash_int32(pack->bag_id);
     uint32_t index = hash % bags->size;
-    Bag *bag = &array_at(*bags, index);
+    Bag *bag = &array_at(bags, index);
 
     while (bag->bag_id != 0) {
         hash = hash_int32(hash);
         index = hash % bags->size;
-        bag = &array_at(*bags, index);
+        bag = &array_at(bags, index);
     }
 
     assert(bag->bag_id == 0);
     bag->bag_id = pack->bag_id;
     bag->type = (BagType)pack->bag_type;
     bag->model = (BagEnum)pack->bag_model_id;
-    array_init(bag->items, pack->slot_count);
-    array_resize(bag->items, pack->slot_count);
+    array_init(&bag->items, pack->slot_count);
+    array_resize(&bag->items, pack->slot_count);
 
     assert(pack->bag_model_id < BagEnum_Count);
     client->inventory.bags[pack->bag_model_id] = bag;
@@ -358,9 +358,9 @@ void HandleWindowOwner(Connection *conn, size_t psize, Packet *packet)
     WindowOwner *pack = cast(WindowOwner *)packet;
     assert(client && client->game_srv.secured);
 
-    array_clear(client->merchant_items);
-    array_clear(client->tmp_merchant_items);
-    array_clear(client->tmp_merchant_prices);
+    array_clear(&client->merchant_items);
+    array_clear(&client->tmp_merchant_items);
+    array_clear(&client->tmp_merchant_prices);
     client->merchant_agent_id = pack->agent_id;
     client->interact_with = pack->agent_id;
     Event_DialogOpenned event;
@@ -372,8 +372,8 @@ void HandleMerchantReady(GwClient* client) {
     LogInfo("HandleMerchantReady called for %d items", client->tmp_merchant_items.size);
     thread_mutex_lock(&client->mutex);
     for (size_t i = 0; i < client->tmp_merchant_items.size; i++) {
-        array_add(client->merchant_items, client->tmp_merchant_items.data[i]);
-        if (array_inside(client->tmp_merchant_prices, i)) {
+        array_add(&client->merchant_items, client->tmp_merchant_items.data[i]);
+        if (array_inside(&client->tmp_merchant_prices, i)) {
             item = client->tmp_merchant_items.data[i];
             // GW Bug: last sale price can be LOWER than the default item value!
             if(item->value < client->tmp_merchant_prices.data[i])
@@ -408,17 +408,17 @@ void HandleWindowAddItems(Connection *conn, size_t psize, Packet *packet)
 
     for (size_t i = 0; i < pack->n_items; i++) {
         int32_t item_id = pack->items[i];
-        if (!array_inside(*items, item_id)) {
+        if (!array_inside(items, item_id)) {
             LogError("Expected item '%d' but was not found", item_id);
             continue;
         }
 
-        Item *item = array_at(*items, item_id);
+        Item *item = array_at(items, item_id);
         if (!item) {
             LogError("Expected item '%d' but was not found", item_id);
             continue;
         }
-        array_add(*merchant_items, item);
+        array_add(merchant_items, item);
     }
     printf("AddItems, %d\n", pack->n_items);
 }
@@ -442,7 +442,7 @@ void HandleWindowAddPrices(Connection* conn, size_t psize, Packet* packet)
 
     array_uint32_t* merchant_prices = &client->tmp_merchant_prices;
     for (size_t i = 0; i < pack->n_prices; i++) {
-        array_add(*merchant_prices, pack->prices[i]);
+        array_add(merchant_prices, pack->prices[i]);
     }
 }
 
@@ -464,9 +464,9 @@ void HandleItemPriceQuote(Connection *conn, size_t psize, Packet *packet)
     assert(client && client->game_srv.secured);
 
     ArrayItem *items = &client->world.items;
-    assert(array_inside(*items, pack->item_id));
-    assert(array_at(*items, pack->item_id));
-    Item *item = array_at(*items, pack->item_id);
+    assert(array_inside(items, pack->item_id));
+    assert(array_at(items, pack->item_id));
+    Item *item = array_at(items, pack->item_id);
 
     item->quote_price = pack->price;
     Event_ItemPrice params;
@@ -503,13 +503,13 @@ void HandleItemChangeLocation(Connection *conn, size_t psize, Packet *packet)
     BagArray *bags = &client->world.bags;
     uint32_t hash = hash_int32(pack->bag_id);
     uint32_t index = hash % bags->size;
-    Bag *bag = &array_at(*bags, index);
+    Bag *bag = &array_at(bags, index);
 
     while (bag->bag_id != pack->bag_id) {
         assert(bag->bag_id != 0);
         hash = hash_int32(hash);
         index = hash % bags->size;
-        bag = &array_at(*bags, index);
+        bag = &array_at(bags, index);
     }
 
     // @Cleanup

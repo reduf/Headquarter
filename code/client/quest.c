@@ -6,7 +6,7 @@
 Quest *find_quest_by_id(ArrayQuest *quests, int quest_id)
 {
     Quest *quest;
-    array_foreach(quest, *quests)
+    array_foreach(quest, quests)
         if (quest->quest_id == quest_id)
             return quest;
     return NULL;
@@ -68,7 +68,7 @@ void HandleQuestAdd(Connection *conn, size_t psize, Packet *packet)
     quest.map_id = pack->map_id;
 
     quest.id = quests->size;
-    array_add(*quests, quest);
+    array_add(quests, quest);
     // LogInfo("Quest '%d' added !", pack->quest_id);
 }
 
@@ -121,7 +121,7 @@ void HandleQuestRemove(Connection *conn, size_t psize, Packet *packet)
         return;
     }
 
-    array_remove(*quests, quest->id);
+    array_remove(quests, quest->id);
 }
 
 void GameSrv_AbandonQuest(GwClient *client, int quest_id)

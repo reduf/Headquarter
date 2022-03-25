@@ -8,9 +8,9 @@ Guild *get_guild_safe(GwClient *client, uint32_t guild_id)
     if (!(client && client->ingame && client->world.hash))
         return NULL;
     ArrayGuild guilds = client->world.guilds;
-    if (!array_inside(guilds, guild_id))
+    if (!array_inside(&guilds, guild_id))
         return NULL;
-    Guild *guild = &array_at(guilds, guild_id);
+    Guild *guild = &array_at(&guilds, guild_id);
     if (guild->guild_id != guild_id)
         return NULL;
     return guild;
@@ -44,7 +44,7 @@ GuildMember* complete_guildmember_update(GwClient* client, uint16_t* account_nam
     struct kstr account_name_kstr;
     kstr_init(&account_name_kstr, account_name, length, capacity);
     
-    array_foreach(member, client->player->guild->members) {
+    array_foreach(member, &client->player->guild->members) {
         if (kstr_compare(&member->account_name, &account_name_kstr) != 0)
             continue;
         if (gmu->status >= 0) {
@@ -123,17 +123,17 @@ void HandleGuildPlayerRole(Connection *conn, size_t psize, Packet *packet)
     assert(client && client->game_srv.secured);
 
     ArrayGuild *guilds = &client->world.guilds;
-    if (!array_inside(*guilds, pack->guild_id)) {
+    if (!array_inside(guilds, pack->guild_id)) {
         LogError("The player guild (id: %d) is out of bound of the guild array (size: %d)",
             pack->guild_id, guilds->size);
         return;
     }
 
-    Guild *guild = &array_at(*guilds, pack->guild_id);
+    Guild *guild = &array_at(guilds, pack->guild_id);
     if (client->player) client->player->guild = guild;
     if (pack->member_type > 2) {
         // We can see this guild's members - prepare the array to receive the feed.
-        array_init(guild->members,100);
+        array_init(&guild->members,100);
     }
 }
 
@@ -254,7 +254,7 @@ void HandleGuildPlayerInfo(Connection* conn, size_t psize, Packet* packet)
     size_t length;
     for (length = 0; length < sizeof(pack->account_name) && pack->account_name[length]; length++) {}
     kstr_init(&invname_kstr, pack->account_name, length, ARRAY_SIZE(pack->account_name));
-    array_foreach(member, client->player->guild->members) {
+    array_foreach(member, &client->player->guild->members) {
         if (found)
             break;
         if (kstr_compare(&invname_kstr, &member->account_name) != 0)
@@ -262,7 +262,7 @@ void HandleGuildPlayerInfo(Connection* conn, size_t psize, Packet* packet)
         found = member;
     }
     if (!found) {
-        found = array_push(client->player->guild->members,1);
+        found = array_push(&client->player->guild->members,1);
         init_guildmember(found);
         //found->join_date = pack->join_date;
         kstr_copy(&found->account_name, &invname_kstr);
@@ -317,11 +317,11 @@ void HandleGuildGeneralInfo(Connection *conn, size_t psize, Packet *packet)
 
     ArrayGuild *guilds = &client->world.guilds;
     if ((size_t)pack->guild_id >= guilds->size) {
-        array_resize(*guilds, pack->guild_id + 1);
+        array_resize(guilds, pack->guild_id + 1);
         guilds->size = guilds->capacity;
     }
 
-    Guild *guild = &array_at(*guilds, pack->guild_id);
+    Guild *guild = &array_at(guilds, pack->guild_id);
     init_guild(guild);
 
     uuid_copy(guild->guild_uuid, pack->uuid);
@@ -359,12 +359,12 @@ void HandleGuildChangeFaction(Connection *conn, size_t psize, Packet *packet)
     assert(client && client->game_srv.secured);
 
     ArrayGuild *guilds = &client->world.guilds;
-    if (!array_inside(*guilds, pack->guild_id)) {
+    if (!array_inside(guilds, pack->guild_id)) {
         LogError("The guild (id: %d) is out of bound (size: %d)", pack->guild_id, guilds->size);
         return;
     }
 
-    Guild *guild = &array_at(client->world.guilds, pack->guild_id);
+    Guild *guild = &array_at(&client->world.guilds, pack->guild_id);
     if (pack->allegiance < FactionType_Count) {
         guild->allegiance = (FactionType)pack->allegiance;
     } else {

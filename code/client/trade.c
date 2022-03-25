@@ -105,12 +105,12 @@ void HandleTradeAddItem(Connection *conn, size_t psize, Packet *packet)
     assert(client && client->game_srv.secured);
 
     TradeSession *session = &client->trade_session;
-    assert(array_size(session->trader_items) <= 6);
+    assert(array_size(&session->trader_items) <= 6);
 
     TradeItem trade_item;
     trade_item.item_id = pack->item_id;
     trade_item.quantity = pack->quantity;
-    array_add(session->trader_items, trade_item);
+    array_add(&session->trader_items, trade_item);
 }
 
 void HandleTradeAcknowledge(Connection *conn, size_t psize, Packet *packet)
@@ -137,8 +137,8 @@ void HandleTradeAcknowledge(Connection *conn, size_t psize, Packet *packet)
     session->trader = pack->player_id;
     session->state |= TradeState_Opened;
 
-    array_clear(session->trader_items);
-    array_clear(session->player_items);
+    array_clear(&session->trader_items);
+    array_clear(&session->player_items);
 }
 
 void HandleTradeAccept(Connection *conn, size_t psize, Packet *packet)
@@ -195,8 +195,8 @@ void GameSrv_TradeAcknowledge(GwClient *client, int32_t player_id)
     session->trader = player_id;
     session->state |= TradeState_Opened;
 
-    array_clear(session->trader_items);
-    array_clear(session->player_items);
+    array_clear(&session->trader_items);
+    array_clear(&session->player_items);
 }
 
 void GameSrv_TradeCancel(GwClient *client)
@@ -232,7 +232,7 @@ void GameSrv_TradeAddItem(GwClient *client, uint32_t item_id, uint8_t quantity)
     TradeItem trade_item;
     trade_item.item_id = item_id;
     trade_item.quantity = quantity;
-    array_add(session->player_items, trade_item);
+    array_add(&session->player_items, trade_item);
 }
 
 void GameSrv_TradeSendOffer(GwClient *client, int gold)

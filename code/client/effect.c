@@ -18,7 +18,7 @@ static Effect *array_find_effect(ArrayEffect *effects, uint32_t effect_id)
     size_t index = array_find_effect_index(effects, effect_id);
     if (index == array_npos)
         return NULL;
-    return &array_at(*effects, index);
+    return &array_at(effects, index);
 }
 
 void HandleEffectUpkeepAdded(Connection *conn, size_t psize, Packet *packet)
@@ -99,7 +99,7 @@ void HandleEffectApplied(Connection *conn, size_t psize, Packet *packet)
     assert(client && client->game_srv.secured);
 
     ArrayEffect *effects = &client->world.effects;
-    Effect *effect = array_push(*effects, 1);
+    Effect *effect = array_push(effects, 1);
 
     effect->timestamp = client->world.world_time;
     effect->effect_id = pack->effect_id;
@@ -162,5 +162,5 @@ void HandleEffectRemoved(Connection *conn, size_t psize, Packet *packet)
         LogError("Didn't find effect_id: %u", pack->effect_id);
         return;
     }
-    array_remove(*effects, index);
+    array_remove(effects, index);
 }

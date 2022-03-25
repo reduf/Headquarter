@@ -8,15 +8,15 @@ void player_is_created(GwClient *client, AgentId agent_id)
     World *world = &client->world;
     client->player_agent_id = agent_id;
 
-    assert(array_inside(world->agents, agent_id));
-    assert(array_at(world->agents, agent_id));
+    assert(array_inside(&world->agents, agent_id));
+    assert(array_at(&world->agents, agent_id));
 
-    Agent* me = array_at(world->agents, agent_id);
+    Agent* me = array_at(&world->agents, agent_id);
     if (!me->player_id)
         return;
 
-    assert(array_inside(world->players, me->player_id));
-    client->player = array_at(world->players, me->player_id);
+    assert(array_inside(&world->players, me->player_id));
+    client->player = array_at(&world->players, me->player_id);
 
     client->player->player_hero = &client->player_hero;
 }

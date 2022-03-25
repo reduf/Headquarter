@@ -117,13 +117,13 @@ static int recv_sts_response(
 
     for (;;) {
         const size_t BUFFER_SIZE = 1024;
-        uint8_t *ptr = array_push(*response, BUFFER_SIZE);
+        uint8_t *ptr = array_push(response, BUFFER_SIZE);
 
         size_t retlen;
         if ((ret = ssl_sts_connection_recv(ssl, ptr, BUFFER_SIZE, &retlen)) != 0)
             return 1;
 
-        response->size = array_size(*response) - (BUFFER_SIZE - retlen);
+        response->size = array_size(response) - (BUFFER_SIZE - retlen);
 
         ret = sts_parse_reply(reply, response->data, response->size);
         if (ret != STSE_INCOMPLETE_CONTENT && ret != STSE_INCOMPLETE_HEADER) {
@@ -154,13 +154,13 @@ static int auth_login_finish(struct sts_connection *sts, struct ssl_sts_connecti
     const size_t url_len = sizeof(url) - 1;
 
     array_uint8_t content;
-    array_init(content, 1024);
+    array_init(&content, 1024);
     appendf(&content, "<Request>\n");
     appendf(&content, "<Language>en</Language>\n");
     appendf(&content, "</Request>\n");
 
     array_uint8_t request;
-    array_init(request, 1024);
+    array_init(&request, 1024);
     int ret = sts_write_request_with_sequence_number(
         &request,
         url, url_len,
@@ -168,14 +168,14 @@ static int auth_login_finish(struct sts_connection *sts, struct ssl_sts_connecti
         TIMEOUT_MS,
         content.data, content.size);
 
-    array_reset(content);
+    array_reset(&content);
 
     if (ret != 0) {
         return ret;
     }
 
     ret = ssl_sts_connection_send(ssl, request.data, request.size);
-    array_reset(request);
+    array_reset(&request);
 
     if (ret != 0) {
         return ret;
@@ -183,16 +183,16 @@ static int auth_login_finish(struct sts_connection *sts, struct ssl_sts_connecti
 
     struct sts_reply reply = {0};
     array_uint8_t response;
-    array_init(response, 1024);
+    array_init(&response, 1024);
 
     if ((ret = recv_sts_response(ssl, &response, &reply, sts->seq_number)) != 0) {
-        array_reset(response);
+        array_reset(&response);
         return ret;
     }
 
     if (reply.status_code != 200) {
         fprintf(stderr, "Reply to '%s' failed with status %u\n", url, reply.status_code);
-        array_reset(response);
+        array_reset(&response);
         return 1;
     }
 
@@ -209,7 +209,7 @@ static int auth_login_finish(struct sts_connection *sts, struct ssl_sts_connecti
             ret = 1;
         }
 
-        array_reset(response);
+        array_reset(&response);
         return ret;
     }
 
@@ -225,17 +225,17 @@ static int auth_login_finish(struct sts_connection *sts, struct ssl_sts_connecti
     struct str user_id;
     if (find_between(&user_id, &reply_content, "<UserId>", "</UserId>") != 0) {
         fprintf(stderr, "Failed to find UserId\n");
-        array_reset(response);
+        array_reset(&response);
         return 1;
     }
 
     if (!s_parse_uuid(&user_id, &sts->user_id)) {
         fprintf(stderr, "Failed to parse the user_id uuid '%.*s'\n", (int)user_id.len, user_id.ptr);
-        array_reset(response);
+        array_reset(&response);
         return 1;
     }
 
-    array_reset(response);
+    array_reset(&response);
     return 0;
 }
 
@@ -249,7 +249,7 @@ static int auth2f_upgrade_totp(
     const size_t url_len = sizeof(url) - 1;
 
     array_uint8_t content;
-    array_init(content, 1024);
+    array_init(&content, 1024);
     appendf(&content, "<Request>\n");
     appendf(&content, "<Otp>%d</Otp>\n", otp);
     if (remember_me != 0)
@@ -257,7 +257,7 @@ static int auth2f_upgrade_totp(
     appendf(&content, "</Request>\n");
 
     array_uint8_t request;
-    array_init(request, 1024);
+    array_init(&request, 1024);
     int ret = sts_write_request_with_sequence_number(
         &request,
         url, url_len,
@@ -265,14 +265,14 @@ static int auth2f_upgrade_totp(
         TIMEOUT_MS,
         content.data, content.size);
 
-    array_reset(content);
+    array_reset(&content);
 
     if (ret != 0) {
         return ret;
     }
 
     ret = ssl_sts_connection_send(ssl, request.data, request.size);
-    array_reset(request);
+    array_reset(&request);
 
     if (ret != 0) {
         return ret;
@@ -280,20 +280,20 @@ static int auth2f_upgrade_totp(
 
     struct sts_reply reply = {0};
     array_uint8_t response;
-    array_init(response, 1024);
+    array_init(&response, 1024);
 
     if ((ret = recv_sts_response(ssl, &response, &reply, sts->seq_number)) != 0) {
-        array_reset(response);
+        array_reset(&response);
         return ret;
     }
 
     if (reply.status_code != 200) {
         fprintf(stderr, "Reply to '%s' failed with status %u\n", url, reply.status_code);
-        array_reset(response);
+        array_reset(&response);
         return 1;
     }
 
-    array_reset(response);
+    array_reset(&response);
     return 0;
 }
 
@@ -303,13 +303,13 @@ static int auth_list_game_accounts(struct sts_connection *sts, struct ssl_sts_co
     const size_t url_len = sizeof(url) - 1;
 
     array_uint8_t content;
-    array_init(content, 1024);
+    array_init(&content, 1024);
     appendf(&content, "<Request>\n");
     appendf(&content, "<GameCode>gw1</GameCode>\n");
     appendf(&content, "</Request>\n");
 
     array_uint8_t request;
-    array_init(request, 1024);
+    array_init(&request, 1024);
     int ret = sts_write_request_with_sequence_number(
         &request,
         url, url_len,
@@ -317,14 +317,14 @@ static int auth_list_game_accounts(struct sts_connection *sts, struct ssl_sts_co
         TIMEOUT_MS,
         content.data, content.size);
 
-    array_reset(content);
+    array_reset(&content);
 
     if (ret != 0) {
         return ret;
     }
 
     ret = ssl_sts_connection_send(ssl, request.data, request.size);
-    array_reset(request);
+    array_reset(&request);
 
     if (ret != 0) {
         return ret;
@@ -332,16 +332,16 @@ static int auth_list_game_accounts(struct sts_connection *sts, struct ssl_sts_co
 
     struct sts_reply reply = {0};
     array_uint8_t response;
-    array_init(response, 1024);
+    array_init(&response, 1024);
 
     if ((ret = recv_sts_response(ssl, &response, &reply, sts->seq_number)) != 0) {
-        array_reset(response);
+        array_reset(&response);
         return ret;
     }
 
     if (reply.status_code != 200) {
         fprintf(stderr, "Reply to '%s' failed with status %u\n", url, reply.status_code);
-        array_reset(response);
+        array_reset(&response);
         return 1;
     }
 
@@ -354,7 +354,7 @@ static int auth_list_game_accounts(struct sts_connection *sts, struct ssl_sts_co
     // </Row>
     // </Reply>
 
-    array_reset(response);
+    array_reset(&response);
     return 0;
 }
 
@@ -367,14 +367,14 @@ static int auth_request_game_token(struct sts_connection *sts, struct ssl_sts_co
     // taked from the previous packet. It returns an array of such information.
 
     array_uint8_t content;
-    array_init(content, 1024);
+    array_init(&content, 1024);
     appendf(&content, "<Request>\n");
     appendf(&content, "<GameCode>gw1</GameCode>\n");
     appendf(&content, "<AccountAlias>gw1</AccountAlias>\n");
     appendf(&content, "</Request>\n");
 
     array_uint8_t request;
-    array_init(request, 1024);
+    array_init(&request, 1024);
     int ret = sts_write_request_with_sequence_number(
         &request,
         url, url_len,
@@ -382,14 +382,14 @@ static int auth_request_game_token(struct sts_connection *sts, struct ssl_sts_co
         TIMEOUT_MS,
         content.data, content.size);
 
-    array_reset(content);
+    array_reset(&content);
 
     if (ret != 0) {
         return ret;
     }
 
     ret = ssl_sts_connection_send(ssl, request.data, request.size);
-    array_reset(request);
+    array_reset(&request);
 
     if (ret != 0) {
         return ret;
@@ -397,16 +397,16 @@ static int auth_request_game_token(struct sts_connection *sts, struct ssl_sts_co
 
     struct sts_reply reply = {0};
     array_uint8_t response;
-    array_init(response, 1024);
+    array_init(&response, 1024);
 
     if ((ret = recv_sts_response(ssl, &response, &reply, sts->seq_number)) != 0) {
-        array_reset(response);
+        array_reset(&response);
         return ret;
     }
 
     if (reply.status_code != 200) {
         fprintf(stderr, "Reply to '%s' failed with status %u\n", url, reply.status_code);
-        array_reset(response);
+        array_reset(&response);
         return 1;
     }
 
@@ -420,17 +420,17 @@ static int auth_request_game_token(struct sts_connection *sts, struct ssl_sts_co
     struct str token;
     if (find_between(&token, &reply_content, "<Token>", "</Token>") != 0) {
         fprintf(stderr, "Failed to find Token\n");
-        array_reset(response);
+        array_reset(&response);
         return 1;
     }
 
     if (!s_parse_uuid(&token, &sts->token)) {
         fprintf(stderr, "Failed to parse the token uuid '%.*s'\n", (int)token.len, token.ptr);
-        array_reset(response);
+        array_reset(&response);
         return 1;
     }
 
-    array_reset(response);
+    array_reset(&response);
     return 0;
 }
 

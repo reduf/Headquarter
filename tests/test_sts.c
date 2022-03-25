@@ -99,7 +99,7 @@ UTEST(sts, sts_write_request)
 UTEST(sts, sts_write_request_with_sequence_number)
 {
     array_uint8_t request;
-    array_init(request, 1024);
+    array_init(&request, 1024);
 
     const char url[] = "/Sts/Connect";
     const char expected[] = \

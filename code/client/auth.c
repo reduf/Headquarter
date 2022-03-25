@@ -41,11 +41,11 @@ void HandleErrorMessage(Connection *conn, size_t psize, Packet *packet)
     assert(client);
 
     AsyncType type = AsyncType_None;
-    for (size_t i = 0; i < array_size(client->requests); i++) {
-        AsyncRequest *request = &array_at(client->requests, i);
+    for (size_t i = 0; i < array_size(&client->requests); i++) {
+        AsyncRequest *request = &array_at(&client->requests, i);
         if (request->trans_id == pack->trans_id) {
             type = request->type;
-            array_remove(client->requests, i);
+            array_remove(&client->requests, i);
             break;
         }
     }
@@ -150,7 +150,7 @@ void HandleAccountInfo(Connection *conn, size_t psize, Packet *packet)
     uuid_dec_le(pack->character_uuid, char_uuid);
 
     Character *character;
-    array_foreach(character, client->characters) {
+    array_foreach(character, &client->characters) {
         if (uuid_equals(character->uuid, char_uuid)) {
             client->current_character = character;
             break;
@@ -185,7 +185,7 @@ void HandleCharacterInfo(Connection *conn, size_t psize, Packet *packet)
     assert(client);
 
     // PrintBytes(p->name, pack->extended.data, 64);
-    Character *character = array_push(client->characters, 1);
+    Character *character = array_push(&client->characters, 1);
     if (!character) {
         LogError("Couldn't create a new character");
         return;
@@ -381,8 +381,8 @@ void AuthSrv_SendPacket35(Connection *conn)
 
 void AuthSrv_RegisterCallbacks(Connection *conn)
 {
-    array_init(conn->handlers, AUTH_SMSG_COUNT);
-    array_resize(conn->handlers, AUTH_SMSG_COUNT);
+    array_init(&conn->handlers, AUTH_SMSG_COUNT);
+    array_resize(&conn->handlers, AUTH_SMSG_COUNT);
 
     MsgHandler *handlers = conn->handlers.data;
 

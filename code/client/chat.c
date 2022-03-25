@@ -28,9 +28,9 @@ static char get_channel_character(Channel channel)
 void init_chat(Chat *chat)
 {
     chat->next_message_entry = 0;
-    array_init(chat->messages, 256);
-    array_resize(chat->messages, 256);
-    array_init(chat->str_builder, 256);
+    array_init(&chat->messages, 256);
+    array_resize(&chat->messages, 256);
+    array_init(&chat->str_builder, 256);
 }
 
 static inline char *
@@ -73,9 +73,9 @@ void HandleChatMessageCore(Connection *conn, size_t psize, Packet *packet)
     assert(client && client->game_srv.secured);
 
     array_u16_t *sb = &client->chat.str_builder;
-    array_reserve(*sb, 123);
+    array_reserve(sb, 123);
     for (size_t i = 0; i < 122; i++) {
-        array_add(*sb, pack->msg[i]);
+        array_add(sb, pack->msg[i]);
         if (pack->msg[i] == 0)
             break;
     }
@@ -108,7 +108,7 @@ void HandleChatMessageLocal(Connection *conn, size_t psize, Packet *packet)
     }
 
     World  *world  = &client->world;
-    Player *player = array_at(world->players, pack->sender);
+    Player *player = array_at(&world->players, pack->sender);
     if (player == NULL) {
         LogError("Player '%d' wasn't found in the world '%08X'", pack->sender, world->hash);
         goto clear_buffer_and_exit;
@@ -127,7 +127,7 @@ void HandleChatMessageLocal(Connection *conn, size_t psize, Packet *packet)
     broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
 
 clear_buffer_and_exit:
-    array_clear(client->chat.str_builder);
+    array_clear(&client->chat.str_builder);
 }
 
 void HandleChatMessageGlobal(Connection *conn, size_t psize, Packet *packet)
@@ -181,7 +181,7 @@ void HandleChatMessageGlobal(Connection *conn, size_t psize, Packet *packet)
     broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
 
 clear_buffer_and_exit:
-    array_clear(client->chat.str_builder);
+    array_clear(&client->chat.str_builder);
 }
 
 void HandleChatMessageServer(Connection *conn, size_t psize, Packet *packet)
@@ -227,7 +227,7 @@ void HandleChatMessageServer(Connection *conn, size_t psize, Packet *packet)
     broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
 
 clear_buffer_and_exit:
-    array_clear(client->chat.str_builder);
+    array_clear(&client->chat.str_builder);
 }
 
 void HandleWhisperReceived(Connection *conn, size_t psize, Packet *packet)

@@ -41,7 +41,7 @@ void GameSrv_HeroLoadSkills(GwClient* client, uint32_t hero_index, uint32_t skil
     assert(client && client->game_srv.secured);
 
     ArrayPartyHero heroes = client->player->party->heroes;
-    if (!array_inside(heroes, hero_index))
+    if (!array_inside(&heroes, hero_index))
         return;
     AgentId agent_id = heroes.data[hero_index].agent_id;
 
@@ -52,7 +52,7 @@ void GameSrv_HeroLoadAttributes(GwClient* client, uint32_t hero_index, ArrayAttr
     assert(client && client->game_srv.secured);
 
     ArrayPartyHero heroes = client->player->party->heroes;
-    if (!array_inside(heroes, hero_index))
+    if (!array_inside(&heroes, hero_index))
         return;
     AgentId agent_id = heroes.data[hero_index].agent_id;
 
@@ -63,7 +63,7 @@ void GameSrv_HeroChangeSecondary(GwClient* client, uint32_t hero_index, Professi
     assert(client && client->game_srv.secured);
 
     ArrayPartyHero heroes = client->player->party->heroes;
-    if (!array_inside(heroes, hero_index))
+    if (!array_inside(&heroes, hero_index))
         return;
     AgentId agent_id = heroes.data[hero_index].agent_id;
 

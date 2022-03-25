@@ -492,8 +492,8 @@ void HandleMissionAddObjective(Connection *conn, size_t psize, Packet *packet)
 
 void GameSrv_RegisterCallbacks(Connection *conn)
 {
-    array_init(conn->handlers, GAME_SMSG_COUNT);
-    array_resize(conn->handlers, GAME_SMSG_COUNT);
+    array_init(&conn->handlers, GAME_SMSG_COUNT);
+    array_resize(&conn->handlers, GAME_SMSG_COUNT);
 
     MsgHandler *handlers = conn->handlers.data;
 

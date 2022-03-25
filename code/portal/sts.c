@@ -131,10 +131,10 @@ static int sts_write_header(array_uint8_t *request,
     uint32_t content_len_as_u32 = (uint32_t)content_len;
 
     // Every requests start with 'P ' (\x50\x20).
-    array_insert(*request, 2, "P ");
-    array_insert(*request, url_len, (const uint8_t *)url);
+    array_insert(request, 2, "P ");
+    array_insert(request, url_len, (const uint8_t *)url);
     // The request is followd by the version, on the same line.
-    array_insert(*request, sizeof(version) - 1, version);
+    array_insert(request, sizeof(version) - 1, version);
 
     // The content length is written as `l:%d`, we force use a `uint32_t`
     // ensuring that a buffer of 32 bytes is always enough.
@@ -144,7 +144,7 @@ static int sts_write_header(array_uint8_t *request,
     if (ret < 0)
         return STSE_UNSUCCESSFUL;
 
-    array_insert(*request, (size_t)ret, content_length_buffer);
+    array_insert(request, (size_t)ret, content_length_buffer);
     return 0;
 }
 
@@ -152,8 +152,8 @@ static void sts_finish_request(array_uint8_t *request,
     const uint8_t *content, size_t content_len)
 {
     // We are done writing the header, so we append "\r\n\r\n" like in http.
-    array_insert(*request, 4, "\r\n\r\n");
-    array_insert(*request, content_len, content);
+    array_insert(request, 4, "\r\n\r\n");
+    array_insert(request, content_len, content);
 }
 
 static int sts_write_request(
@@ -164,21 +164,21 @@ static int sts_write_request(
     int ret;
 
     array_uint8_t request;
-    array_init(request, 1024);
+    array_init(&request, 1024);
 
     if ((ret = sts_write_header(&request, url, url_len, content_len)) != 0) {
-        array_reset(request);
+        array_reset(&request);
         return STSE_UNSUCCESSFUL;
     }
 
     sts_finish_request(&request, content, content_len);
 
     if ((ret = send_full(sts->fd, request.data, request.size)) != 0) {
-        array_reset(request);
+        array_reset(&request);
         return ret;
     }
 
-    array_reset(request);
+    array_reset(&request);
     return 0;
 }
 
@@ -195,7 +195,7 @@ int sts_write_request_with_sequence_number(
         return STSE_UNSUCCESSFUL;
     }
 
-    array_insert(*request, 2, "\r\n");
+    array_insert(request, 2, "\r\n");
 
     char seq_number_buffer[64];
     ret = snprintf(
@@ -207,7 +207,7 @@ int sts_write_request_with_sequence_number(
         return STSE_UNSUCCESSFUL;
     }
 
-    array_insert(*request, (size_t)ret, seq_number_buffer);
+    array_insert(request, (size_t)ret, seq_number_buffer);
     sts_finish_request(request, content, content_len);
 
     return 0;
@@ -223,7 +223,7 @@ int sts_send_request_with_sequence_number(
     int ret;
 
     array_uint8_t request;
-    array_init(request, 1024);
+    array_init(&request, 1024);
 
     if ((ret = sts_write_request_with_sequence_number(
             &request,
@@ -232,12 +232,12 @@ int sts_send_request_with_sequence_number(
             timeout_ms,
             content, content_len)) != 0) {
 
-        array_reset(request);
+        array_reset(&request);
         return ret;
     }
 
     ret = send_full(sts->fd, request.data, request.size);
-    array_reset(request);
+    array_reset(&request);
 
     if (ret != 0) {
         fprintf(stderr, "Failed to send the data\n");
@@ -258,26 +258,26 @@ int sts_connection_connect(struct sts_connection *sts, const char *hostname)
     }
 
     array_sockaddr_t addresses;
-    array_init(addresses, 8);
+    array_init(&addresses, 8);
     if ((ret = resolve_dns4(&addresses, hostname, 6112)) != 0) {
         fprintf(stderr, "Failed to resolve the DNS name\n");
         return ret;
     }
 
     struct sockaddr *it;
-    array_foreach(it, addresses) {
+    array_foreach(it, &addresses) {
         if ((ret = connect(sts->fd, it, sizeof(*it))) == 0) {
             break;
         }
     }
 
-    if (it == array_end(addresses)) {
+    if (it == array_end(&addresses)) {
         fprintf(stderr, "Couldn't connect to '%s:%d\n", hostname, 6112);
-        array_reset(addresses);
+        array_reset(&addresses);
         return STSE_UNSUCCESSFUL;
     }
 
-    array_reset(addresses);
+    array_reset(&addresses);
 
     char sockname[MAX(INET_ADDRSTRLEN, INET6_ADDRSTRLEN)];
     if ((ret = get_sockname(sts->fd, sockname, sizeof(sockname))) != 0) {
@@ -285,7 +285,7 @@ int sts_connection_connect(struct sts_connection *sts, const char *hostname)
     }
 
     array_uint8_t content;
-    array_init(content, 1024);
+    array_init(&content, 1024);
 
     appendf(&content, "<Connect>\n");
     appendf(&content, "<ConnType>400</ConnType>\n");
@@ -330,12 +330,12 @@ int sts_connection_start_tls(struct sts_connection *sts, struct ssl_sts_connecti
     }
 
     array_uint8_t buffer;
-    array_init(buffer, 1024);
+    array_init(&buffer, 1024);
 
     struct sts_reply reply = {0};
     for (;;) {
         if ((ret = recv_to_buffer(sts->fd, &buffer)) != 0) {
-            array_reset(buffer);
+            array_reset(&buffer);
             return ret;
         }
 
@@ -345,7 +345,7 @@ int sts_connection_start_tls(struct sts_connection *sts, struct ssl_sts_connecti
         if (ret != STSE_INCOMPLETE_CONTENT && ret != STSE_INCOMPLETE_HEADER) {
             // We don't care about the content of the response, it's useless
             // and the header gives us all the necessary information.
-            array_reset(buffer);
+            array_reset(&buffer);
             break;
         }
     }

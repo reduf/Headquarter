@@ -29,13 +29,13 @@ void NetConn_Reset(Connection *conn)
 
     thread_mutex_destroy(&conn->mutex);
 
-    array_reset(conn->in);
-    array_reset(conn->out);
+    array_reset(&conn->in);
+    array_reset(&conn->out);
 
-    // array_reset(conn->srv_filter);
-    // array_reset(conn->clt_filter);
+    // array_reset(&conn->srv_filter);
+    // array_reset(&conn->clt_filter);
 
-    array_reset(conn->handlers);
+    array_reset(&conn->handlers);
 }
 
 void NetConn_HardShutdown(Connection *conn)
@@ -67,8 +67,8 @@ void init_connection(Connection *conn, void *data)
 
     thread_mutex_init(&conn->mutex);
 
-    array_init(conn->in, 5840);
-    array_init(conn->out, 5840);
+    array_init(&conn->in, 5840);
+    array_init(&conn->out, 5840);
 }
 
 #pragma pack(push, 1)
@@ -217,7 +217,7 @@ void Network_Shutdown(void)
     mbedtls_entropy_free(&entropy);
     mbedtls_ctr_drbg_free(&ctr_drbg);
 
-    array_reset(AuthSrv_IPs);
+    array_reset(&AuthSrv_IPs);
 
 #ifdef _WIN32
     WSACleanup();
@@ -245,11 +245,11 @@ SockAddressArray IPv4ToAddrEx(const char *host, const char *port)
     while ((it = it->ai_next) != NULL)
         found++;
 
-    array_init(ret, found);
+    array_init(&ret, found);
 
     it = results;
     for (size_t i = 0; i < found; i++) {
-        array_add(ret, *it->ai_addr);
+        array_add(&ret, *it->ai_addr);
         it = it->ai_next;
     }
 
@@ -433,7 +433,7 @@ bool AuthSrv_Connect(Connection *conn)
 
     if (conn->host.sa_family == 0) {
         // This could happend if we don't have an internet connection
-        if (array_size(AuthSrv_IPs) == 0) {
+        if (array_size(&AuthSrv_IPs) == 0) {
             NetConn_Reset(conn);
             return false;
         }
@@ -623,7 +623,7 @@ void SendPacket(Connection *conn, size_t size, void *p)
     Packet *packet = cast(Packet *)p;
     Header header = packet->header;
 
-    assert(array_inside(conn->client_msg_format, header));
+    assert(array_inside(&conn->client_msg_format, header));
 
     MsgFormat format = conn->client_msg_format.data[header];
     assert(header == format.header);
@@ -721,9 +721,9 @@ void NetConn_DispatchPackets(Connection *conn)
 
     while (size >= sizeof(Header)) {
         Header header = le16dec(data);
-        assert(array_inside(conn->server_msg_format, header));
+        assert(array_inside(&conn->server_msg_format, header));
 
-        MsgFormat format = array_at(conn->server_msg_format, header);
+        MsgFormat format = array_at(&conn->server_msg_format, header);
         assert(format.header == header);
 
         memzero(buffer.bytes, format.unpack_size);
@@ -737,20 +737,20 @@ void NetConn_DispatchPackets(Connection *conn)
         data += readed;
         size -= readed;
 
-        if (!array_inside(conn->handlers, header)) {
+        if (!array_inside(&conn->handlers, header)) {
             LogError("Received a unvalid header '%u' max is '%zu'", header, conn->handlers.size);
             NetConn_HardShutdown(conn);
             return;
         }
 
-        MsgHandler handler = array_at(conn->handlers, header);
+        MsgHandler handler = array_at(&conn->handlers, header);
         if (handler)
             handler(conn, format.unpack_size, &buffer.packet);
 
         // @Remark: We don't want to dispatch packet if we close the connection. but
         // it might make us loose some packet.
         if (conn->flags & NETCONN_REMOVE) {
-            array_clear(conn->in);
+            array_clear(&conn->in);
             return;
         }
     }
@@ -779,8 +779,8 @@ void NetConn_Update(Connection *conn)
         conn->latency = 0;
         conn->last_tick_time = 0;
 
-        array_clear(conn->in);
-        array_clear(conn->out);
+        array_clear(&conn->in);
+        array_clear(&conn->out);
         conn->secured = false;
     }
 }

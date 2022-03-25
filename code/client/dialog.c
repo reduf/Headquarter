@@ -32,10 +32,10 @@ void HandleDialogButton(Connection *conn, size_t psize, Packet *packet)
     // @Remark:
     // We do that, because we will likely just alloc this array with a big enough size
     // during the client allocation/init.
-    if (array_full(dialog->buttons)) {
+    if (array_full(&dialog->buttons)) {
         LogInfo("DialogInfo::buttons needed a reallocation. Size before reallocation: %d", dialog->buttons.size);
     }
-    array_add(dialog->buttons, button);
+    array_add(&dialog->buttons, button);
 }
 
 void HandleDialogBody(Connection *conn, size_t psize, Packet *packet)
@@ -81,7 +81,7 @@ void HandleDialogSender(Connection *conn, size_t psize, Packet *packet)
     client->interact_with = pack->agent_id;
 
     // @Cleanup: Check if we alway get this packet before
-    array_clear(dialog->buttons);
+    array_clear(&dialog->buttons);
     Event_DialogOpenned event;
     event.sender_agent_id = pack->agent_id;
     broadcast_event(&client->event_mgr, DIALOG_OPENNED, &event);
@@ -103,7 +103,7 @@ void GameSrv_SendDialog(GwClient *client, int dialog_id)
 
     bool found_dialog_id = false;
     DialogButton *it;
-    array_foreach(it, dialog->buttons) {
+    array_foreach(it, &dialog->buttons) {
         if (it->dialog_id == dialog_id) {
             found_dialog_id = true;
             break;

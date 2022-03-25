@@ -11,9 +11,9 @@ void appendv(array_uint8_t *buffer, const char *fmt, va_list args)
 
     // We need to allocate one more bytes, because  of `vsnprintf`.
     // We will pop this "\0" byte later.
-    uint8_t *write_ptr = array_push(*buffer, (size_t)ret + 1);
+    uint8_t *write_ptr = array_push(buffer, (size_t)ret + 1);
     vsnprintf((char *)write_ptr, (size_t)ret + 1, fmt, args);
-    array_pop(*buffer);
+    array_pop(buffer);
 }
 
 void appendf(array_uint8_t *buffer, const char *fmt, ...)
@@ -26,7 +26,7 @@ void appendf(array_uint8_t *buffer, const char *fmt, ...)
 
 void array_add_be_uint16(array_uint8_t *buffer, uint16_t value)
 {
-    uint8_t *ptr = array_push(*buffer, sizeof(value));
+    uint8_t *ptr = array_push(buffer, sizeof(value));
     be16enc(ptr, value);
 }
 
