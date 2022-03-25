@@ -54,6 +54,15 @@ add_library(
   ${COMMON_SOURCES}
 )
 
+if (MSVC)
+  # We disable the following warnings:
+  # - C4057: nonstandard extension used: nameless struct/union
+  # - C4204: nonstandard extension used: non-constant aggregate initializer
+  # - C4221: nonstandard extension used: '<var>': cannot be initialized using address of automatic variable
+  # - C4459: declaration of '<var>' hides global declaration
+  target_compile_options(client PRIVATE /WX /W4 /wd4201 /wd4204 /wd4221 /wd4459)
+endif()
+
 if (UNIX)
   target_link_libraries(common PRIVATE pthread m dl)
 endif()
