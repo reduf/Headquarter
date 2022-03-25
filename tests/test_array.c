@@ -51,7 +51,6 @@ UTEST(array_init, array_reserve_on_non_empty_array)
     array_reset(a);
 }
 
-#if 0
 UTEST(array_resize, resize_and_grow)
 {
     array_int_t a;
@@ -86,4 +85,3 @@ UTEST(array_resize, resize_to_a_smaller_size)
 
     array_reset(a);
 }
-#endif

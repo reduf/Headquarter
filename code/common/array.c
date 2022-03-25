@@ -62,7 +62,7 @@ _array_reset(array_void_t *a)
 }
 
 int
-_array_resize(array_void_t *a, size_t new_capacity, const size_t elem_size)
+_array_grow_to(array_void_t *a, size_t new_capacity, const size_t elem_size)
 {
     assert(a && elem_size > 0);
 
@@ -87,13 +87,19 @@ _array_resize(array_void_t *a, size_t new_capacity, const size_t elem_size)
 }
 
 int
-_array_grow_to(array_void_t *a, size_t min, const size_t elem_size)
+_array_resize(array_void_t *a, size_t size, const size_t elem_size)
 {
     assert(a && elem_size > 0);
-    size_t new_capacity = (a->capacity * 2) + 1;
-    if (new_capacity < min)
-        new_capacity = min;
-    return _array_resize(a, new_capacity, elem_size);
+
+    if (a->capacity < size) {
+        int ret;
+        if ((ret = _array_grow_to(a, size, elem_size)) != 0) {
+            return ret;
+        }
+    }
+
+    a->size = size;
+    return 0;
 }
 
 int
@@ -106,6 +112,7 @@ _array_reserve(array_void_t *a, size_t count, const size_t elem_size)
             new_capacity = a->size + count;
         return _array_resize(a, new_capacity, elem_size);
     }
+
     return 1;
 }
 

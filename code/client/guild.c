@@ -312,7 +312,7 @@ void HandleGuildGeneralInfo(Connection *conn, size_t psize, Packet *packet)
 
     ArrayGuild *guilds = &client->world.guilds;
     if ((size_t)pack->guild_id >= guilds->size) {
-        array_grow_to(*guilds, pack->guild_id + 1);
+        array_resize(*guilds, pack->guild_id + 1);
         guilds->size = guilds->capacity;
     }
 

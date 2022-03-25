@@ -112,7 +112,7 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
 
     ArrayItem *items = &client->world.items;
     if (!array_inside(*items, pack->item_id)) {
-        array_grow_to(*items, pack->item_id + 1);
+        array_resize(*items, pack->item_id + 1);
         items->size = items->capacity;
     }
 

@@ -62,12 +62,11 @@ union {                         \
 #define array_init2(a, s)       _array_init2(&(a).base, (s), sizeof(*(a).data))
 #define array_reset(a)          _array_reset(&(a).base);
 
-#define array_grow_to(a, m)     _array_grow_to(&(a).base, (m), sizeof(*(a).data))
 #define array_reserve(a, s)     _array_reserve(&(a).base, (s), sizeof(*(a).data))
 #define array_resize(a, s)      _array_resize( &(a).base, (s), sizeof(*(a).data))
 #define array_remove(a, i)      _array_remove( &(a).base, (i), sizeof(*(a).data))
 #define array_insert(a, c, p)   _array_insert( &(a).base, (c), (p), sizeof(*(a).data))
-#define array_copy(d, s)        _array_copy(&(d).base, &(s).base, sizeof((s).data[0]))
+#define array_copy(d, s)        _array_copy(&(d).base, &(s).base, sizeof(*(s).data))
 #define array_push(a, n)        _array_push(&(a).base, (n), sizeof(*(a).data))
 
 #define array_remove_ordered(a, i) _array_remove_range_ordered(&(a).base, (i), 1, sizeof(*(a).data))
@@ -111,8 +110,7 @@ union {                         \
 int _array_init(array_void_t *a, size_t capacity, const size_t elem_size);
 int _array_init2(array_void_t *a, size_t capacity, const size_t elem_size);
 void _array_reset(array_void_t *a);
-int _array_resize(array_void_t *a, size_t new_capacity, const size_t elem_size);
-int _array_grow_to(array_void_t *a, size_t min, const size_t elem_size);
+int _array_resize(array_void_t *a, size_t size, const size_t elem_size);
 int _array_reserve(array_void_t *a, size_t count, const size_t elem_size);
 void _array_remove(array_void_t *a, size_t index, const size_t elem_size);
 int _array_insert(array_void_t *a, size_t count, const void *ptr, const size_t elem_size);

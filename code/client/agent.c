@@ -75,7 +75,7 @@ static void ensure_agent_exist(GwClient *client, AgentId id)
         return;
 
     if (!array_inside(*agents, id)) {
-        array_grow_to(*agents, id + 1);
+        array_resize(*agents, id + 1);
         agents->size = agents->capacity;
     }
 
@@ -606,7 +606,7 @@ void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
 
     ArrayPlayer *players = &client->world.players;
     if (!array_inside(*players, pack->player_id)) {
-        array_grow_to(*players, pack->player_id + 1);
+        array_resize(*players, pack->player_id + 1);
         players->size = players->capacity;
     }
 

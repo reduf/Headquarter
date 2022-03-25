@@ -374,7 +374,7 @@ void HandlePartyCreate(Connection *conn, size_t psize, Packet *packet)
 
     ArrayParty *parties = &client->world.parties;
     if (!array_inside(*parties, pack->party_id)) {
-        array_grow_to(*parties, pack->party_id + 1);
+        array_resize(*parties, pack->party_id + 1);
         parties->size = parties->capacity;
     }
 
