@@ -39,7 +39,8 @@ static void api_make_item(ApiItem *dest, Item *src)
     dest->quantity  = src->quantity;
     dest->type      = src->type;
 
-    array_init2(dest->mods, array_size(src->mods));
+    array_init(dest->mods, array_size(src->mods));
+    array_resize(dest->mods, array_size(src->mods));
 
     ItemModifier* mod;
     array_foreach(mod, src->mods) {

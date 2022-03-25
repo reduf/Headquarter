@@ -41,15 +41,6 @@ _array_init(array_void_t *a, size_t capacity, const size_t elem_size)
     return 1;
 }
 
-int
-_array_init2(array_void_t *a, size_t capacity, const size_t elem_size)
-{
-    if (!_array_init(a, capacity, elem_size))
-        return 0;
-    a->size = a->capacity;
-    return 1;
-}
-
 void
 _array_reset(array_void_t *a)
 {

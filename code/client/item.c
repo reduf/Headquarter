@@ -299,7 +299,8 @@ void HandleInventoryCreateBag(Connection *conn, size_t psize, Packet *packet)
     bag->bag_id = pack->bag_id;
     bag->type = (BagType)pack->bag_type;
     bag->model = (BagEnum)pack->bag_model_id;
-    array_init2(bag->items, pack->slot_count);
+    array_init(bag->items, pack->slot_count);
+    array_resize(bag->items, pack->slot_count);
 
     assert(pack->bag_model_id < BagEnum_Count);
     client->inventory.bags[pack->bag_model_id] = bag;

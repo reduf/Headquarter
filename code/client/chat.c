@@ -28,7 +28,8 @@ static char get_channel_character(Channel channel)
 void init_chat(Chat *chat)
 {
     chat->next_message_entry = 0;
-    array_init2(chat->messages, 256);
+    array_init(chat->messages, 256);
+    array_resize(chat->messages, 256);
     array_init(chat->str_builder, 256);
 }
 

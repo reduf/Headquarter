@@ -5,14 +5,23 @@
 
 static void init_world(World *world, uint32_t hash)
 {
-    array_init2(world->bags,    32);
-    array_init2(world->items,   1024);
-    array_init2(world->parties, 8);
-    array_init2(world->guilds,  32);
-    array_init2(world->quests,  32);
-    array_init2(world->agents,  64);
-    array_init2(world->players, 32);
-    array_init2(world->effects, 32);
+    array_init(world->agents, 64);
+    array_init(world->bags, 32);
+    array_init(world->effects, 32);
+    array_init(world->guilds, 32);
+    array_init(world->items, 1024);
+    array_init(world->parties, 8);
+    array_init(world->players, 32);
+    array_init(world->quests, 32);
+
+    array_resize(world->agents, 64);
+    array_resize(world->bags, 32);
+    array_resize(world->effects, 32);
+    array_resize(world->guilds, 32);
+    array_resize(world->items, 1024);
+    array_resize(world->parties, 8);
+    array_resize(world->players, 32);
+    array_resize(world->quests, 32);
 
     // @Enhancement:
     // This would break if we had more than 8 skillbars.

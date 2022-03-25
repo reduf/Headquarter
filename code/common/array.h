@@ -59,7 +59,6 @@ union {                         \
 }
 
 #define array_init(a, s)        _array_init( &(a).base, (s), sizeof(*(a).data))
-#define array_init2(a, s)       _array_init2(&(a).base, (s), sizeof(*(a).data))
 #define array_reset(a)          _array_reset(&(a).base);
 
 #define array_reserve(a, s)     _array_reserve(&(a).base, (s), sizeof(*(a).data))
@@ -108,7 +107,6 @@ union {                         \
 #endif
 
 int _array_init(array_void_t *a, size_t capacity, const size_t elem_size);
-int _array_init2(array_void_t *a, size_t capacity, const size_t elem_size);
 void _array_reset(array_void_t *a);
 int _array_resize(array_void_t *a, size_t size, const size_t elem_size);
 int _array_reserve(array_void_t *a, size_t count, const size_t elem_size);
