@@ -38,7 +38,6 @@ void HandleEffectUpkeepAdded(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(EffectAdded) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    EffectAdded *pack = cast(EffectAdded *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -56,7 +55,6 @@ void HandleEffectUpkeepRemoved(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(EffectRemoved) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    EffectRemoved *pack = cast(EffectRemoved *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -77,7 +75,6 @@ void HandleEffectUpkeepApplied(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(EffectApplied) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    EffectApplied *pack = cast(EffectApplied *)packet;
     assert(client && client->game_srv.secured);
 }
 

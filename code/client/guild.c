@@ -73,8 +73,8 @@ leave:
 void reset_guildmember_update(GwClient* client) {
     GuildMemberUpdate* gmu = &client->guild_member_update;
     gmu->pending = false;
-    gmu->member_type = -1;
-    gmu->status = -1;
+    gmu->member_type = 0;
+    gmu->status = 0;
     gmu->player_name.length = 0;
     gmu->minutes_since_login = 0;
 }
@@ -142,7 +142,7 @@ void HandleGuildChangePlayerStatus(Connection* conn, size_t psize, Packet* packe
     typedef struct {
         Header header;
         uint32_t minutes_since_login;
-        int32_t status;
+        uint32_t status;
     } GuildPlayerStatusChange;
 #pragma pack(pop)
 
@@ -189,6 +189,11 @@ void HandleGuildChangePlayerContext(Connection* conn, size_t psize, Packet* pack
 #pragma pack(pop)
 
     assert(packet->header == GAME_SMSG_GUILD_CHANGE_PLAYER_CONTEXT);
+    assert(sizeof(GuildPlayerStatusChange) == psize);
+
+    (void)conn;
+    (void)packet;
+
     // NOTE: Followed by GAME_SMSG_GUILD_PLAYER_CHANGE_SUBJECT
     // Not used atm
 }
@@ -210,7 +215,7 @@ void HandleGuildPlayerChangeComplete(Connection* conn, size_t psize, Packet* pac
     assert(client&& client->game_srv.secured);
 
     GuildMember* member = complete_guildmember_update(client, pack->account_name, ARRAY_SIZE(pack->account_name));
-    if(member && !list_empty(&client->event_mgr.callbacks[EventType_GuildMember_Updated])) {
+    if (member && !list_empty(&client->event_mgr.callbacks[EventType_GuildMember_Updated])) {
         Event_GuildMemberUpdated event;
         api_make_guild_member(&event.member, member);
         broadcast_event(&client->event_mgr, EventType_GuildMember_Updated, &event);
@@ -235,11 +240,11 @@ void HandleGuildPlayerInfo(Connection* conn, size_t psize, Packet* packet)
 #pragma pack(pop)
 
     assert(packet->header == GAME_SMSG_GUILD_PLAYER_INFO);
-    //assert(sizeof(GuildPlayerInfo) == psize);
+    assert(sizeof(GuildPlayerInfo) == psize);
 
     GwClient* client = cast(GwClient*)conn->data;
     GuildPlayerInfo* pack = cast(GuildPlayerInfo*)packet;
-    int size = sizeof(GuildPlayerInfo);
+
     //wchar_t invited_name[40]
     assert(client && client->game_srv.secured);
     assert(client->player->guild);
@@ -388,7 +393,6 @@ void HandleGuildInviteReceived(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(GuildInvite) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    GuildInvite *pack = cast(GuildInvite *)packet;
     assert(client && client->game_srv.secured);
 
     // @Cleanup:

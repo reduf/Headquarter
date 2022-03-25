@@ -10,7 +10,7 @@ void begin_travel(GwClient *client)
 }
 
 void start_loading_new_zone(GwClient *client, struct sockaddr *host,
-    uint32_t map_id, uint32_t world_id, uint32_t player_id, bool record_packets)
+    uint32_t map_id, uint32_t world_id, uint32_t player_id)
 {
     LogDebug("start_loading_new_zone {map_id: %lu, player_id: %lu}", map_id, player_id);
 
@@ -80,7 +80,7 @@ void HandleGameServerInfo(Connection *conn, size_t psize, Packet *packet)
 
     struct sockaddr host;
     memcpy(&host, pack->host, sizeof(host));
-    start_loading_new_zone(client, &host, pack->map_id, pack->world_id, pack->player_id, true);
+    start_loading_new_zone(client, &host, pack->map_id, pack->world_id, pack->player_id);
 }
 
 void HandleGameTransferInfo(Connection *conn, size_t psize, Packet *packet)
@@ -107,7 +107,7 @@ void HandleGameTransferInfo(Connection *conn, size_t psize, Packet *packet)
     client->world.region = pack->region;
     struct sockaddr host;
     memcpy(&host, pack->host, sizeof(host));
-    start_loading_new_zone(client, &host, pack->map_id, pack->world_id, pack->player_id, true);
+    start_loading_new_zone(client, &host, pack->map_id, pack->world_id, pack->player_id);
     broadcast_event(&client->event_mgr, WORLD_MAP_LEAVE, NULL);
 }
 
@@ -243,7 +243,7 @@ void extract_district(World *world,
     }
 }
 
-void GameSrv_Travel(GwClient *client, int map_id, District district, int district_number)
+void GameSrv_Travel(GwClient *client, uint16_t map_id, District district, uint16_t district_number)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -289,7 +289,6 @@ void HandleInstanceTravelTimer(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(PartyTravel) == psize);
     
     GwClient *client = cast(GwClient *)conn->data;
-    PartyTravel *pack = cast(PartyTravel *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -306,7 +305,6 @@ void HandleInstanceLoaded(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(InstanceLoaded) == psize);
     
     GwClient *client = cast(GwClient *)conn->data;
-    InstanceLoaded *pack = cast(InstanceLoaded *)packet;
     assert(client && client->game_srv.secured);
 
     client->ingame = true;

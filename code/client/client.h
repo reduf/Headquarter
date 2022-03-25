@@ -35,6 +35,8 @@ typedef struct GameServerTransfer {
     struct sockaddr host;
 } GameServerTransfer;
 
+typedef array(uint32_t) array_uint32_t;
+
 //
 // AwaitState is used to connect and start playing a character.
 // Every state should be added here to precisely know what is
@@ -135,7 +137,7 @@ typedef struct GwClient {
     ObjectManager       object_mgr;
 
     ArrayItem           tmp_merchant_items;
-    array(uint32_t)      tmp_merchant_prices;
+    array_uint32_t      tmp_merchant_prices;
     ArrayItem           merchant_items;
     AgentId             merchant_agent_id;
     AgentId             interact_with;

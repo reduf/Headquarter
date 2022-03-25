@@ -78,6 +78,8 @@ void ContinueAccountLogin(GwClient *client, uint32_t error_code)
 
 void ContinueSendHardwareInfo(GwClient *client, uint32_t error_code)
 {
+    LogDebug("Unused error code: %" PRIu32, error_code);
+
     assert(client->state == AwaitHardwareInfoReply);
     client->state = AwaitPlayCharacter;
     client->connected = true;

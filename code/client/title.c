@@ -66,6 +66,5 @@ void HandleTitleTrackInfo(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(TrackInfo) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    TrackInfo *pack = cast(TrackInfo *)packet;
     assert(client && client->game_srv.secured);
 }

@@ -155,7 +155,7 @@ int main(int argc, const char *argv[])
         kstr_read_ascii(&password, options.password, ARRAY_SIZE(options.password));
 
         if (options.newauth) {
-            portal_login(&client->email, &password);
+            portal_dll_login(&client->email, &password);
         } else {
             compute_pswd_hash(&client->email, &password, client->password);
         }

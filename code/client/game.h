@@ -26,17 +26,17 @@ void GameSrv_HeroSetBehavior(GwClient *client, AgentId agent_id, HeroBehavior be
 void GameSrv_HeroSkillToggle(GwClient *client, AgentId agent_id, int skill_slot);
 void GameSrv_TravelGH(GwClient *client, const uuid_t guild_uuid);
 void GameSrv_LeaveGH(GwClient *client);
-void GameSrv_Travel(GwClient *client, int map_id, District district, int district_number);
+void GameSrv_Travel(GwClient *client, uint16_t map_id, District district, uint16_t district_number);
 void GameSrv_ReturnToOutpost(GwClient *client);
 void GameSrv_UseItem(GwClient *client, Item *item);
 void GameSrv_InteractItem(GwClient *client, uint32_t agent_id);
-void GameSrv_MoveItem(GwClient *client, Item *item, Bag *bag, int slot);
+void GameSrv_MoveItem(GwClient *client, Item *item, Bag *bag, uint8_t slot);
 void GameSrv_StartSalvage(GwClient *client, Item *kit, Item *item);
 void GameSrv_CancelSalvage(GwClient *client);
 void GameSrv_SalvageDone(GwClient *client);
 void GameSrv_SalvageMaterials(GwClient *client);
 void GameSrv_SalvageUpgrade(GwClient *client, size_t index);
-void GameSrv_UnequipItem(GwClient *client, EquipedItemSlot equip_slot, Bag *bag, int slot);
+void GameSrv_UnequipItem(GwClient *client, EquipedItemSlot equip_slot, Bag *bag, uint8_t slot);
 void GameSrv_Identify(GwClient* client, Item* kit, Item* item);
 void GameSrv_TransactItems(GwClient *client, TransactionType type,
     int gold_send, TransactionInfo *send_info,
@@ -57,8 +57,8 @@ void GameSrv_AddHero(GwClient *client, HeroID hero_id);
 void GameSrv_KickHero(GwClient *client, HeroID hero_id);
 void GameSrv_PS_SeekParty(GwClient *client, PartySearchType type, struct kstr *msg);
 void GameSrv_PS_CancelSeek(GwClient *client);
-void GameSrv_PS_RequestJoin(GwClient *client, int party_search_id);
-void GameSrv_PS_RequestReply(GwClient *client, int party_search_id);
+void GameSrv_PS_RequestJoin(GwClient *client, uint16_t party_search_id);
+void GameSrv_PS_RequestReply(GwClient *client, uint16_t party_search_id);
 void GameSrv_PS_ChangeType(GwClient *client, PartySearchType type);
 void GameSrv_DonateFaction(GwClient *client, FactionType faction, int amount);
 void GameSrv_AbandonQuest(GwClient *client, int quest_id);

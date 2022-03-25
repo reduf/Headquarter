@@ -5,7 +5,7 @@
 
 void begin_travel(GwClient *client);
 void start_loading_new_zone(GwClient *client, struct sockaddr *host,
-    uint32_t map_id, uint32_t world_hash, uint32_t player_hash, bool record_packets);
+    uint32_t map_id, uint32_t world_hash, uint32_t player_hash);
 
 typedef struct World World;
 void extract_district(World *world,

@@ -81,7 +81,7 @@ void *read_entire_file(const char *path, size_t *length)
     size_t size = file_size(file);
     char *buffer = cast(char *)malloc(size + 1);
     int read = fread(buffer, 1, size, file);
-    if (read > 0 && read == size) {
+    if (read > 0 && (size_t)read == size) {
         if (length) *length = size;
         buffer[read] = 0;
     } else {

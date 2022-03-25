@@ -4,22 +4,20 @@
 #define CORE_GUILD_H
 
 typedef struct GuildMember {
-    struct kstr     account_name;
-    struct kstr     player_name;
-    //struct kstr     invited_by;
-    uint16_t        account_name_buffer[20];
-    uint16_t        player_name_buffer[20];
-    //uint16_t        invited_by_buffer[20];
+    uint16_t account_name_buffer[20];
+    uint16_t player_name_buffer[20];
 
-    uint64_t          last_login_utc;
-    //uint32_t        join_date;
-    uint8_t         status;
-    uint8_t         member_type;
+    uint64_t last_login_utc;
+    uint32_t status;
+    uint32_t member_type;
+
+    struct kstr account_name;
+    struct kstr player_name;
 } GuildMember;
 typedef array(GuildMember) ArrayGuildMember;
 
 typedef struct Guild {
-    uint32_t          guild_id;
+    uint32_t        guild_id;
     uuid_t          guild_uuid;
 
     FactionType     allegiance;
@@ -36,8 +34,8 @@ typedef array(Guild) ArrayGuild;
 
 typedef struct GuildMemberUpdate {
     bool pending;
-    int8_t status;
-    int8_t member_type;
+    uint32_t status;
+    uint8_t  member_type;
     uint32_t minutes_since_login;
     struct kstr player_name;
     uint16_t player_name_buffer[20];

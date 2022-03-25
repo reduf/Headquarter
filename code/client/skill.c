@@ -487,7 +487,7 @@ void HandleAgentUpdateAttribute(Connection *conn, size_t psize, Packet *packet)
         Header header;
         AgentId agent_id;
         uint32_t n_data;
-        int32_t data[48];
+        uint32_t data[48];
     } UpdateAttribute;
 #pragma pack(pop)
 

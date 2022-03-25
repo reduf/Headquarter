@@ -161,6 +161,5 @@ void HandleFriendStreamEnd(Connection *conn, size_t psize, Packet *packet)
     assert(packet->header == AUTH_SMSG_FRIEND_STREAM_END);
     assert(sizeof(FriendStreamEnd) == psize);
 
-    GwClient *client = cast(GwClient *)conn->data;
-    FriendStreamEnd *pack = cast(FriendStreamEnd *)packet;
+    (void)conn;
 }

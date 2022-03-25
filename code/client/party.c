@@ -3,7 +3,7 @@
 #endif
 #define CORE_PARTY_C
 
-Player *get_player_safe(GwClient *client, int player_id)
+Player *get_player_safe(GwClient *client, uint32_t player_id)
 {
     if (!(client && client->ingame && client->world.hash))
         return NULL;
@@ -14,7 +14,7 @@ Player *get_player_safe(GwClient *client, int player_id)
     return array_at(*players, player_id);
 }
 
-Party *get_party_safe(GwClient *client, int party_id)
+Party *get_party_safe(GwClient *client, uint32_t party_id)
 {
     if (!(client && client->ingame && client->world.hash))
         return NULL;
@@ -24,7 +24,7 @@ Party *get_party_safe(GwClient *client, int party_id)
     return &array_at(*parties, party_id);
 }
 
-PartyPlayer *get_party_player(Party *party, int player_id)
+PartyPlayer *get_party_player(Party *party, uint32_t player_id)
 {
     assert(party);
     PartyPlayer *it;
@@ -166,7 +166,6 @@ void HandlePartyInviteAdd(Connection *conn, size_t psize, Packet *packet)
     assert(psize == sizeof(InviteAdd));
 
     GwClient *client = cast(GwClient *)conn->data;
-    InviteAdd *pack = cast(InviteAdd *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -211,7 +210,6 @@ void HandlePartyInviteCancel(Connection *conn, size_t psize, Packet *packet)
     assert(psize == sizeof(InviteCancel));
 
     GwClient *client = cast(GwClient *)conn->data;
-    InviteCancel *pack = cast(InviteCancel *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -230,7 +228,6 @@ void HandlePartyRequestCancel(Connection *conn, size_t psize, Packet *packet)
     assert(psize == sizeof(RequestCancel));
 
     GwClient *client = cast(GwClient *)conn->data;
-    RequestCancel *pack = cast(RequestCancel *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -247,7 +244,6 @@ void HandlePartyYouAreLeader(Connection *conn, size_t psize, Packet *packet)
     assert(psize == sizeof(YouAreLeader));
 
     GwClient *client = cast(GwClient *)conn->data;
-    YouAreLeader *pack = cast(YouAreLeader *)packet;
     assert(client && client->game_srv.secured);
 
     // This is bad
@@ -578,7 +574,6 @@ void HandlePartySearchRequestJoin(Connection *conn, size_t psize, Packet *packet
     assert(sizeof(RequestJoin) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    RequestJoin *pack = cast(RequestJoin *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -669,7 +664,6 @@ void HandlePartySearchRemove(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(PacketType) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    PacketType *pack = cast(PacketType *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -706,7 +700,6 @@ void HandlePartySearchType(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(PacketType) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    PacketType *pack = cast(PacketType *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -736,7 +729,7 @@ void GameSrv_PS_CancelSeek(GwClient *client)
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
 
-void GameSrv_PS_RequestJoin(GwClient *client, int party_search_id)
+void GameSrv_PS_RequestJoin(GwClient *client, uint16_t party_search_id)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -752,7 +745,7 @@ void GameSrv_PS_RequestJoin(GwClient *client, int party_search_id)
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
 
-void GameSrv_PS_RequestReply(GwClient *client, int party_search_id)
+void GameSrv_PS_RequestReply(GwClient *client, uint16_t party_search_id)
 {
 #pragma pack(push, 1)
     typedef struct {

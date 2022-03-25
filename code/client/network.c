@@ -242,7 +242,7 @@ SockAddressArray IPv4ToAddrEx(const char *host, const char *port)
 
     size_t found = 1;
     struct addrinfo *it = results;
-    while ((it = it->ai_next))
+    while ((it = it->ai_next) != NULL)
         found++;
 
     array_init(ret, found);
@@ -329,7 +329,7 @@ static bool socket_would_block(int err)
 static bool socket_set_nonblock(struct socket *sock)
 {
 #if _WIN32
-    int nonblock = 1;
+    u_long nonblock = 1;
     int iresult = ioctlsocket(sock->handle, FIONBIO, &nonblock);
     if (iresult == SOCKET_ERROR) {
         LogError("ioctlsocket failed: %d", os_errno);
@@ -670,7 +670,7 @@ void NetConn_Send(Connection *conn)
 
     mbedtls_arc4_crypt(&conn->encrypt, size, buff, buff);
 
-    int result = send(conn->fd.handle, out->data, out->size, 0);
+    int result = send(conn->fd.handle, cast(const char *)out->data, out->size, 0);
     if (result == SOCKET_ERROR) {
         LogError("send failed: %d", os_errno);
         NetConn_HardShutdown(conn);
@@ -692,7 +692,7 @@ void NetConn_Recv(Connection *conn)
 
     uint8_t buffer[5840];
     size_t size = conn->in.capacity - conn->in.size;
-    int iresult = recv(conn->fd.handle, buffer, size, 0);
+    int iresult = recv(conn->fd.handle, cast(char *)buffer, size, 0);
 
     int err = os_errno;
     if (iresult == SOCKET_ERROR) {

@@ -239,8 +239,8 @@ HQAPI District GetDistrict(void)
 {
     assert(client != NULL);
 
-    District         district;
-    DistrictRegion   region;
+    District district = DISTRICT_CURRENT;
+    DistrictRegion region;
     DistrictLanguage language;
 
     thread_mutex_lock(&client->mutex);
@@ -312,7 +312,7 @@ leave:
     return district_number;
 }
 
-HQAPI void Travel(uint32_t map_id, District district, int district_number)
+HQAPI void Travel(uint32_t map_id, District district, uint16_t district_number)
 {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
@@ -322,7 +322,8 @@ HQAPI void Travel(uint32_t map_id, District district, int district_number)
     // DistrictRegion region;
     // DistrictLanguage language;
     // extract_district(client->world, district, &region, &language);
-    GameSrv_Travel(client, map_id, district, district_number);
+    assert(map_id <= (uint32_t)UINT16_MAX);
+    GameSrv_Travel(client, cast(uint16_t)map_id, district, district_number);
 leave:
     thread_mutex_unlock(&client->mutex);
 }
@@ -1174,7 +1175,7 @@ leave:
     thread_mutex_unlock(&client->mutex);
 }
 
-void MoveItem(uint32_t item_id, BagEnum bag, int slot)
+void MoveItem(uint32_t item_id, BagEnum bag, uint8_t slot)
 {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
@@ -1191,7 +1192,7 @@ leave:
     thread_mutex_unlock(&client->mutex);
 }
 
-HQAPI void UnequipItem(EquipedItemSlot equip_slot, BagEnum bag, int slot)
+HQAPI void UnequipItem(EquipedItemSlot equip_slot, BagEnum bag, uint8_t slot)
 {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);

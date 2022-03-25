@@ -848,7 +848,6 @@ void HandleAgentUpdateNpcName(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(NpcName) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    NpcName *pack = cast(NpcName *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -873,7 +872,6 @@ void HandleNPCUpdateProperties(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(NPCProperties) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    NPCProperties *pack = cast(NPCProperties *)packet;
     assert(client && client->game_srv.secured);
 }
 
@@ -892,8 +890,9 @@ void HandleNPCUpdateModel(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(NpcModel) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    NpcModel *pack = cast(NpcModel *)packet;
     assert(client && client->game_srv.secured);
+
+    (void)packet;
 }
 
 void HandleAgentCreateNPC(Connection *conn, size_t psize, Packet *packet)
@@ -911,8 +910,9 @@ void HandleAgentCreateNPC(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(NPCAgent) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    NPCAgent *pack = cast(NPCAgent *)packet;
     assert(client && client->game_srv.secured);
+
+    (void)packet;
 }
 
 void HandlePlayerUnlockedProfession(Connection *conn, size_t psize, Packet *packet)

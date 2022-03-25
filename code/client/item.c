@@ -440,10 +440,9 @@ void HandleWindowAddPrices(Connection* conn, size_t psize, Packet* packet)
     AddPrices* pack = cast(AddPrices*)packet;
     assert(client&& client->game_srv.secured);
 
-    ArrayItem* merchant_items = &client->tmp_merchant_items;
-
+    array_uint32_t* merchant_prices = &client->tmp_merchant_prices;
     for (size_t i = 0; i < pack->n_prices; i++) {
-        array_add(client->tmp_merchant_prices, pack->prices[i]);
+        array_add(*merchant_prices, pack->prices[i]);
     }
 }
 
@@ -555,7 +554,7 @@ void GameSrv_InteractItem(GwClient *client, uint32_t agent_id)
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 }
 
-void GameSrv_MoveItem(GwClient *client, Item *item, Bag *bag, int slot)
+void GameSrv_MoveItem(GwClient *client, Item *item, Bag *bag, uint8_t slot)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -567,6 +566,7 @@ void GameSrv_MoveItem(GwClient *client, Item *item, Bag *bag, int slot)
 #pragma pack(pop)
 
     assert(client && client->game_srv.secured);
+
     ItemMove packet = NewPacket(GAME_CMSG_ITEM_MOVE);
     packet.item_id = item->item_id;
     packet.bag_id = bag->bag_id;
@@ -713,7 +713,6 @@ void HandleSalvageSessionSuccess(Connection* conn, size_t psize, Packet* packet)
 
     GwClient* client = cast(GwClient*)conn->data;
     assert(client && client->game_srv.secured);
-    SalvageSession* session = &client->salvage_session;
 
     GameSrv_SalvageDone(client);
 }
@@ -731,12 +730,10 @@ void HandleSalvageSessionItemKept(Connection *conn, size_t psize, Packet *packet
     assert(sizeof(SalvagePacket) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
-    SalvagePacket *pack = cast(SalvagePacket *)packet;
     assert(client && client->game_srv.secured);
-    SalvageSession *session = &client->salvage_session;
 }
 
-void GameSrv_UnequipItem(GwClient *client, EquipedItemSlot equip_slot, Bag *bag, int slot)
+void GameSrv_UnequipItem(GwClient *client, EquipedItemSlot equip_slot, Bag *bag, uint8_t slot)
 {
 #pragma pack(push, 1)
     typedef struct {

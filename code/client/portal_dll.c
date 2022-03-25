@@ -34,6 +34,9 @@ uuid_t portal_session_id;
 
 static void OnPortalNotify(uint32_t msgid, uint32_t unk1, void *data, void *param)
 {
+    (void)unk1;
+    (void)param;
+
     uint8_t *user_id = NULL;
     uint8_t *bytes = (uint8_t *)data;
     LogInfo("Portal notify %lu", msgid);
@@ -87,17 +90,18 @@ bool portal_dll_init(void)
         LogError("Couldn't load Portal.dll (%d)", os_errno);
         return false;
     }
+
     LogInfo("portal dll found @ %s", file_path);
 
-    *(FARPROC *)&PortalInitialize           = dllsym(hPortal, "PortalInitialize");
-    *(FARPROC *)&PortalDestroy              = dllsym(hPortal, "PortalDestroy");
-    *(FARPROC *)&PortalStartCleanup         = dllsym(hPortal, "PortalStartCleanup");
-    *(FARPROC *)&PortalRegisterNotify       = dllsym(hPortal, "PortalRegisterNotify");
-    *(FARPROC *)&PortalLogin                = dllsym(hPortal, "PortalLogin");
-    *(FARPROC *)&PortalListGameAccounts     = dllsym(hPortal, "PortalListGameAccounts");
-    *(FARPROC *)&PortalRequestGameToken     = dllsym(hPortal, "PortalRequestGameToken");
-    *(FARPROC *)&PortalGetUserId            = dllsym(hPortal, "PortalGetUserId");
-    *(FARPROC*)&PortalLoginSecondaryAuth    = dllsym(hPortal, "PortalLoginSecondaryAuth");
+    *(void **)&PortalInitialize           = dllsym(hPortal, "PortalInitialize");
+    *(void **)&PortalDestroy              = dllsym(hPortal, "PortalDestroy");
+    *(void **)&PortalStartCleanup         = dllsym(hPortal, "PortalStartCleanup");
+    *(void **)&PortalRegisterNotify       = dllsym(hPortal, "PortalRegisterNotify");
+    *(void **)&PortalLogin                = dllsym(hPortal, "PortalLogin");
+    *(void **)&PortalListGameAccounts     = dllsym(hPortal, "PortalListGameAccounts");
+    *(void **)&PortalRequestGameToken     = dllsym(hPortal, "PortalRequestGameToken");
+    *(void **)&PortalGetUserId            = dllsym(hPortal, "PortalGetUserId");
+    *(void **)&PortalLoginSecondaryAuth   = dllsym(hPortal, "PortalLoginSecondaryAuth");
     
 
     PortalInitialize(6112);

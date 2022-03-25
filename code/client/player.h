@@ -19,7 +19,7 @@ typedef struct PlayerHero {
 typedef struct Player {
     GameObject  object;
 
-    int32_t     player_id;
+    uint32_t    player_id;
     AgentId     agent_id;
 
     struct kstr name;

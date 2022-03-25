@@ -1,8 +1,8 @@
 typedef struct ApiGuildMember {
     uint16_t account_name[20];
     uint16_t player_name[20];
-    uint8_t status;
-    uint8_t type;
+    uint32_t status;
+    uint32_t type;
     uint64_t last_login_utc;
 } ApiGuildMember;
 
