@@ -79,7 +79,7 @@ static void ensure_agent_exist(GwClient *client, AgentId id)
         agents->size = agents->capacity;
     }
 
-    Agent *agent = cast(Agent *)game_object_alloc(&client->object_mgr, ObjectType_Agent);
+    Agent *agent = malloc(sizeof(*agent));
     agent->agent_id = id;
     agent->speed_modifier = 1.f;
     array_set(agents, id, agent);
@@ -90,7 +90,8 @@ static void remove_agent(GwClient *client, AgentId id)
     ArrayAgent *agents = &client->world.agents;
     if (!array_inside(agents, id))
         return;
-    game_object_free(&client->object_mgr, &array_at(agents, id)->object);
+
+    free(agents->data[id]);
     agents->data[id] = NULL;
 }
 
@@ -614,7 +615,7 @@ void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
     Player *player = array_at(players, pack->player_id);
 
     if (player == NULL) {
-        player = cast(Player *)game_object_alloc(&client->object_mgr, ObjectType_Player);
+        player = malloc(sizeof(*player));
         assert(player != NULL);
         init_player(player);
         array_set(players, pack->player_id, player);

@@ -137,7 +137,6 @@ typedef struct GwClient {
     Player             *player;
 
     EventManager        event_mgr;
-    ObjectManager       object_mgr;
 
     ArrayItem           tmp_merchant_items;
     array_uint32_t      tmp_merchant_prices;

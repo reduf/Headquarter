@@ -32,24 +32,27 @@ static void init_world(World *world, uint32_t hash)
     world->hash = hash;
 }
 
-static void reset_world(World *world, ObjectManager *mgr)
+static void reset_world(World *world)
 {
-    Bag      *bag;
-    Item    **item;
-    Agent   **agent;
-    Player  **player;
+    Item **item;
+    array_foreach(item, &world->items) {
+        free(*item);
+    }
 
-    array_foreach(item, &world->items)
-        game_object_free(mgr, &(*item)->object);
+    Agent **agent;
+    array_foreach(agent, &world->agents) {
+        free(*agent);
+    }
 
-    array_foreach(agent, &world->agents)
-        game_object_free(mgr, &(*agent)->object);
+    Player **player;
+    array_foreach(player, &world->players) {
+        free(*player);
+    }
 
-    array_foreach(player, &world->players)
-        game_object_free(mgr, &(*player)->object);
-
-    array_foreach(bag, &world->bags)
+    Bag *bag;
+    array_foreach(bag, &world->bags) {
         array_reset(&bag->items);
+    }
 
     array_reset(&world->bags);
     array_reset(&world->items);

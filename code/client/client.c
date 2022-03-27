@@ -31,7 +31,6 @@ void init_client(GwClient *client)
 
     client->next_transaction_id = 1;
 
-    init_object_manager(&client->object_mgr);
     init_event_manager(&client->event_mgr);
 
     init_guildmember_update(client);

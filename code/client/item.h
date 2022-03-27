@@ -4,7 +4,6 @@
 #define CORE_ITEM_H
 
 typedef struct Item {
-    GameObject  object;
     uint32_t    item_id;
     AgentId     agent_id;
 

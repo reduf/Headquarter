@@ -78,7 +78,6 @@
 // @Cleanup: Temporary
 typedef struct GwClient GwClient;
 
-#include "object.h"
 #include "bag.h"
 #include "chat.h"
 #include "item.h"
@@ -128,7 +127,6 @@ typedef struct GwClient GwClient;
 #include "instance.c"
 #include "merchant.c"
 
-#include "object.c"
 #include "world.c"
 #include "event.c"
 #include "client.c"

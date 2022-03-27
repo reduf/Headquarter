@@ -42,4 +42,4 @@ void world_update_after_input(World *world, msec_t diff);
 void world_update_before_input(World *world, msec_t diff);
 
 static void init_world(World *world, uint32_t hash);
-static void reset_world(World *world, ObjectManager *mgr);
+static void reset_world(World *world);
