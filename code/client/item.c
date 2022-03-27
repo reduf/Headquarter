@@ -3,15 +3,18 @@
 #endif
 #define CORE_ITEM_C
 
-uint32_t item_mod_identifier(uint32_t mod) {
+uint32_t item_mod_identifier(uint32_t mod)
+{
     return mod >> 16;
 }
 
-uint32_t item_mod_arg1(uint32_t mod) {
+uint32_t item_mod_arg1(uint32_t mod)
+{
     return (mod & 0x0000FF00) >> 8;
 }
 
-uint32_t item_mod_arg2(uint32_t mod) {
+uint32_t item_mod_arg2(uint32_t mod)
+{
     return (mod & 0x000000FF);
 }
 
