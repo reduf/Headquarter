@@ -133,7 +133,7 @@ void HandleGuildPlayerRole(Connection *conn, size_t psize, Packet *packet)
     if (client->player) client->player->guild = guild;
     if (pack->member_type > 2) {
         // We can see this guild's members - prepare the array to receive the feed.
-        array_init(&guild->members,100);
+        array_init(&guild->members);
     }
 }
 

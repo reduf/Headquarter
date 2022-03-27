@@ -299,7 +299,7 @@ void HandleInventoryCreateBag(Connection *conn, size_t psize, Packet *packet)
     bag->bag_id = pack->bag_id;
     bag->type = (BagType)pack->bag_type;
     bag->model = (BagEnum)pack->bag_model_id;
-    array_init(&bag->items, pack->slot_count);
+    array_init(&bag->items);
     array_resize(&bag->items, pack->slot_count);
 
     assert(pack->bag_model_id < BagEnum_Count);

@@ -154,13 +154,16 @@ static int auth_login_finish(struct sts_connection *sts, struct ssl_sts_connecti
     const size_t url_len = sizeof(url) - 1;
 
     array_uint8_t content;
-    array_init(&content, 1024);
+    array_init(&content);
+    array_reserve(&content, 1024);
+
     appendf(&content, "<Request>\n");
     appendf(&content, "<Language>en</Language>\n");
     appendf(&content, "</Request>\n");
 
     array_uint8_t request;
-    array_init(&request, 1024);
+    array_init(&request);
+    array_reserve(&request, 1024);
     int ret = sts_write_request_with_sequence_number(
         &request,
         url, url_len,
@@ -183,7 +186,8 @@ static int auth_login_finish(struct sts_connection *sts, struct ssl_sts_connecti
 
     struct sts_reply reply = {0};
     array_uint8_t response;
-    array_init(&response, 1024);
+    array_init(&response);
+    array_reserve(&response, 1024);
 
     if ((ret = recv_sts_response(ssl, &response, &reply, sts->seq_number)) != 0) {
         array_reset(&response);
@@ -305,13 +309,15 @@ static int auth_list_game_accounts(struct sts_connection *sts, struct ssl_sts_co
     const size_t url_len = sizeof(url) - 1;
 
     array_uint8_t content;
-    array_init(&content, 1024);
+    array_init(&content);
+    array_reserve(&content, 1024);
     appendf(&content, "<Request>\n");
     appendf(&content, "<GameCode>gw1</GameCode>\n");
     appendf(&content, "</Request>\n");
 
     array_uint8_t request;
-    array_init(&request, 1024);
+    array_init(&request);
+    array_reserve(&request, 1024);
     int ret = sts_write_request_with_sequence_number(
         &request,
         url, url_len,
@@ -334,7 +340,8 @@ static int auth_list_game_accounts(struct sts_connection *sts, struct ssl_sts_co
 
     struct sts_reply reply = {0};
     array_uint8_t response;
-    array_init(&response, 1024);
+    array_init(&response);
+    array_reserve(&response, 1024);
 
     if ((ret = recv_sts_response(ssl, &response, &reply, sts->seq_number)) != 0) {
         array_reset(&response);
@@ -369,14 +376,16 @@ static int auth_request_game_token(struct sts_connection *sts, struct ssl_sts_co
     // taked from the previous packet. It returns an array of such information.
 
     array_uint8_t content;
-    array_init(&content, 1024);
+    array_init(&content);
+    array_reserve(&content, 1024);
     appendf(&content, "<Request>\n");
     appendf(&content, "<GameCode>gw1</GameCode>\n");
     appendf(&content, "<AccountAlias>gw1</AccountAlias>\n");
     appendf(&content, "</Request>\n");
 
     array_uint8_t request;
-    array_init(&request, 1024);
+    array_init(&request);
+    array_reserve(&request, 1024);
     int ret = sts_write_request_with_sequence_number(
         &request,
         url, url_len,
@@ -399,7 +408,8 @@ static int auth_request_game_token(struct sts_connection *sts, struct ssl_sts_co
 
     struct sts_reply reply = {0};
     array_uint8_t response;
-    array_init(&response, 1024);
+    array_init(&response);
+    array_reserve(&response, 1024);
 
     if ((ret = recv_sts_response(ssl, &response, &reply, sts->seq_number)) != 0) {
         array_reset(&response);

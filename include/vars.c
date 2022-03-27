@@ -175,11 +175,11 @@ VarFile parse_vars_file(const char *path)
     var_file.data_size = size;
 
     VarSectionArray *sections = &var_file.sections;
-    array_init(sections, 8);
+    array_init(sections);
 
     VarSection global;
     global.name = "global";
-    array_init(&global.vars, 8);
+    array_init(&global.vars);
     array_add(sections, global);
 
     VarSection *current_section = &array_back(sections);
@@ -211,7 +211,7 @@ VarFile parse_vars_file(const char *path)
 
             VarSection sect;
             sect.name = strlwc(name, strlen(name));
-            array_init(&sect.vars, 8);
+            array_init(&sect.vars);
             array_add(sections, sect);
             current_section = &array_back(sections);
 

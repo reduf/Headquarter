@@ -58,7 +58,7 @@ union {                         \
     };                          \
 }
 
-#define array_init(a, s)        _array_init(&(a)->base, (s), sizeof(*(a)->data))
+#define array_init(a)           _array_init(&(a)->base)
 #define array_reset(a)          _array_reset(&(a)->base);
 
 #define array_reserve(a, s)     _array_reserve(&(a)->base, (s), sizeof(*(a)->data))
@@ -106,8 +106,9 @@ union {                         \
 # define array_for_reverse(a)   array_foreach_reverse(it, a)
 #endif
 
-int _array_init(array_void_t *a, size_t capacity, const size_t elem_size);
+void _array_init(array_void_t *a);
 void _array_reset(array_void_t *a);
+
 int _array_resize(array_void_t *a, size_t size, const size_t elem_size);
 int _array_reserve(array_void_t *a, size_t count, const size_t elem_size);
 void _array_remove(array_void_t *a, size_t index, const size_t elem_size);

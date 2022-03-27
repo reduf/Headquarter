@@ -5,14 +5,14 @@
 
 static void init_world(World *world, uint32_t hash)
 {
-    array_init(&world->agents, 64);
-    array_init(&world->bags, 32);
-    array_init(&world->effects, 32);
-    array_init(&world->guilds, 32);
-    array_init(&world->items, 1024);
-    array_init(&world->parties, 8);
-    array_init(&world->players, 32);
-    array_init(&world->quests, 32);
+    array_init(&world->agents);
+    array_init(&world->bags);
+    array_init(&world->effects);
+    array_init(&world->guilds);
+    array_init(&world->items);
+    array_init(&world->parties);
+    array_init(&world->players);
+    array_init(&world->quests);
 
     array_resize(&world->agents, 64);
     array_resize(&world->bags, 32);
@@ -26,7 +26,7 @@ static void init_world(World *world, uint32_t hash)
     // @Enhancement:
     // This would break if we had more than 8 skillbars.
     // We use pointers to element in a array of Skillbar.
-    array_init(&world->skillbars, 8);
+    array_init(&world->skillbars);
 
     world->player_count = 0;
     world->hash = hash;

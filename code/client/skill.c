@@ -609,7 +609,7 @@ static SkillTemplate* template_decode(const char* temp) {
         return NULL;
     }
     
-    array_init(&result->attributes, attribute_count);
+    array_init(&result->attributes);
     array_resize(&result->attributes, attribute_count);
 
     result->attributes.size = attribute_count;
