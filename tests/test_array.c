@@ -20,7 +20,7 @@ UTEST(array_init, array_init_valid_data)
     array_reset(&a);
 }
 
-UTEST(array_init, array_reserve_increase_capacity)
+UTEST(array_reserve, reserve_increase_capacity)
 {
     const size_t RESERVE_SIZE = 16;
 
@@ -37,7 +37,7 @@ UTEST(array_init, array_reserve_increase_capacity)
     array_reset(&a);
 }
 
-UTEST(array_init, array_reserve_on_non_empty_array)
+UTEST(array_reserve, reserve_on_non_empty_array)
 {
     array_int_t a;
     array_init(&a, 0);
@@ -82,6 +82,108 @@ UTEST(array_resize, resize_to_a_smaller_size)
     for (int i = 0; i < 4; ++i) {
         ASSERT_EQ(a.data[i], i);
     }
+
+    array_reset(&a);
+}
+
+UTEST(array_resize, resize_init_to_0)
+{
+    array_int_t a;
+    array_init(&a, 0);
+
+    array_resize(&a, 4);
+    for (size_t i = 0; i < a.size; ++i) {
+        ASSERT_EQ(a.data[i], 0);
+    }
+
+    array_reset(&a);
+}
+
+UTEST(array_remove, remove_first_element)
+{
+    array_int_t a;
+    array_init(&a, 0);
+
+    for (int i = 0; i < 3; ++i)
+        array_add(&a, i);
+    array_remove(&a, 0);
+
+    ASSERT_EQ(a.size, 2);
+    array_reset(&a);
+}
+
+UTEST(array_remove, remove_last_element)
+{
+    array_int_t a;
+    array_init(&a, 0);
+
+    for (int i = 0; i < 3; ++i)
+        array_add(&a, i);
+    array_remove(&a, a.size - 1);
+
+    ASSERT_EQ(a.size, 2);
+    array_reset(&a);
+}
+
+UTEST(array_remove, remove_middle_element)
+{
+    array_int_t a;
+    array_init(&a, 0);
+
+    for (int i = 0; i < 3; ++i)
+        array_add(&a, i);
+    array_remove(&a, 1);
+
+    ASSERT_EQ(a.size, 2);
+    array_reset(&a);
+}
+
+UTEST(array_remove_ordered, remove_first_element)
+{
+    array_int_t a;
+    array_init(&a, 0);
+
+    for (int i = 0; i < 3; ++i)
+        array_add(&a, i);
+    array_remove_ordered(&a, 0);
+
+    ASSERT_EQ(a.size, 2);
+    for (int i = 0; i < 2; ++i) {
+        ASSERT_EQ(a.data[i], i + 1);
+    }
+
+    array_reset(&a);
+}
+
+UTEST(array_remove_ordered, remove_last_element)
+{
+    array_int_t a;
+    array_init(&a, 0);
+
+    for (int i = 0; i < 3; ++i)
+        array_add(&a, i);
+    array_remove_ordered(&a, a.size - 1);
+
+    ASSERT_EQ(a.size, 2);
+    for (int i = 0; i < 2; ++i) {
+        ASSERT_EQ(a.data[i], i);
+    }
+
+    array_reset(&a);
+}
+
+UTEST(array_remove_ordered, remove_middle_element)
+{
+    array_int_t a;
+    array_init(&a, 0);
+
+    for (int i = 0; i < 3; ++i)
+        array_add(&a, i);
+    array_remove_ordered(&a, 1);
+
+    ASSERT_EQ(a.size, 2);
+    ASSERT_EQ(a.data[0], 0);
+    ASSERT_EQ(a.data[1], 2);
 
     array_reset(&a);
 }
