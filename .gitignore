@@ -17,3 +17,22 @@ __pycache__/
 
 # Vim
 *.swp
+
+
+CMakeFiles
+CMakeCache.txt
+*.vcxproj*
+*.cmake
+.vc
+.vs
+*.tlog
+*.obj
+*.log
+*.recipe
+*.idb
+*.pdb
+*.dll
+*.lib
+*.exp
+*.ilk
+*.sln
