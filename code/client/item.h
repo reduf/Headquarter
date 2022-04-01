@@ -3,15 +3,7 @@
 #endif
 #define CORE_ITEM_H
 
-typedef uint32_t ItemModifier;
-typedef array(ItemModifier) ArrayItemModifier;
-
-uint32_t item_mod_identifier(ItemModifier mod);
-uint32_t item_mod_arg1(ItemModifier mod);
-uint32_t item_mod_arg2(ItemModifier mod);
-
 typedef struct Item {
-    GameObject  object;
     uint32_t    item_id;
     AgentId     agent_id;
 
@@ -28,8 +20,6 @@ typedef struct Item {
     ItemType    type;
     uint32_t    slot;
     uint32_t    quote_price;
-
-    ArrayItemModifier mods;
 } Item;
 
 static void api_make_item(ApiItem *dest, Item *src)
@@ -38,19 +28,6 @@ static void api_make_item(ApiItem *dest, Item *src)
     dest->model_id  = src->model_id;
     dest->quantity  = src->quantity;
     dest->type      = src->type;
-
-    array_init(&dest->mods, array_size(&src->mods));
-    array_resize(&dest->mods, array_size(&src->mods));
-
-    ItemModifier* mod;
-    array_foreach(mod, &src->mods) {
-        ApiItemModifier apiMod;
-        apiMod.identifier = item_mod_identifier(*mod);
-        apiMod.arg1 = item_mod_arg1(*mod);
-        apiMod.arg2 = item_mod_arg2(*mod);
-
-        array_add(&dest->mods, apiMod);
-    }
 }
 
 

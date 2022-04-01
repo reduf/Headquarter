@@ -6,7 +6,6 @@
 typedef array(struct Item *) ArrayItem;
 
 typedef struct Bag {
-    GameObject object;
     uint16_t bag_id;
     
     int item_count;

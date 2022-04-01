@@ -23,14 +23,14 @@ int dllclose(void *handle)
         return -1;
 }
 
-int dlllocation(void *handle, char *buffer, int length)
+int dlllocation(char *buffer, int length)
 {
-    return GetModuleFileName((HMODULE)handle, buffer, length);
+    return GetModuleFileName(NULL, buffer, length);
 }
 
 int dlldir(char *buffer, int length)
 {
-    int len = dlllocation(NULL, buffer, length);
+    int len = dlllocation(buffer, length);
     if (len < 0)
         return len;
     char *p = strrchr(buffer, '\\');

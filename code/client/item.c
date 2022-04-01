@@ -3,15 +3,18 @@
 #endif
 #define CORE_ITEM_C
 
-uint32_t item_mod_identifier(ItemModifier mod) {
+uint32_t item_mod_identifier(uint32_t mod)
+{
     return mod >> 16;
 }
 
-uint32_t item_mod_arg1(ItemModifier mod) {
+uint32_t item_mod_arg1(uint32_t mod)
+{
     return (mod & 0x0000FF00) >> 8;
 }
 
-uint32_t item_mod_arg2(ItemModifier mod) {
+uint32_t item_mod_arg2(uint32_t mod)
+{
     return (mod & 0x000000FF);
 }
 
@@ -116,7 +119,7 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
         items->size = items->capacity;
     }
 
-    Item *new_item = cast(Item *)game_object_alloc(&client->object_mgr, ObjectType_Item);
+    Item *new_item = malloc(sizeof(*new_item));
     memset(new_item, 0, sizeof(Item));
     new_item->item_id = pack->item_id;
     new_item->flags = pack->flags;
@@ -126,12 +129,8 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
     new_item->type = pack->type;
     new_item->value = pack->value;
     kstr_read(&new_item->name, pack->name, ARRAY_SIZE(pack->name));
-    
-    for (uint32_t i = 0; i < pack->n_modifier; i++) {
-        uint32_t mod = pack->modifier[i];
-        if (mod == 0) continue;
-        array_add(&new_item->mods, mod);
-    }
+
+    // @Cleanup: Save modifier
 
     array_set(items, pack->item_id, new_item);
 }
@@ -299,7 +298,7 @@ void HandleInventoryCreateBag(Connection *conn, size_t psize, Packet *packet)
     bag->bag_id = pack->bag_id;
     bag->type = (BagType)pack->bag_type;
     bag->model = (BagEnum)pack->bag_model_id;
-    array_init(&bag->items, pack->slot_count);
+    array_init(&bag->items);
     array_resize(&bag->items, pack->slot_count);
 
     assert(pack->bag_model_id < BagEnum_Count);

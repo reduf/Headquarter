@@ -4,8 +4,6 @@
 #define CORE_AGENT_H
 
 typedef struct Agent {
-    GameObject      object;
-
     AgentId         agent_id;
     AgentType       type;
     bool            spawned;

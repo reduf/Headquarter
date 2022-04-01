@@ -164,7 +164,7 @@ static int sts_write_request(
     int ret;
 
     array_uint8_t request;
-    array_init(&request, 1024);
+    array_init(&request);
 
     if ((ret = sts_write_header(&request, url, url_len, content_len)) != 0) {
         array_reset(&request);
@@ -223,7 +223,7 @@ int sts_send_request_with_sequence_number(
     int ret;
 
     array_uint8_t request;
-    array_init(&request, 1024);
+    array_init(&request);
 
     if ((ret = sts_write_request_with_sequence_number(
             &request,
@@ -258,7 +258,7 @@ int sts_connection_connect(struct sts_connection *sts, const char *hostname)
     }
 
     array_sockaddr_t addresses;
-    array_init(&addresses, 8);
+    array_init(&addresses);
     if ((ret = resolve_dns4(&addresses, hostname, 6112)) != 0) {
         fprintf(stderr, "Failed to resolve the DNS name\n");
         return ret;
@@ -285,7 +285,7 @@ int sts_connection_connect(struct sts_connection *sts, const char *hostname)
     }
 
     array_uint8_t content;
-    array_init(&content, 1024);
+    array_init(&content);
 
     appendf(&content, "<Connect>\n");
     appendf(&content, "<ConnType>400</ConnType>\n");
@@ -330,7 +330,7 @@ int sts_connection_start_tls(struct sts_connection *sts, struct ssl_sts_connecti
     }
 
     array_uint8_t buffer;
-    array_init(&buffer, 1024);
+    array_init(&buffer);
 
     struct sts_reply reply = {0};
     for (;;) {

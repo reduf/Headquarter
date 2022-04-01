@@ -24,25 +24,15 @@ msdn_realloc(void *addr, size_t size)
     }
 }
 
-int
-_array_init(array_void_t *a, size_t capacity, const size_t elem_size)
+void _array_init(array_void_t *a)
 {
-    assert(a && elem_size > 0);
-
-    capacity = array_max(capacity, ARRAY_MIN_CAPACITY);
+    assert(a);
+    a->capacity = 0;
     a->size = 0;
-    a->data = msdn_realloc(NULL, capacity * elem_size);
-    if (!a->data)
-        return 0;
-#ifdef ARRAY_ALLOC_ZERO
-    memset(a->data, 0, capacity * elem_size);
-#endif
-    a->capacity = capacity;
-    return 1;
+    a->data = NULL;
 }
 
-void
-_array_reset(array_void_t *a)
+void _array_reset(array_void_t *a)
 {
     a->size = 0;
     a->capacity = 0;

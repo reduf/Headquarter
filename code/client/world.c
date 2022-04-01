@@ -5,14 +5,14 @@
 
 static void init_world(World *world, uint32_t hash)
 {
-    array_init(&world->agents, 64);
-    array_init(&world->bags, 32);
-    array_init(&world->effects, 32);
-    array_init(&world->guilds, 32);
-    array_init(&world->items, 1024);
-    array_init(&world->parties, 8);
-    array_init(&world->players, 32);
-    array_init(&world->quests, 32);
+    array_init(&world->agents);
+    array_init(&world->bags);
+    array_init(&world->effects);
+    array_init(&world->guilds);
+    array_init(&world->items);
+    array_init(&world->parties);
+    array_init(&world->players);
+    array_init(&world->quests);
 
     array_resize(&world->agents, 64);
     array_resize(&world->bags, 32);
@@ -26,30 +26,33 @@ static void init_world(World *world, uint32_t hash)
     // @Enhancement:
     // This would break if we had more than 8 skillbars.
     // We use pointers to element in a array of Skillbar.
-    array_init(&world->skillbars, 8);
+    array_init(&world->skillbars);
 
     world->player_count = 0;
     world->hash = hash;
 }
 
-static void reset_world(World *world, ObjectManager *mgr)
+static void reset_world(World *world)
 {
-    Bag      *bag;
-    Item    **item;
-    Agent   **agent;
-    Player  **player;
+    Item **item;
+    array_foreach(item, &world->items) {
+        free(*item);
+    }
 
-    array_foreach(item, &world->items)
-        game_object_free(mgr, &(*item)->object);
+    Agent **agent;
+    array_foreach(agent, &world->agents) {
+        free(*agent);
+    }
 
-    array_foreach(agent, &world->agents)
-        game_object_free(mgr, &(*agent)->object);
+    Player **player;
+    array_foreach(player, &world->players) {
+        free(*player);
+    }
 
-    array_foreach(player, &world->players)
-        game_object_free(mgr, &(*player)->object);
-
-    array_foreach(bag, &world->bags)
+    Bag *bag;
+    array_foreach(bag, &world->bags) {
         array_reset(&bag->items);
+    }
 
     array_reset(&world->bags);
     array_reset(&world->items);

@@ -49,7 +49,7 @@ void TransferGameServer(GwClient *client)
         transfer->world_id, transfer->player_id, transfer->map_id)) {
 
         LogError("Game handshake failed !");
-        reset_world(&client->world, &client->object_mgr);
+        reset_world(&client->world);
         NetConn_Reset(&client->game_srv);
         client->state = AwaitNothing;
         return;

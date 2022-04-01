@@ -141,8 +141,8 @@ void ssl_sts_connection_init(struct ssl_sts_connection *ssl)
     mbedtls_md_init(&ssl->mac_enc);
     mbedtls_md_init(&ssl->mac_dec);
 
-    array_init(&ssl->read, 1024);
-    array_init(&ssl->write, 1024);
+    array_init(&ssl->read);
+    array_init(&ssl->write);
 }
 
 void ssl_sts_connection_free(struct ssl_sts_connection *ssl)
@@ -501,7 +501,7 @@ static int ssl_sts_connection_send_internal(
     iv_buffer = NULL;
 
     array_uint8_t buffer;
-    array_init(&buffer, data_len + 32);
+    array_init(&buffer);
     if ((ret = ssl_srp_build_message_to_encrypt(&buffer, &ssl->mac_enc, data, data_len)) != 0) {
         array_reset(&buffer);
         return ERR_SSL_UNSUCCESSFUL;

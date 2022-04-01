@@ -67,8 +67,11 @@ void init_connection(Connection *conn, void *data)
 
     thread_mutex_init(&conn->mutex);
 
-    array_init(&conn->in, 5840);
-    array_init(&conn->out, 5840);
+    array_init(&conn->in);
+    array_init(&conn->out);
+
+    array_reserve(&conn->in, 5840);
+    array_reserve(&conn->out, 5840);
 }
 
 #pragma pack(push, 1)
@@ -245,7 +248,8 @@ SockAddressArray IPv4ToAddrEx(const char *host, const char *port)
     while ((it = it->ai_next) != NULL)
         found++;
 
-    array_init(&ret, found);
+    array_init(&ret);
+    array_resize(&ret, found);
 
     it = results;
     for (size_t i = 0; i < found; i++) {

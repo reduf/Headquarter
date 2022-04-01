@@ -17,8 +17,6 @@ typedef struct PlayerHero {
 } PlayerHero;
 
 typedef struct Player {
-    GameObject  object;
-
     uint32_t    player_id;
     AgentId     agent_id;
 

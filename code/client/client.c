@@ -17,22 +17,20 @@ void init_client(GwClient *client)
     client->loading = true;
     client->connected = true;
 
-    array_init(&client->characters, 16);
-    array_init(&client->merchant_items, 360);
-    array_init(&client->trade_session.trader_items, 7);
-    array_init(&client->trade_session.player_items, 7);
-    array_init(&client->titles, 64);
-    array_resize(&client->titles, 64);
-    array_init(&client->friends, 150);
+    array_init(&client->characters);
+    array_init(&client->merchant_items);
+    array_init(&client->trade_session.trader_items);
+    array_init(&client->trade_session.player_items);
+    array_init(&client->titles);
+    array_init(&client->friends);
+    array_init(&client->dialog.buttons);
 
-    // @Cleanup: What is the practical max amount of button in the game.
-    array_init(&client->dialog.buttons, 16);
+    array_resize(&client->titles, 64);
 
     init_chat(&client->chat);
 
     client->next_transaction_id = 1;
 
-    init_object_manager(&client->object_mgr);
     init_event_manager(&client->event_mgr);
 
     init_guildmember_update(client);

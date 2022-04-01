@@ -381,7 +381,7 @@ void AuthSrv_SendPacket35(Connection *conn)
 
 void AuthSrv_RegisterCallbacks(Connection *conn)
 {
-    array_init(&conn->handlers, AUTH_SMSG_COUNT);
+    array_init(&conn->handlers);
     array_resize(&conn->handlers, AUTH_SMSG_COUNT);
 
     MsgHandler *handlers = conn->handlers.data;

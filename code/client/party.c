@@ -378,9 +378,9 @@ void HandlePartyCreate(Connection *conn, size_t psize, Packet *packet)
     memzero(party, sizeof(*party));
 
     party->party_id = pack->party_id;
-    array_init(&party->heroes,    8);
-    array_init(&party->players,   8);
-    array_init(&party->henchmans, 8);
+    array_init(&party->heroes);
+    array_init(&party->players);
+    array_init(&party->henchmans);
 }
 
 void HandlePartyMemberStreamEnd(Connection *conn, size_t psize, Packet *packet)

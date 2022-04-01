@@ -43,8 +43,6 @@ set(
   merchant.h
   network.c
   network.h
-  object.c
-  object.h
   opcodes.h
   packets.c
   packets.h
