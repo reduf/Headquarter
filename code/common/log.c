@@ -69,7 +69,7 @@ void log_init(void)
     int length = 0;
     char dir_path[1024];
     length = dlldir(dir_path, sizeof(dir_path));
-    for (int i = 0; i < 4 && !log_file; i++) {
+    for (int i = 0; i < 8 && !log_file; i++) {
         snprintf(file_path, sizeof(file_path), "%s/logs/%s_%d.txt", dir_path,timestamp, getpid());
         dir_path[length++] = '/';
         dir_path[length++] = '.';

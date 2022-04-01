@@ -62,7 +62,7 @@ bool plugin_load(const char *path)
     PluginEntry_pt PluginInit;
     *(void **)&PluginInit = dllsym(plugin->module, "PluginEntry");
     if (PluginInit == NULL) {
-        LogError("Couldn't load the plugin '%s'", path);
+        LogError("Couldn't load the plugin '%s' (No PluginEntry symbol)", path);
         plugin_unload(plugin);
         return false;
     }

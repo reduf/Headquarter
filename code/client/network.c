@@ -170,7 +170,7 @@ void Network_Init(void)
     bool file_read_ok = false;
     char dir_path[1024];
     length = dlldir(dir_path, sizeof(dir_path));
-    for (int i = 0; i < 4 && !file_read_ok; i++) {
+    for (int i = 0; i < 8 && !file_read_ok; i++) {
         snprintf(file_path, sizeof(file_path), "%s/data/gw_%d.pub", dir_path, GUILD_WARS_VERSION);
         dir_path[length++] = '/';
         dir_path[length++] = '.';
@@ -184,7 +184,7 @@ void Network_Init(void)
     file_read_ok = false;
     length = dlldir(dir_path, sizeof(dir_path));
     dir_path[length] = 0;
-    for (int i = 0; i < 4 && !file_read_ok; i++) {
+    for (int i = 0; i < 8 && !file_read_ok; i++) {
         snprintf(file_path, sizeof(file_path), "%s/data/authkey.pub",dir_path);
         dir_path[length++] = '/';
         dir_path[length++] = '.';

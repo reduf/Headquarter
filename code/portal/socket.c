@@ -10,7 +10,7 @@ int send_full(SOCKET fd, const uint8_t *buffer, size_t buffer_len)
 
     while (written < buffer_len) {
         const char *p = (const char *)buffer + written;
-        if ((ret = send(fd, p, buffer_len - written, 0)) <= 0)
+        if ((ret = send(fd, p, (int)(buffer_len - written), 0)) <= 0)
             return ret;
         written += (size_t)ret;
     }
@@ -25,7 +25,7 @@ int recv_to_buffer(SOCKET fd, array_uint8_t *buffer)
     const size_t BUFFER_SIZE = 1024;
     uint8_t *ptr = array_push(buffer, BUFFER_SIZE);
 
-    if ((ret = recv(fd, (char *)ptr, BUFFER_SIZE, 0)) <= 0) {
+    if ((ret = recv(fd, (char *)ptr, (int)BUFFER_SIZE, 0)) <= 0) {
         size_t size = array_size(buffer) - BUFFER_SIZE;
         buffer->size = size;
         // array_resize(buffer, size);

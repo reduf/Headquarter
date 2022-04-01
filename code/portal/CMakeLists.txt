@@ -23,6 +23,8 @@ set_source_files_properties(
 add_library(
   portal
 
+STATIC
+
   build_portal.c
   ${PORTAL_SOURCES}
 )

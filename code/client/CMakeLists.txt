@@ -87,7 +87,7 @@ target_include_directories(
   client
 
   PUBLIC
-  ${CMAKE_SOURCE_DIR}/include
+  ../../include
 )
 
 if (MSVC)

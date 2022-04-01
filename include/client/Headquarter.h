@@ -1,7 +1,7 @@
 #ifndef HEADQUARTER_H
 #define HEADQUARTER_H
 
-#define GUILD_WARS_VERSION          (37130)
+#define GUILD_WARS_VERSION          (37169)
 #define HEADQUARTER_VERSION_MAJOR   (1)
 #define HEADQUARTER_VERSION_MINOR   (0)
 
@@ -19,9 +19,12 @@
 #  define __cdecl __attribute__((__cdecl__))
 # endif
 
-#include "str.h"
+#include "../include/str.h"
 #include <common/array.h>
 #include <common/noreturn.h>
+#include <common/dlfunc.h>
+
+#include <assert.h>
 
 typedef uint32_t uint;
 typedef uint64_t msec_t;

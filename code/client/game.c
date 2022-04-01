@@ -5,6 +5,7 @@
 
 static void HandlePingRequest(Connection *conn, size_t psize, Packet *packet)
 {
+    (psize);
 #pragma pack(push, 1)
     typedef struct {
         Header header;
@@ -13,15 +14,14 @@ static void HandlePingRequest(Connection *conn, size_t psize, Packet *packet)
 #pragma pack(pop)
 
     assert(packet->header == GAME_SMSG_PING_REQUEST);
-    assert(sizeof(PingReply) == psize);
 
     // @Cleanup: This should be the time that it take to make a loop in main_loop.
     PingReply pack = NewPacket(GAME_CMSG_PING_REPLY);
     pack.ping = 1000 / 60;
     SendPacket(conn, sizeof(PingReply), &pack);
 
-    GameSrv_PingRequest(conn);
-    GameSrv_HeartBeat(conn);
+    //GameSrv_PingRequest(conn);
+   // GameSrv_HeartBeat(conn);
 }
 
 static void HandlePingReply(Connection *conn, size_t psize, Packet *packet)

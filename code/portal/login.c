@@ -32,7 +32,7 @@ static struct str s_from_c_str(const char *ptr)
 static int s_cmp(struct str *str1, struct str *str2)
 {
     if (str1->len != str2->len)
-        return str1->len - str2->len;
+        return (int)str1->len - (int)str2->len;
     return memcmp(str1->ptr, str2->ptr, str1->len);
 }
 
