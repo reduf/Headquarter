@@ -249,7 +249,6 @@ SockAddressArray IPv4ToAddrEx(const char *host, const char *port)
         found++;
 
     array_init(&ret);
-    array_resize(&ret, found);
 
     it = results;
     for (size_t i = 0; i < found; i++) {
