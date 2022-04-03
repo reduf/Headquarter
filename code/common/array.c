@@ -74,13 +74,12 @@ _array_resize(array_void_t *a, size_t size, const size_t elem_size)
 
     if (a->capacity < size) {
         int ret;
-        if ((ret = _array_grow_to(a, size, elem_size)) != 0) {
+        if ((ret = _array_reserve(a, size, elem_size)) != 1)
             return ret;
-        }
     }
 
     a->size = size;
-    return 0;
+    return 1;
 }
 
 int
@@ -91,7 +90,7 @@ _array_reserve(array_void_t *a, size_t count, const size_t elem_size)
         size_t new_capacity = a->capacity * 2;
         if (new_capacity < a->size + count)
             new_capacity = a->size + count;
-        return _array_resize(a, new_capacity, elem_size);
+        return _array_grow_to(a, new_capacity, elem_size);
     }
 
     return 1;
