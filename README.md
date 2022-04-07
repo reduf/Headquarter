@@ -33,7 +33,7 @@ The syntax is simply:
 > cmake -B build -CBUILD_SHARED_LIBS=Off
 ```
 
-- *BUILD_SHARED_LIBS:BOOL*: Control whether the library are built as shared libs
+- **BUILD_SHARED_LIBS:BOOL**: Control whether the library are built as shared libs
   (DLL on Windows) or static libraries.
-- *HQ_ENABLE_TESTING:BOOL*: Control if the tests program are included in the
+- **HQ_ENABLE_TESTING:BOOL**: Control if the tests program are included in the
   solution.
