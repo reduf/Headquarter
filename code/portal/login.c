@@ -3,8 +3,9 @@
 #endif
 #define PORTAL_LOGIN_C
 
-#define PORTAL_ERR_UKNOWN_ERROR 1
-#define PORTAL_ERR_REQUIRE_TOTP 2
+#define PORTAL_ERR_UKNOWN_ERROR      1
+#define PORTAL_ERR_2FA_REQUIRE_TOTP  2
+#define PORTAL_ERR_2FA_REQUIRE_EMAIL 3
 
 struct str {
     const char *ptr;
@@ -209,8 +210,11 @@ static int auth_login_finish(struct sts_connection *sts, struct ssl_sts_connecti
     if (find_between(&auth_type, &reply_content, "<AuthType>", "</AuthType>") == 0) {
         // This mean we need to complete a 2fa.
         struct str totp = s_from_c_str("Totp");
+        struct str email = s_from_c_str("Email");
         if (s_cmp(&auth_type, &totp) == 0) {
-            ret = PORTAL_ERR_REQUIRE_TOTP;
+            ret = PORTAL_ERR_2FA_REQUIRE_TOTP;
+        } else if (s_cmp(&auth_type, &email) == 0) {
+            ret = PORTAL_ERR_2FA_REQUIRE_EMAIL;
         } else {
             fprintf(stderr, "Unknown AuthType: '%.*s'\n", (int)auth_type.len, auth_type.ptr);
             ret = 1;
@@ -499,12 +503,13 @@ int portal_login(struct portal_login_result *result, const char *username, const
     if ((ret = auth_login_finish(&sts, &ssl)) != 0) {
         // This is not necessarily a unrecoverable error. We may need
         // to send a code, because of 2fa.
-        if (ret == PORTAL_ERR_REQUIRE_TOTP) {
-            fprintf(stderr, "2fa isn't implemented yet!!\n");
-            goto cleanup;
-        } else {
-            goto cleanup;
+        if (ret == PORTAL_ERR_2FA_REQUIRE_TOTP) {
+            fprintf(stderr, "2fa requires TOTP code and it's not currently implemented\n");
+        } else if (ret == PORTAL_ERR_2FA_REQUIRE_EMAIL) {
+            fprintf(stderr, "2fa requires Email code and it's not currently implemented\n");
         }
+
+        goto cleanup;
     }
 
     if ((ret = auth_list_game_accounts(&sts, &ssl)) != 0) {
