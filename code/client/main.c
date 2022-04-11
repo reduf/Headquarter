@@ -32,8 +32,7 @@ static void main_loop(void)
         // - Connecting to a game server or transferring game server.
         //
         if (client->state == AwaitAccountConnect) {
-            if (!options.newauth || portal_received_key)
-                AccountLogin(client);
+            AccountLogin(client);
         }
 
         // @Enhancement:
@@ -179,14 +178,11 @@ int main(int argc, const char *argv[])
     #endif
     }
 
-    char full_script_path[1024];
-    int length = dlldir(full_script_path, sizeof(full_script_path));
-    snprintf(&full_script_path[length], sizeof(full_script_path) - length, "/%s", options.script);
-    if (!plugin_load(full_script_path)) {
-        LogError("Couldn't load the plugin '%s'", full_script_path);
+    if (!plugin_load(options.script)) {
+        LogError("Couldn't load the plugin '%s'", options.script);
         return 1;
     }
-    LogInfo("Plugin loaded, %s\n", full_script_path);
+    LogInfo("Plugin loaded, %s\n", options.script);
 
     main_loop();
 

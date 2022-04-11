@@ -207,10 +207,6 @@ void AccountLogin(GwClient *client)
 {
     assert(client->state == AwaitAccountConnect);
     if (options.newauth) {
-        if (!portal_received_key) {
-            LogError("GwLoginClient didn't replied with the connection key yet");
-            return;
-        }
         PortalAccountConnect(client, &client->portal_user_id, &client->portal_token, &client->charname);
     } else {
         OldAccountConnect(client, &client->email, NULL, &client->charname);

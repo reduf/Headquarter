@@ -51,7 +51,6 @@ void log_init(void)
     log_print_level = LOG_DEBUG;
 #endif
 
-
     error = thread_mutex_init(&log_mutex);
     if (error) {
         assert(!"log_init: thread_mutex_init");
