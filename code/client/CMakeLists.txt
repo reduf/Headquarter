@@ -88,6 +88,9 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/include
 )
 
+# This is necessary to allow other target to link against "client".
+set_property(TARGET client PROPERTY ENABLE_EXPORTS 1)
+
 if (MSVC)
   # We disable the following warnings:
   # - C4057: nonstandard extension used: nameless struct/union

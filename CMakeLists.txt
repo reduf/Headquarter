@@ -11,6 +11,7 @@ option(HQ_ENABLE_TESTING "Build tests" OFF)
 
 add_subdirectory(code)
 add_subdirectory(deps)
+add_subdirectory(plugins)
 
 if (HQ_ENABLE_TESTING)
   add_subdirectory(tests)
