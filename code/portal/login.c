@@ -250,7 +250,22 @@ static int auth_login_finish(struct sts_connection *sts, struct ssl_sts_connecti
     return 0;
 }
 
-#if 0
+static int read_user_code(int *otp)
+{
+    printf("Enter code: ");
+
+    char line[256];
+    if (fgets(line, sizeof(line), stdin) == NULL)
+        return 1;
+
+    if (sscanf(line, "%d", otp) != 1) {
+        fprintf(stderr, "Couldn't extract the otp from '%s'\n", line);
+        return 1;
+    }
+
+    return 0;
+}
+
 static int auth2f_upgrade_totp(
     struct sts_connection *sts,
     struct ssl_sts_connection *ssl,
@@ -261,7 +276,9 @@ static int auth2f_upgrade_totp(
     const size_t url_len = sizeof(url) - 1;
 
     array_uint8_t content;
-    array_init(&content, 1024);
+    array_init(&content);
+    array_reserve(&content, 1024);
+
     appendf(&content, "<Request>\n");
     appendf(&content, "<Otp>%d</Otp>\n", otp);
     if (remember_me != 0)
@@ -269,7 +286,9 @@ static int auth2f_upgrade_totp(
     appendf(&content, "</Request>\n");
 
     array_uint8_t request;
-    array_init(&request, 1024);
+    array_init(&request);
+    array_reserve(&request, 1024);
+
     int ret = sts_write_request_with_sequence_number(
         &request,
         url, url_len,
@@ -292,7 +311,8 @@ static int auth2f_upgrade_totp(
 
     struct sts_reply reply = {0};
     array_uint8_t response;
-    array_init(&response, 1024);
+    array_init(&response);
+    array_reserve(&response, 1024);
 
     if ((ret = recv_sts_response(ssl, &response, &reply, sts->seq_number)) != 0) {
         array_reset(&response);
@@ -308,7 +328,6 @@ static int auth2f_upgrade_totp(
     array_reset(&response);
     return 0;
 }
-#endif
 
 static int auth_list_game_accounts(struct sts_connection *sts, struct ssl_sts_connection *ssl)
 {
@@ -504,12 +523,22 @@ int portal_login(struct portal_login_result *result, const char *username, const
         // This is not necessarily a unrecoverable error. We may need
         // to send a code, because of 2fa.
         if (ret == PORTAL_ERR_2FA_REQUIRE_TOTP) {
-            fprintf(stderr, "2fa requires TOTP code and it's not currently implemented\n");
+            fprintf(stderr, "2fa requires TOTP code\n");
         } else if (ret == PORTAL_ERR_2FA_REQUIRE_EMAIL) {
-            fprintf(stderr, "2fa requires Email code and it's not currently implemented\n");
+            fprintf(stderr, "2fa requires Email code\n");
+        } else {
+            goto cleanup;
         }
 
-        goto cleanup;
+        int otp;
+        if ((ret = read_user_code(&otp)) != 0) {
+            goto cleanup;
+        }
+
+        const int remember_me = 1;
+        if ((ret = auth2f_upgrade_totp(&sts, &ssl, otp, remember_me)) != 0) {
+            goto cleanup;
+        }
     }
 
     if ((ret = auth_list_game_accounts(&sts, &ssl)) != 0) {
