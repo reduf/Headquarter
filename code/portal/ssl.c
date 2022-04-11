@@ -11,6 +11,7 @@
 
 #define TLS_SRP_SHA_WITH_AES_256_CBC_SHA 0xC020
 #define TLS_SRP_SHA_WITH_AES_128_CBC_SHA 0xC01D
+#define TLS_ANET_INVALID_EMAIL           0xFF04
 
 #define SSL_MSG_CHANGE_CIPHER_SPEC     20
 #define SSL_MSG_ALERT                  21
@@ -796,7 +797,7 @@ static int ssl_srp_write_client_hello_body(struct ssl_sts_connection *ssl)
         TLS_SRP_SHA_WITH_AES_128_CBC_SHA,
         0xFF02, // No ideas what this is...
         0xFF01, // No ideas what this is...
-        0xFF04, // No ideas what this is...
+        TLS_ANET_INVALID_EMAIL,
         0xFF03, // No ideas what this is...
     };
 
@@ -986,10 +987,18 @@ static int parse_server_hello(struct ssl_sts_connection *ssl, const uint8_t *dat
     if ((ret = chk_stream_read16(&content, &content_len, &cipher_suite)) != 0)
         return ret;
 
-    // @Cleanup:
-    // In theory any of the ciphers we told the cipher should work...
-    if (cipher_suite != TLS_SRP_SHA_WITH_AES_256_CBC_SHA)
-        return ERR_SSL_BAD_INPUT_DATA;
+    switch (cipher_suite) {
+        case TLS_SRP_SHA_WITH_AES_128_CBC_SHA:
+            // @Cleanup:
+            // We should support this one, since we told the server we did.
+            return ERR_SSL_BAD_INPUT_DATA;
+        case TLS_SRP_SHA_WITH_AES_256_CBC_SHA:
+            break;
+        case TLS_ANET_INVALID_EMAIL:
+            return ERR_SSL_INVALID_EMAIL;
+        default:
+            return ERR_SSL_BAD_INPUT_DATA;
+    }
 
     uint8_t compression_method;
     if ((ret = chk_stream_read8(&content, &content_len, &compression_method)) != 0)
