@@ -6,6 +6,7 @@
 #define PORTAL_ERR_UKNOWN_ERROR      1
 #define PORTAL_ERR_2FA_REQUIRE_TOTP  2
 #define PORTAL_ERR_2FA_REQUIRE_EMAIL 3
+#define PORTAL_ERR_2FA_REQUIRE_SMS   4
 
 struct str {
     const char *ptr;
@@ -209,12 +210,15 @@ static int auth_login_finish(struct sts_connection *sts, struct ssl_sts_connecti
     struct str auth_type;
     if (find_between(&auth_type, &reply_content, "<AuthType>", "</AuthType>") == 0) {
         // This mean we need to complete a 2fa.
+        struct str sms = s_from_c_str("SMS");
         struct str totp = s_from_c_str("Totp");
         struct str email = s_from_c_str("Email");
         if (s_cmp(&auth_type, &totp) == 0) {
             ret = PORTAL_ERR_2FA_REQUIRE_TOTP;
         } else if (s_cmp(&auth_type, &email) == 0) {
             ret = PORTAL_ERR_2FA_REQUIRE_EMAIL;
+        } else if (s_cmp(&auth_type, &sms) == 0) {
+            ret = PORTAL_ERR_2FA_REQUIRE_SMS;
         } else {
             fprintf(stderr, "Unknown AuthType: '%.*s'\n", (int)auth_type.len, auth_type.ptr);
             ret = 1;
@@ -526,6 +530,8 @@ int portal_login(struct portal_login_result *result, const char *username, const
             fprintf(stderr, "2fa requires TOTP code\n");
         } else if (ret == PORTAL_ERR_2FA_REQUIRE_EMAIL) {
             fprintf(stderr, "2fa requires Email code\n");
+        } else if (ret == PORTAL_ERR_2FA_REQUIRE_SMS) {
+            fprintf(stderr, "2fa requires SMS code\n");
         } else {
             goto cleanup;
         }
