@@ -185,8 +185,8 @@ void PortalAccountConnect(GwClient *client, struct uuid *user_id, struct uuid *t
     uuid_t user_id_buffer;
     memcpy(&user_id_buffer, user_id, sizeof(user_id_buffer));
 
-    uuid_enc_le(packet.user_id, token_buffer);
-    uuid_enc_le(packet.session_id, user_id_buffer);
+    uuid_enc_le(packet.user_id, user_id_buffer);
+    uuid_enc_le(packet.session_id, token_buffer);
     
     assert(ARRAY_SIZE(packet.charname1) == ARRAY_SIZE(packet.charname2));
     if (ARRAY_SIZE(packet.charname1) < charname->length) {
