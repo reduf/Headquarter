@@ -3,205 +3,49 @@
 #endif
 #define ERROR_C_INC
 
-static const char *gw_errlist[] = {
-    "No error",
-    "Error 1",
-    "Network error.",
-    "Error 3",
-    "Error 4",
-    "Error 5",
-    "Error 6",
-    "Your connection to the server was lost. Please check your Internet connection.",
-    "Error 8",
-    "Error 9",
-    "Error 10",
-    "The password you have provided is incorrect.",
-    "Error 12",
-    "Error 13",
-    "Error 14",
-    "Error 15",
-    "Error 16",
-    "Error 17",
-    "Error 18",
-    "This district you requested is being closed. Please choose another district.",
-    "Error 20",
-    "The email address <text> was not found.",
-    "Error 22",
-    "Error 23",
-    "Error 24",
-    "Error 25",
-    "Error 26",
-    "Error 27",
-    "Network error.",
-    "The character name <text> is already in use by another player",
-    "Network error.",
-    "The character name <text> contains words or partial words that are not permitted in Guild Wars.",
-    "Error 32",
-    "Error 33",
-    "Your transaction is still in progress. Please wait a few moments and try again.",
-    "You have been disconnected from Guild Wars because another client has connected using your account. Please try again later.",
-    "Error 36",
-    "Error 37",
-    "Error 38",
-    "Error 39",
-    "Error 40",
-    "You have attempted to create too many characters recently.",
-    "Guild Wars was unable to complete the operation.",
-    "Error 43",
-    "Error 44",
-    "Your account has been banned, blocked or terminated from Guild Wars.",
-    "Error 46",
-    "Error 47",
-    "Error 48",
-    "Error 49",
-    "Error 50",
-    "Error 51",
-    "Error 52",
-    "Error 53",
-    "Error 54",
-    "Error 55",
-    "Error 56",
-    "Error 57",
-    "Error 58",
-    "Error 59",
-    "Error 60",
-    "Error 61",
-    "Error 62",
-    "Error 63",
-    "Error 64",
-    "Error 65",
-    "Error 66",
-    "Error 67",
-    "Error 68",
-    "Error 69",
-    "Error 70",
-    "Error 71",
-    "Error 72",
-    "Error 73",
-    "Error 74",
-    "Error 75",
-    "Error 76",
-    "Error 77",
-    "Error 78",
-    "Error 79",
-    "Error 80",
-    "Error 81",
-    "Error 82",
-    "Error 83",
-    "Error 84",
-    "Error 85",
-    "Error 86",
-    "Error 87",
-    "Error 88",
-    "Error 89",
-    "Error 90",
-    "Error 91",
-    "Error 92",
-    "Error 93",
-    "Error 94",
-    "Error 95",
-    "Error 96",
-    "Error 97",
-    "Error 98",
-    "Error 99",
-    "Error 100",
-    "Error 101",
-    "Error 102",
-    "Error 103",
-    "Error 104",
-    "Error 105",
-    "Error 106",
-    "Error 107",
-    "Error 108",
-    "Error 109",
-    "Error 110",
-    "Error 111",
-    "Error 112",
-    "Error 113",
-    "Error 114",
-    "Error 115",
-    "Error 116",
-    "Error 117",
-    "Error 118",
-    "Error 119",
-    "Error 120",
-    "Error 121",
-    "Error 122",
-    "Error 123",
-    "Error 124",
-    "Error 125",
-    "Error 126",
-    "Error 127",
-    "Error 128",
-    "Error 129",
-    "Error 130",
-    "Error 131",
-    "Error 132",
-    "Error 133",
-    "Error 134",
-    "Error 135",
-    "Error 136",
-    "Error 137",
-    "Error 138",
-    "Error 139",
-    "Error 140",
-    "Your play time has ended. To continue playing, please purchase Guid Wars. See www.guildwars.com for more information.",
-    "Error 142",
-    "Error 143",
-    "Error 144",
-    "Error 145",
-    "Error 146",
-    "Error 147",
-    "Error 148",
-    "Error 149",
-    "Error 150",
-    "Error 151",
-    "Error 152",
-    "Error 153",
-    "Error 154",
-    "Error 155",
-    "Error 156",
-    "Error 157",
-    "Error 158",
-    "Error 159",
-    "Error 160",
-    "Error 161",
-    "Error 162",
-    "Error 163",
-    "Error 164",
-    "Error 165",
-    "Error 166",
-    "Error 167",
-    "Error 168",
-    "Error 169",
-    "Error 170",
-    "Error 171",
-    "Error 172",
-    "Error 173",
-    "Error 174",
-    "Error 175",
-    "Error 176",
-    "Error 177",
-    "Error 178",
-    "Error 179",
-    "Error 180",
-    "The Guid Wars Official Store is currently down for maintenance. We apologize for any inconveniences this maintenance may cause, and hope to have the Guid Wars Official Store running again in short order",
-    "Error 182",
-    "Error 183",
-    "Error 184",
-    "Error 185",
-    "Error 186",
-    "Error 187",
-    "Error 188",
-    "Error 189",
-};
-
 static const char *get_error_s(int error_code)
 {
-    int errors_count = ARRAY_SIZE(gw_errlist);
-    if (error_code < 0 || errors_count <= error_code)
-        return "Unknow error";
-    return gw_errlist[error_code];
+    switch (error_code)
+    {
+        case 0:
+            return "No error";
+        case 2:
+            return "Network error.";
+        case 7:
+            return "Your connection to the server was lost. Please check your Internet connection.";
+        case 11:
+            return "The password you have provided is incorrect.";
+        case 19:
+            return "This district you requested is being closed. Please choose another district.";
+        case 21:
+            return "The email address <text> was not found.";
+        case 38:
+            return "Network error.";
+        case 39:
+            return "The character name <text> is already in use by another player";
+        case 30:
+            return "Network error.";
+        case 31:
+            return "The character name <text> contains words or partial words that are not permitted in Guild Wars.";
+        case 34:
+            return "Your transaction is still in progress. Please wait a few moments and try again.";
+        case 35:
+            return "You have been disconnected from Guild Wars because another client has connected using your account. Please try again later.";
+        case 41:
+            return "You have attempted to create too many characters recently.";
+        case 42:
+            return "Guild Wars was unable to complete the operation.";
+        case 45:
+            return "Your account has been banned, blocked or terminated from Guild Wars.";
+        case 141:
+            return "Your play time has ended. To continue playing, please purchase Guid Wars. See www.guildwars.com for more information.";
+        case 181:
+            return "The Guid Wars Official Store is currently down for maintenance. We apologize for any inconveniences this maintenance may cause, and hope to have the Guid Wars Official Store running again in short order";
+        case 3032:
+            return "Network error. Please check your Internet connection and try again. (This was observed when the socket to 'Portal' was closed before connection was established)";
+        default:
+            return "Unknown Error";
+    }
 }
 
 #if defined(OS_WINDOWS)
