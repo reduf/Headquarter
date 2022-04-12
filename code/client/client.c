@@ -194,10 +194,12 @@ void PortalAccountConnect(GwClient *client, struct uuid *user_id, struct uuid *t
         return;
     }
 
-    memcpy(packet.charname1, charname->buffer, charname->length * 2); // playing character
-    memcpy(packet.charname2, charname->buffer, charname->length * 2);
-    packet.charname1[charname->length] = 0;
-    packet.charname2[charname->length] = 0;
+    // @Cleanup: This seem to now be unsupported, it causes issues
+    //
+    // memcpy(packet.charname1, charname->buffer, charname->length * 2); // playing character
+    // memcpy(packet.charname2, charname->buffer, charname->length * 2);
+    // packet.charname1[charname->length] = 0;
+    // packet.charname2[charname->length] = 0;
 
     LogDebug("PortalAccountConnect: {trans_id: %lu}", trans_id);
     SendPacket(&client->auth_srv, sizeof(packet), &packet);

@@ -10,22 +10,22 @@
 #define GAME_CMSG_COUNT (192)
 #define GAME_SMSG_COUNT (485)
 
-#define AUTH_CMSG_HEARTBEAT                         (0x0000) // 0
-#define AUTH_CMSG_SEND_COMPUTER_INFO                (0x0001) // 1
-#define AUTH_CMSG_SEND_COMPUTER_HASH                (0x0002) // 2
-#define AUTH_CMSG_ACCOUNT_CREATE                    (0x0003) // 3
-#define AUTH_CMSG_ACCOUNT_LOGIN                     (0x0004) // 4
-#define AUTH_CMSG_CHANGE_PLAY_CHARACTER             (0x000A) // 10
-#define AUTH_CMSG_DISCONNECT                        (0x000D) // 13
-#define AUTH_CMSG_SET_PLAYER_STATUS                 (0x000E) // 14
-#define AUTH_CMSG_SEND_HARDWARE_INFO                (0x000F) // 15
-#define AUTH_CMSG_FRIEND_ADD                        (0x001A) // 26
-#define AUTH_CMSG_REQUEST_GUILD_HALL                (0x0025) // 37
-#define AUTH_CMSG_SETTING_UPDATE_CONTENT            (0x0020) // 32
-#define AUTH_CMSG_SETTING_UPDATE_SIZE               (0x0021) // 33
-#define AUTH_CMSG_REQUEST_INSTANCE                  (0x0029) // 41
-#define AUTH_CMSG_ASK_SERVER_RESPONSE               (0x0035) // 53
-#define AUTH_CMSG_PORTAL_ACCOUNT_LOGIN              (0x0038) // 56
+#define AUTH_CMSG_HEARTBEAT                         (0x8000) // 0
+#define AUTH_CMSG_SEND_COMPUTER_INFO                (0x8001) // 1
+#define AUTH_CMSG_SEND_COMPUTER_HASH                (0x8002) // 2
+#define AUTH_CMSG_ACCOUNT_CREATE                    (0x8003) // 3
+#define AUTH_CMSG_ACCOUNT_LOGIN                     (0x8004) // 4
+#define AUTH_CMSG_CHANGE_PLAY_CHARACTER             (0x800A) // 10
+#define AUTH_CMSG_DISCONNECT                        (0x800D) // 13
+#define AUTH_CMSG_SET_PLAYER_STATUS                 (0x800E) // 14
+#define AUTH_CMSG_SEND_HARDWARE_INFO                (0x800F) // 15
+#define AUTH_CMSG_FRIEND_ADD                        (0x801A) // 26
+#define AUTH_CMSG_REQUEST_GUILD_HALL                (0x8025) // 37
+#define AUTH_CMSG_SETTING_UPDATE_CONTENT            (0x8020) // 32
+#define AUTH_CMSG_SETTING_UPDATE_SIZE               (0x8021) // 33
+#define AUTH_CMSG_REQUEST_INSTANCE                  (0x8029) // 41
+#define AUTH_CMSG_ASK_SERVER_RESPONSE               (0x8035) // 53
+#define AUTH_CMSG_PORTAL_ACCOUNT_LOGIN              (0x8038) // 56
 
 #define AUTH_SMSG_HEARTBEAT                         (0x0000) // 0
 #define AUTH_SMSG_SESSION_INFO                      (0x0001) // 1
