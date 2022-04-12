@@ -25,6 +25,16 @@ Generate the project and compile it.
 > cmake --build build
 ```
 
+### Running a test plugin
+You can familiarize yourself with the project by compiling the client and then
+running the example plugin "chat".
+
+Assuming you created the cmake build folder at `$repo/build`, you can run the
+following command:
+```
+> build/code/client/Debug/client.exe build\plugins\chat\Debug\chat.dll -email {email} -password {password} -character "{charname}" -mapid 449 -maptype 0
+```
+
 ### CMake options
 You can customize how to build the project using the following CMake variable.
 The syntax is simply:
