@@ -5,23 +5,9 @@
 
 static void HandlePingRequest(Connection *conn, size_t psize, Packet *packet)
 {
-#pragma pack(push, 1)
-    typedef struct {
-        Header header;
-        int32_t ping;
-    } PingReply;
-#pragma pack(pop)
-
     assert(packet->header == GAME_SMSG_PING_REQUEST);
-    assert(sizeof(PingReply) == psize);
-
-    // @Cleanup: This should be the time that it take to make a loop in main_loop.
-    PingReply pack = NewPacket(GAME_CMSG_PING_REPLY);
-    pack.ping = 1000 / 60;
-    SendPacket(conn, sizeof(PingReply), &pack);
-
-    GameSrv_PingRequest(conn);
-    GameSrv_HeartBeat(conn);
+    assert(sizeof(Header) == psize);
+    GameSrv_PingReply(conn);
 }
 
 static void HandlePingReply(Connection *conn, size_t psize, Packet *packet)
@@ -713,9 +699,18 @@ void HandleCantEnterOutpost(Connection *conn, size_t psize, Packet *packet)
     broadcast_event(&client->event_mgr, WORLD_CANT_TRAVEL, &pack->value);
 }
 
-void GameSrv_HeartBeat(Connection *conn)
+void GameSrv_PingReply(Connection *conn)
 {
-    GameSrv_PingRequest(conn);
+#pragma pack(push, 1)
+    typedef struct {
+        Header header;
+        uint32_t value;
+    } PingReply;
+#pragma pack(pop)
+
+    PingReply pack = NewPacket(GAME_CMSG_PING_REPLY);
+    pack.value = 16;
+    SendPacket(conn, sizeof(pack), &pack);
 }
 
 void GameSrv_PingRequest(Connection *conn)
@@ -725,4 +720,9 @@ void GameSrv_PingRequest(Connection *conn)
 
     Packet packet = NewPacket(GAME_CMSG_PING_REQUEST);
     SendPacket(conn, sizeof(packet), &packet);
+}
+
+void GameSrv_HeartBeat(Connection *conn)
+{
+    GameSrv_PingRequest(conn);
 }

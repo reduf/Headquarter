@@ -16,6 +16,7 @@ void GameSrv_SkipCinematic(GwClient *client);
 void GameSrv_ChangeGold(GwClient *client, int gold_character, int gold_storage);
 void GameSrv_SendDialog(GwClient *client, int dialog_id);
 void GameSrv_HeartBeat(Connection *conn);
+void GameSrv_PingReply(Connection *conn);
 void GameSrv_PingRequest(Connection *conn);
 void GameSrv_HeroUseSkill(GwClient *client, AgentId hero_id,
     int skill_id, uint32_t flags, AgentId target_id);
