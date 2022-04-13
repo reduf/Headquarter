@@ -6,16 +6,14 @@ typedef array(int) array_int_t;
 
 UTEST_MAIN();
 
-UTEST(array_init, array_init_valid_data)
+UTEST(array_init, array_init_initialize_all_fields)
 {
-    const size_t INIT_SIZE = 16;
-
     array_int_t a;
-    array_init(&a, INIT_SIZE);
+    array_init(&a);
 
-    ASSERT_GE(a.capacity, INIT_SIZE);
+    ASSERT_EQ(a.capacity, 0);
     ASSERT_EQ(a.size, 0);
-    ASSERT_NE(a.data, NULL);
+    ASSERT_EQ(a.data, NULL);
 
     array_reset(&a);
 }
@@ -25,7 +23,7 @@ UTEST(array_reserve, reserve_increase_capacity)
     const size_t RESERVE_SIZE = 16;
 
     array_int_t a;
-    array_init(&a, 0);
+    array_init(&a);
 
     array_reserve(&a, RESERVE_SIZE);
     ASSERT_GE(a.capacity, RESERVE_SIZE);
@@ -40,7 +38,7 @@ UTEST(array_reserve, reserve_increase_capacity)
 UTEST(array_reserve, reserve_on_non_empty_array)
 {
     array_int_t a;
-    array_init(&a, 0);
+    array_init(&a);
 
     size_t capacity = a.capacity;
     array_add(&a, 0xDE);
@@ -54,7 +52,7 @@ UTEST(array_reserve, reserve_on_non_empty_array)
 UTEST(array_resize, resize_and_grow)
 {
     array_int_t a;
-    array_init(&a, 0);
+    array_init(&a);
 
     const size_t new_size = 4;
     array_resize(&a, new_size);
@@ -70,7 +68,7 @@ UTEST(array_resize, resize_and_grow)
 UTEST(array_resize, resize_to_a_smaller_size)
 {
     array_int_t a;
-    array_init(&a, 0);
+    array_init(&a);
 
     for (int i = 0; i < 8; ++i)
         array_add(&a, i);
@@ -89,7 +87,7 @@ UTEST(array_resize, resize_to_a_smaller_size)
 UTEST(array_resize, resize_init_to_0)
 {
     array_int_t a;
-    array_init(&a, 0);
+    array_init(&a);
 
     array_resize(&a, 4);
     for (size_t i = 0; i < a.size; ++i) {
@@ -102,7 +100,7 @@ UTEST(array_resize, resize_init_to_0)
 UTEST(array_remove, remove_first_element)
 {
     array_int_t a;
-    array_init(&a, 0);
+    array_init(&a);
 
     for (int i = 0; i < 3; ++i)
         array_add(&a, i);
@@ -115,7 +113,7 @@ UTEST(array_remove, remove_first_element)
 UTEST(array_remove, remove_last_element)
 {
     array_int_t a;
-    array_init(&a, 0);
+    array_init(&a);
 
     for (int i = 0; i < 3; ++i)
         array_add(&a, i);
@@ -128,7 +126,7 @@ UTEST(array_remove, remove_last_element)
 UTEST(array_remove, remove_middle_element)
 {
     array_int_t a;
-    array_init(&a, 0);
+    array_init(&a);
 
     for (int i = 0; i < 3; ++i)
         array_add(&a, i);
@@ -141,7 +139,7 @@ UTEST(array_remove, remove_middle_element)
 UTEST(array_remove_ordered, remove_first_element)
 {
     array_int_t a;
-    array_init(&a, 0);
+    array_init(&a);
 
     for (int i = 0; i < 3; ++i)
         array_add(&a, i);
@@ -158,7 +156,7 @@ UTEST(array_remove_ordered, remove_first_element)
 UTEST(array_remove_ordered, remove_last_element)
 {
     array_int_t a;
-    array_init(&a, 0);
+    array_init(&a);
 
     for (int i = 0; i < 3; ++i)
         array_add(&a, i);
@@ -175,7 +173,7 @@ UTEST(array_remove_ordered, remove_last_element)
 UTEST(array_remove_ordered, remove_middle_element)
 {
     array_int_t a;
-    array_init(&a, 0);
+    array_init(&a);
 
     for (int i = 0; i < 3; ++i)
         array_add(&a, i);
@@ -184,6 +182,26 @@ UTEST(array_remove_ordered, remove_middle_element)
     ASSERT_EQ(a.size, 2);
     ASSERT_EQ(a.data[0], 0);
     ASSERT_EQ(a.data[1], 2);
+
+    array_reset(&a);
+}
+
+UTEST(array_push, array_push_10_times)
+{
+    const int ARRAY_SIZE = 10;
+
+    array_int_t a;
+    array_init(&a);
+
+    for (int i = 0; i < ARRAY_SIZE; ++i) {
+        int *ptr = array_push(&a, 1);
+        *ptr = i;
+    }
+
+    ASSERT_EQ(a.size, ARRAY_SIZE);
+    for (int i = 0; i < ARRAY_SIZE; ++i) {
+        ASSERT_EQ(a.data[i], i);
+    }
 
     array_reset(&a);
 }
