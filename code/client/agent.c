@@ -1094,5 +1094,5 @@ void HandleAgentPingeg(Connection *conn, size_t psize, Packet *packet)
     Event_AgentFocus params;
     params.agent_id  = pack->agent_id;
     params.player_id = pack->player_id;
-    broadcast_event(&client->event_mgr, AGENT_FOCUS, &params);
+    broadcast_event(&client->event_mgr, EventType_AgentFocus, &params);
 }

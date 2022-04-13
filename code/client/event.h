@@ -4,7 +4,7 @@
 #define EVENTS_H
 
 typedef struct EventManager {
-    struct list callbacks[N_EVENT];
+    struct list callbacks[EventType_Count];
 } EventManager;
 
 void init_event_manager(EventManager *mgr);

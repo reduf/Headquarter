@@ -108,7 +108,7 @@ void HandleGameTransferInfo(Connection *conn, size_t psize, Packet *packet)
     struct sockaddr host;
     memcpy(&host, pack->host, sizeof(host));
     start_loading_new_zone(client, &host, pack->map_id, pack->world_id, pack->player_id);
-    broadcast_event(&client->event_mgr, WORLD_MAP_LEAVE, NULL);
+    broadcast_event(&client->event_mgr, EventType_WorldMapLeave, NULL);
 }
 
 void HandleInstanceCountdownStop(Connection *conn, size_t psize, Packet *packet)
@@ -320,7 +320,7 @@ void HandleInstanceLoadFinish(Connection *conn, size_t psize, Packet *packet)
 
     client->loading = false;
 
-    broadcast_event(&client->event_mgr, WORLD_MAP_ENTER, NULL);
+    broadcast_event(&client->event_mgr, EventType_WorldMapEnter, NULL);
 }
 
 void GameSrv_ReturnToOutpost(GwClient *client)

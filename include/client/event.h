@@ -5,56 +5,38 @@
 
 typedef enum EventType {
     EventType_PartySearchAdvertisement,
-
     EventType_GuildMember_Updated,
     EventType_Friend_Updated,
-
     EventType_Error,
-
     EventType_ItemQuotePrice, // Item quote received.
-
     EventType_ChatMessage,
     EventType_FriendListMessage,
-
     EventType_Disconnect,
-
+    EventType_AuthDisconnect,
+    EventType_PartyInviteRequest,
+    EventType_PartyMembersChanged,
+    EventType_PartyLeaderChanged,
+    EventType_PartyMemberDisconnect,
+    EventType_PartyDifficultyChanged,
+    EventType_WorldMapEnter,
+    EventType_WorldMapLeave,
+    EventType_WorldCantTravel,
+    EventType_QuestAccepted,
+    EventType_CinematicPlay,
+    EventType_CinematicStop,
     EventType_TradeRequest,
     EventType_TradeRequestCancel,
+    EventType_TradeClosed,
+    EventType_TradeAcceptUpdate,
+    EventType_TradeOfferReceived,
+    EventType_SalvageSessionStart,
+    EventType_PlayerDead,
+    EventType_PlayerAlive,
+    EventType_AgentFocus,
+    EventType_DialogOpenned,
+    EventType_MerchantWindowOpened,
 
-    AUTH_DISCONNECT,
-
-    PARTY_INVITE_REQUEST,
-    PARTY_MEMBERS_CHANGED,
-    PARTY_LEADER_CHANGED,
-    PARTY_MEMBER_DISCONNECT,
-    PARTY_DIFFICULTY_CHANGED,
-
-    WORLD_MAP_ENTER,
-    WORLD_MAP_LEAVE,
-    WORLD_CANT_TRAVEL,
-
-    QUEST_ACCEPTED,
-
-    CINEMATIC_PLAY,
-    CINEMATIC_STOP,
-
-    TRADE_REQUEST,
-    TRADE_REQUEST_CANCEL,
-    TRADE_CLOSED,
-    TRADE_ACCEPT_UPDATE,
-    TRADE_OFFER_RECEIVED,
-
-    SALVAGE_SESSION_START,
-
-    PLAYER_DEAD,
-    PLAYER_ALIVE,
-
-    AGENT_FOCUS,
-
-    DIALOG_OPENNED,
-    MERCHANT_WINDOW_OPENED,
-
-    N_EVENT
+    EventType_Count,
 } EventType;
 
 typedef void (*Callback)(EventType event, void *args, void *param);

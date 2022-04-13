@@ -338,7 +338,7 @@ void HandleCinematicStart(Connection *conn, size_t psize, Packet *packet)
 
     client->world.in_cinematic = true;
     if (pack->start) {
-        broadcast_event(&client->event_mgr, CINEMATIC_PLAY, NULL);
+        broadcast_event(&client->event_mgr, EventType_CinematicPlay, NULL);
     }
 }
 
@@ -696,7 +696,7 @@ void HandleCantEnterOutpost(Connection *conn, size_t psize, Packet *packet)
     LogInfo("Can't enter outpost: %d\n", pack->value);
     client->try_changing_zone = false;
 
-    broadcast_event(&client->event_mgr, WORLD_CANT_TRAVEL, &pack->value);
+    broadcast_event(&client->event_mgr, EventType_WorldCantTravel, &pack->value);
 }
 
 void GameSrv_PingReply(Connection *conn)

@@ -193,7 +193,7 @@ void HandlePartyJoinRequest(Connection *conn, size_t psize, Packet *packet)
     }
 
     uint32_t party_id = pack->party_id;
-    broadcast_event(&client->event_mgr, PARTY_INVITE_REQUEST, &party_id);
+    broadcast_event(&client->event_mgr, EventType_PartyInviteRequest, &party_id);
 }
 
 void HandlePartyInviteCancel(Connection *conn, size_t psize, Packet *packet)
@@ -247,7 +247,7 @@ void HandlePartyYouAreLeader(Connection *conn, size_t psize, Packet *packet)
     assert(client && client->game_srv.secured);
 
     // This is bad
-    broadcast_event(&client->event_mgr, PARTY_LEADER_CHANGED, NULL);
+    broadcast_event(&client->event_mgr, EventType_PartyLeaderChanged, NULL);
 }
 
 void HandlePartyPlayerAdd(Connection *conn, size_t psize, Packet *packet)
@@ -286,7 +286,7 @@ void HandlePartyPlayerAdd(Connection *conn, size_t psize, Packet *packet)
     party->player_count++;
 
     uint32_t party_id = pack->party_id;
-    broadcast_event(&client->event_mgr, PARTY_MEMBERS_CHANGED, &party_id);
+    broadcast_event(&client->event_mgr, EventType_PartyMembersChanged, &party_id);
 }
 
 void HandlePartyPlayerRemove(Connection *conn, size_t psize, Packet *packet)
@@ -323,7 +323,7 @@ void HandlePartyPlayerRemove(Connection *conn, size_t psize, Packet *packet)
     party->player_count--;
 
     uint32_t party_id = pack->party_id;
-    broadcast_event(&client->event_mgr, PARTY_MEMBERS_CHANGED, &party_id);
+    broadcast_event(&client->event_mgr, EventType_PartyMembersChanged, &party_id);
 }
 
 void HandlePartyPlayerReady(Connection *conn, size_t psize, Packet *packet)

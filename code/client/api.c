@@ -140,7 +140,7 @@ leave:
 HQAPI bool RegisterEvent(EventType event, CallbackEntry *entry)
 {
     assert(client != NULL);
-    if (event < 0 || N_EVENT <= event)
+    if (event < 0 || EventType_Count <= event)
         return false;
     if (!entry || entry->registered)
         return false;

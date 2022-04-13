@@ -364,7 +364,7 @@ void HandleWindowOwner(Connection *conn, size_t psize, Packet *packet)
     client->interact_with = pack->agent_id;
     Event_DialogOpenned event;
     event.sender_agent_id = pack->agent_id;
-    broadcast_event(&client->event_mgr, DIALOG_OPENNED, &event);
+    broadcast_event(&client->event_mgr, EventType_DialogOpenned, &event);
 }
 void HandleMerchantReady(GwClient* client) {
     Item* item;
@@ -382,7 +382,7 @@ void HandleMerchantReady(GwClient* client) {
     thread_mutex_unlock(&client->mutex);
     Event_DialogOpenned event;
     event.sender_agent_id = client->merchant_agent_id;
-    broadcast_event(&client->event_mgr, MERCHANT_WINDOW_OPENED, &event);
+    broadcast_event(&client->event_mgr, EventType_MerchantWindowOpened, &event);
 }
 
 void HandleWindowAddItems(Connection *conn, size_t psize, Packet *packet)
@@ -676,7 +676,7 @@ void HandleSalvageSessionStart(Connection *conn, size_t psize, Packet *packet)
     }
     session->is_open = true;
 
-    broadcast_event(&client->event_mgr, SALVAGE_SESSION_START, &pack->item_id); // @todo pass possible salvage options
+    broadcast_event(&client->event_mgr, EventType_SalvageSessionStart, &pack->item_id); // @todo pass possible salvage options
 }
 
 void HandleSalvageSessionCancel(Connection *conn, size_t psize, Packet *packet)

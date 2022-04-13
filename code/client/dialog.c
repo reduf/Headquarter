@@ -84,7 +84,7 @@ void HandleDialogSender(Connection *conn, size_t psize, Packet *packet)
     array_clear(&dialog->buttons);
     Event_DialogOpenned event;
     event.sender_agent_id = pack->agent_id;
-    broadcast_event(&client->event_mgr, DIALOG_OPENNED, &event);
+    broadcast_event(&client->event_mgr, EventType_DialogOpenned, &event);
 }
 
 void GameSrv_SendDialog(GwClient *client, int dialog_id)
