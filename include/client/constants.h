@@ -163,14 +163,14 @@ typedef enum DistrictLanguage {
 } DistrictLanguage;
 
 typedef struct Appearance {
-    uint sex        : 1;
-    uint height     : 4;
-    uint skin_color : 5;
-    uint hair_color : 5;
-    uint face       : 5;
-    uint prof1      : 4;
-    uint hair_style : 6;
-    uint campaign   : 2; // 0=prof, 1=faction, 2=nightfall
+    unsigned int sex        : 1;
+    unsigned int height     : 4;
+    unsigned int skin_color : 5;
+    unsigned int hair_color : 5;
+    unsigned int face       : 5;
+    unsigned int prof1      : 4;
+    unsigned int hair_style : 6;
+    unsigned int campaign   : 2; // 0=prof, 1=faction, 2=nightfall
 } Appearance;
 
 #define Range_Adjacent              (166.f)

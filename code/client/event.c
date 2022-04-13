@@ -32,17 +32,24 @@ void events_rem_entry(EventManager *mgr, CallbackEntry *entry)
     entry->registered = false;
 }
 
-bool is_event_subscribed(EventManager* mgr, EventType e) {
+bool is_event_subscribed(EventManager* mgr, EventType e)
+{
     return 0 <= e && e < N_EVENT && !list_empty(&mgr->callbacks[e]);
 }
 
 void broadcast_event(EventManager *mgr, EventType e, void *args)
 {
     assert(0 <= e && e < N_EVENT);
-    CallbackEntry *entry;
-    struct list   *it;
-    list_for_each(&mgr->callbacks[e], it) {
-        entry = list_entry(it, CallbackEntry, node);
+
+    struct list *it = list_first(&mgr->callbacks[e]);
+    while (!list_end(&mgr->callbacks[e], it)) {
+        CallbackEntry *entry = list_entry(it, CallbackEntry, node);
+
+        // We increment the iterator before processing the callback, because
+        // the callback can unregister itself. By incrementing the `it` right
+        // away, it will work fine.
+        it = list_next(it);
+
         if (entry->callback) {
             entry->callback(e, args, entry->param);
         }
