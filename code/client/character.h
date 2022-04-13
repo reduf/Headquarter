@@ -11,7 +11,7 @@ typedef struct Character {
 
     Profession  prof1;
     Profession  prof2;
-    int32_t map;
+    uint16_t    map;
 } Character;
 typedef array(Character) CharacterArray;
 

@@ -172,8 +172,8 @@ void HandleCharacterInfo(Connection *conn, size_t psize, Packet *packet)
         uint16_t name[20];
         uint32_t n_extended;
         uint16_t unk1;
-        int16_t last_map_id;
-        int16_t  extended[30];
+        uint16_t last_map_id;
+        uint16_t extended[30];
     } CharacterInfo;
 #pragma pack(pop)
 
