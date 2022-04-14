@@ -1,7 +1,7 @@
 #ifndef HEADQUARTER_H
 #define HEADQUARTER_H
 
-#define GUILD_WARS_VERSION          (37169)
+#define GUILD_WARS_VERSION          (37175)
 #define HEADQUARTER_VERSION_MAJOR   (1)
 #define HEADQUARTER_VERSION_MINOR   (0)
 
@@ -22,6 +22,8 @@
 #include "str.h"
 #include <common/array.h>
 #include <common/noreturn.h>
+#include <common/dlfunc.h>
+#include <common/assert.h>
 
 typedef uint32_t uint;
 typedef uint64_t msec_t;
