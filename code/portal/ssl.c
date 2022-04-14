@@ -1494,57 +1494,57 @@ int ssl_sts_connection_handshake(struct ssl_sts_connection *ssl)
 
     int ret;
     if ((ret = send_client_step(ssl_srp_write_client_hello, ssl)) != 0) {
-        fprintf(stderr, "'ssl_srp_write_client_hello' failed: %d\n", ret);
+        fprintf(stderr, "'ssl_srp_write_client_hello' failed: %d %s\n", ret, ssl_err_string(ret));
         return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = wait_for_server_step(ssl_srp_process_server_hello, ssl)) != 0) {
-        fprintf(stderr, "'ssl_srp_process_server_hello' failed: %d\n", ret);
+        fprintf(stderr, "'ssl_srp_process_server_hello' failed: %d %s\n", ret, ssl_err_string(ret));
         return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = wait_for_server_step(ssl_srp_process_server_key_exchange, ssl)) != 0) {
-        fprintf(stderr, "'ssl_srp_process_server_key_exchange' failed: %d\n", ret);
+        fprintf(stderr, "'ssl_srp_process_server_key_exchange' failed: %d %s\n", ret, ssl_err_string(ret));
         return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = wait_for_server_step(ssl_srp_process_server_done, ssl)) != 0) {
-        fprintf(stderr, "'ssl_srp_process_server_done' failed: %d\n", ret);
+        fprintf(stderr, "'ssl_srp_process_server_done' failed: %d %s\n", ret, ssl_err_string(ret));
         return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = send_client_step(ssl_srp_write_client_key_exchange, ssl)) != 0) {
-        fprintf(stderr, "'ssl_srp_write_client_key_exchange' failed: %d\n", ret);
+        fprintf(stderr, "'ssl_srp_write_client_key_exchange' failed: %d %s\n", ret, ssl_err_string(ret));
         return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = send_client_step(ssl_srp_write_change_cipher_spec, ssl)) != 0) {
-        fprintf(stderr, "'ssl_srp_write_change_cipher_spec' failed: %d\n", ret);
+        fprintf(stderr, "'ssl_srp_write_change_cipher_spec' failed: %d %s\n", ret, ssl_err_string(ret));
         return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = ssl_sts_connection_setup_ciphers(ssl)) != 0) {
-        fprintf(stderr, "ssl_sts_connection_setup_ciphers failed: %d\n", ret);
+        fprintf(stderr, "ssl_sts_connection_setup_ciphers failed: %d %s\n", ret, ssl_err_string(ret));
         return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = ssl_srp_write_finished(ssl)) != 0) {
-        fprintf(stderr, "ssl_srp_write_finished failed: %d\n", ret);
+        fprintf(stderr, "ssl_srp_write_finished failed: %d %s\n", ret, ssl_err_string(ret));
         return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = ssl_sts_connection_send_internal(ssl, SSL_MSG_HANDSHAKE, ssl->write.data, ssl->write.size)) != 0) {
-        fprintf(stderr, "ssl_sts_connection_send_internal failed: %d\n", ret);
+        fprintf(stderr, "ssl_sts_connection_send_internal failed: %d %s\n", ret, ssl_err_string(ret));
         return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = wait_for_server_step(ssl_srp_process_change_cipher_spec, ssl)) != 0) {
-        fprintf(stderr, "'ssl_srp_process_change_cipher_spec' failed: %d\n", ret);
+        fprintf(stderr, "'ssl_srp_process_change_cipher_spec' failed: %d %s\n", ret, ssl_err_string(ret));
         return ERR_SSL_UNSUCCESSFUL;
     }
 
     if ((ret = wait_for_server_step(ssl_srp_process_encrypted_handshake, ssl)) != 0) {
-        fprintf(stderr, "'ssl_srp_process_encrypted_handshake' failed: %d\n", ret);
+        fprintf(stderr, "'ssl_srp_process_encrypted_handshake' failed: %d %s\n", ret, ssl_err_string(ret));
         return ERR_SSL_UNSUCCESSFUL;
     }
 
