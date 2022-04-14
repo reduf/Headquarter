@@ -559,7 +559,9 @@ int portal_login(struct portal_login_result *result, const char *username, const
     result->user_id = sts.user_id;
 
 cleanup:
-    ssl_sts_connection_free(&ssl);
+    // TODO: This connection seems to need to stay open even after successful auth.
+    // Its naughty, but for now leave the pointer hanging instead of closing the conn.
+    //ssl_sts_connection_free(&ssl);
     sts_connection_free(&sts);
     mbedtls_entropy_free(&entropy);
     if (ret != 0)
