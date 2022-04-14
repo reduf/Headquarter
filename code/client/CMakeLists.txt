@@ -85,7 +85,7 @@ target_include_directories(
   client
 
   PUBLIC
-  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../include
 )
 
 # This is necessary to allow other target to link against "client".
