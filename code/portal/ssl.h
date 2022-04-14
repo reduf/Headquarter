@@ -24,6 +24,26 @@ enum ssl_sts_state {
     AWAIT_CLIENT_FINISHED,
 };
 
+inline const char* ssl_err_string(const int error_code) {
+    switch (error_code) {
+    case ERR_SSL_UNSUCCESSFUL:
+        return "Unsuccessul";
+    case ERR_SSL_CONTINUE_PROCESSING:
+        return "Continue Processing";
+    case ERR_SSL_UNEXPECTED_MESSAGE:
+        return "Unexpected Message";
+    case ERR_SSL_UNSUPPORTED_PROTOCOL:
+        return "Unsupported Protocol";
+    case ERR_SSL_BAD_INPUT_DATA:
+        return "Bad Input Data";
+    case ERR_SSL_BUFFER_TOO_SMALL:
+        return "Buffer Too Small";
+    case ERR_SSL_INVALID_EMAIL:
+        return "Invalid Email";
+    }
+    return "Unknown Error";
+}
+
 // The hardcoded size here do not reflect the size(s) that are supported by
 // the protocol, but it's currently what is used by portal.  We could be more
 // flexible, trading some simplicity.
