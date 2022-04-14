@@ -79,7 +79,7 @@ static void ensure_agent_exist(GwClient *client, AgentId id)
         agents->size = agents->capacity;
     }
 
-    Agent *agent = malloc(sizeof(*agent));
+    Agent *agent = calloc(1,sizeof(*agent));
     agent->agent_id = id;
     agent->speed_modifier = 1.f;
     array_set(agents, id, agent);
