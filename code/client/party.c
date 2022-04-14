@@ -631,7 +631,7 @@ void HandlePartySearchAdvertisement(Connection *conn, size_t psize, Packet *pack
     params.sender.buffer = pack->player_name;
     params.sender.length = u16len(pack->player_name, ARRAY_SIZE(pack->player_name));
     params.message.buffer = pack->message;
-    params.sender.length = u16len(pack->message, ARRAY_SIZE(pack->message));
+    params.message.length = u16len(pack->message, ARRAY_SIZE(pack->message));
     broadcast_event(&client->event_mgr, EventType_PartySearchAdvertisement, &params);
 }
 
