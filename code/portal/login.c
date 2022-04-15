@@ -179,6 +179,7 @@ static int auth_login_finish(struct sts_connection *sts, struct ssl_sts_connecti
     array_reset(&content);
 
     if (ret != 0) {
+        array_reset(&request);
         return ret;
     }
 
@@ -303,6 +304,7 @@ static int auth2f_upgrade_totp(
     array_reset(&content);
 
     if (ret != 0) {
+        array_reset(&request);
         return ret;
     }
 
@@ -358,6 +360,7 @@ static int auth_list_game_accounts(struct sts_connection *sts, struct ssl_sts_co
     array_reset(&content);
 
     if (ret != 0) {
+        array_reset(&request);
         return ret;
     }
 
@@ -426,6 +429,7 @@ static int auth_request_game_token(struct sts_connection *sts, struct ssl_sts_co
     array_reset(&content);
 
     if (ret != 0) {
+        array_reset(&request);
         return ret;
     }
 
