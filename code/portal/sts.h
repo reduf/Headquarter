@@ -31,6 +31,12 @@ struct sts_reply {
 };
 
 int sts_parse_reply(struct sts_reply *reply, const uint8_t *raw, size_t length);
+
+int sts_write_request(
+    array_uint8_t *request,
+    const char *url, size_t url_len,
+    const uint8_t *content, size_t content_len);
+
 int sts_write_request_with_sequence_number(
     array_uint8_t *request,
     const char *url, size_t url_len,

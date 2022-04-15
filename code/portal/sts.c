@@ -156,7 +156,22 @@ static void sts_finish_request(array_uint8_t *request,
     array_insert(request, content_len, content);
 }
 
-static int sts_write_request(
+int sts_write_request(
+    array_uint8_t *request,
+    const char *url, size_t url_len,
+    const uint8_t *content, size_t content_len)
+{
+    int ret;
+
+    if ((ret = sts_write_header(request, url, url_len, content_len)) != 0) {
+        return STSE_UNSUCCESSFUL;
+    }
+
+    sts_finish_request(request, content, content_len);
+    return 0;
+}
+
+static int sts_send_request(
     struct sts_connection *sts,
     const char *url, size_t url_len,
     const uint8_t *content, size_t content_len)
@@ -166,19 +181,19 @@ static int sts_write_request(
     array_uint8_t request;
     array_init(&request);
 
-    if ((ret = sts_write_header(&request, url, url_len, content_len)) != 0) {
-        array_reset(&request);
-        return STSE_UNSUCCESSFUL;
-    }
-
-    sts_finish_request(&request, content, content_len);
-
-    if ((ret = send_full(sts->fd, request.data, request.size)) != 0) {
+    if ((ret = sts_write_request(&request, url, url_len, content, content_len)) != 0) {
         array_reset(&request);
         return ret;
     }
 
+    ret = send_full(sts->fd, request.data, request.size);
     array_reset(&request);
+
+    if (ret != 0) {
+        fprintf(stderr, "Failed to send the data\n");
+        return ret;
+    }
+
     return 0;
 }
 
@@ -301,7 +316,7 @@ int sts_connection_connect(struct sts_connection *sts, const char *hostname)
 
     const char url[] = "/Sts/Connect";
     size_t url_len = ARRAY_SIZE(url) - 1;
-    if ((ret = sts_write_request(sts, url, url_len, content.data, content.size)) != 0) {
+    if ((ret = sts_send_request(sts, url, url_len, content.data, content.size)) != 0) {
         return ret;
     }
 
