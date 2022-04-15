@@ -127,7 +127,7 @@ typedef union PacketBuffer {
 static bool socket_would_block(int err);
 static bool key_exchange_helper(Connection *conn, DiffieHellmanCtx *dhm);
 static void arc4_hash(const uint8_t *key, uint8_t *digest);
-static bool read_dhm_key_file(DiffieHellmanCtx *dhm, const FILE* file);
+static bool read_dhm_key_file(DiffieHellmanCtx *dhm, FILE* file);
 
 static size_t get_static_size(MsgField *field);
 static size_t get_element_size(MsgField *field);
@@ -180,11 +180,11 @@ void Network_Init(void)
         dir_path[length++] = '.';
         dir_path[length++] = '.';
         dir_path[length] = 0;
-        if (file = fopen(file_path, "rb")) {
+        file = fopen(file_path, "rb");
+        if (file) {
             file_read_ok = read_dhm_key_file(&official_server_keys, file);
             fclose(file);
         }
-        
     }
     assert(file_read_ok);
     LogInfo("gw key found @ %s", file_path);
@@ -270,7 +270,7 @@ bool IPv4ToAddr(const char *host, const char *port, struct sockaddr *sockaddr)
     return true;
 }
 
-static bool read_dhm_key_file(DiffieHellmanCtx *dhm, const FILE * file)
+static bool read_dhm_key_file(DiffieHellmanCtx *dhm, FILE * file)
 {
 
     uint8_t prim_root[4];
@@ -278,7 +278,7 @@ static bool read_dhm_key_file(DiffieHellmanCtx *dhm, const FILE * file)
     uint8_t prime_mod[64];
 
     if (fread(prim_root, sizeof(prim_root), 1, file) != 1) {
-        LogError("Couldn't read the primitive root from dhm key file", );
+        LogError("Couldn't read the primitive root from dhm key file");
         return false;
     }
 
