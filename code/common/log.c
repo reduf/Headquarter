@@ -41,7 +41,7 @@ log_print_level_s(unsigned int level)
     }
 }
 
-void log_init(const char* log_file_name)
+void log_init(const char *log_file_name)
 {
     int error;
 

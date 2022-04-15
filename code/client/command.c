@@ -20,7 +20,7 @@ void print_help(bool terminate)
             "    -character <string>        Sets the client's security question\n"
             "    -authsrv                   Specify authserver IP to connect to\n\n"
 
-            "    -newauth                   The client will use Portal connection\n\n"
+            "    -oldauth                   The client will use Portal connection\n\n"
 
             "    -seed                      Specify the seed for pseudo random generation\n"
             "    -v, --verbose              Enable debug logs\n"
@@ -47,7 +47,6 @@ void parse_command_args(int argc, const char **argv)
 
     options.mapid = 248; // By default with load GtoB first.
     options.maptype = 3;   
-    options.log_file_name[0] = 0;
     options.newauth = true;
 
     for (int i = 0; i < argc; i++) {
@@ -94,9 +93,9 @@ void parse_command_args(int argc, const char **argv)
             options.script = arg;
         }
     }
+
     // Assign a default log file name if one wasn't provided
     if (!options.log_file_name[0]) {
-        
         char timestamp[64];
         time_t t = time(NULL);
         struct tm ts;
