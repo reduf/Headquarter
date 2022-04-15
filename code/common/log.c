@@ -67,7 +67,7 @@ void log_init(const char* log_file_name)
         dir_path[length++] = '.';
         dir_path[length++] = '.';
         dir_path[length] = 0;
-        log_file = fopen(file_path, "w");
+        log_file = fopen(file_path, "a");
     }
     assert(log_file);
     printf("Logging to %s\n",file_path);
