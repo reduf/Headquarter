@@ -127,7 +127,7 @@ typedef union PacketBuffer {
 static bool socket_would_block(int err);
 static bool key_exchange_helper(Connection *conn, DiffieHellmanCtx *dhm);
 static void arc4_hash(const uint8_t *key, uint8_t *digest);
-static bool read_dhm_key_file(DiffieHellmanCtx *dhm, const char *path);
+static bool read_dhm_key_file(DiffieHellmanCtx *dhm, const FILE* file);
 
 static size_t get_static_size(MsgField *field);
 static size_t get_element_size(MsgField *field);
@@ -168,10 +168,11 @@ void Network_Init(void)
     }
 #endif
 
-    char file_path[1048];
+    char file_path[MAX_PATH];
     int length = 0;
     bool file_read_ok = false;
-    char dir_path[1024];
+    FILE* file = 0;
+    char dir_path[MAX_PATH];
     length = dlldir(dir_path, sizeof(dir_path));
     for (int i = 0; i < 6 && !file_read_ok; i++) {
         snprintf(file_path, sizeof(file_path), "%s/data/gw_%d.pub", dir_path, GUILD_WARS_VERSION);
@@ -179,7 +180,11 @@ void Network_Init(void)
         dir_path[length++] = '.';
         dir_path[length++] = '.';
         dir_path[length] = 0;
-        file_read_ok = read_dhm_key_file(&official_server_keys, file_path);
+        if (file = fopen(file_path, "rb")) {
+            file_read_ok = read_dhm_key_file(&official_server_keys, file);
+            fclose(file);
+        }
+        
     }
     assert(file_read_ok);
     LogInfo("gw key found @ %s", file_path);
@@ -265,37 +270,27 @@ bool IPv4ToAddr(const char *host, const char *port, struct sockaddr *sockaddr)
     return true;
 }
 
-static bool read_dhm_key_file(DiffieHellmanCtx *dhm, const char *path)
+static bool read_dhm_key_file(DiffieHellmanCtx *dhm, const FILE * file)
 {
-    FILE *file = fopen(path, "rb");
-    if (file == NULL) {
-        LogError("Couldn't open the key file '%s'", path);
-        return false;
-    }
 
     uint8_t prim_root[4];
     uint8_t public_key[64];
     uint8_t prime_mod[64];
 
     if (fread(prim_root, sizeof(prim_root), 1, file) != 1) {
-        LogError("Couldn't read the primitive root. (file: %s)", path);
-        fclose(file);
+        LogError("Couldn't read the primitive root from dhm key file", );
         return false;
     }
 
     if (fread(prime_mod, sizeof(prime_mod), 1, file) != 1) {
-        LogError("Couldn't read the prime modulus. (file: %s)", path);
-        fclose(file);
+        LogError("Couldn't read the prime modulus from dhm key file");
         return false;
     }
 
     if (fread(public_key, sizeof(public_key), 1, file) != 1) {
-        LogError("Couldn't read the public key. (file: %s)", path);
-        fclose(file);
+        LogError("Couldn't read the public key from dhm key file");
         return false;
     }
-
-    fclose(file);
     mbedtls_mpi_read_binary(&dhm->prime_modulus, prime_mod, 64);
     mbedtls_mpi_read_binary(&dhm->server_public, public_key, 64);
     mbedtls_mpi_read_binary(&dhm->primitive_root, prim_root, 4);
