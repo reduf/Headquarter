@@ -112,7 +112,7 @@ int main(int argc, const char *argv[])
     srand(seed);
 
     signal(SIGINT, sighandler);
-    log_init();
+    log_init(options.log_file_name);
     time_init();
     init_timers();
 

@@ -12,7 +12,7 @@ enum {
     LOG_LEVEL_COUNT,
 };
 
-void log_init(void);
+void log_init(const char* log_file_name);
 void log_set_level(unsigned int level);
 
 int log_msg(unsigned int level, const char *format, ...);

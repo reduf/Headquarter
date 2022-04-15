@@ -41,7 +41,7 @@ log_print_level_s(unsigned int level)
     }
 }
 
-void log_init(void)
+void log_init(const char* log_file_name)
 {
     int error;
 
@@ -57,27 +57,17 @@ void log_init(void)
         return;
     }
 
-    char timestamp[64];
-    time_t t = time(NULL);
-    struct tm ts;
-    // @Robustness: Deal with the error?
-    time_localtime(&t, &ts);
-    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d_%H-%M-%S", &ts);
-
     char file_path[1128];
     int length = 0;
     char dir_path[1024];
     length = dlldir(dir_path, sizeof(dir_path));
     for (int i = 0; i < 4 && !log_file; i++) {
-        snprintf(file_path, sizeof(file_path), "%s/logs/%s_%d.txt", dir_path,timestamp, getpid());
+        snprintf(file_path, sizeof(file_path), "%s/logs/%s", dir_path, log_file_name);
         dir_path[length++] = '/';
         dir_path[length++] = '.';
         dir_path[length++] = '.';
         dir_path[length] = 0;
         log_file = fopen(file_path, "w");
-        if (!log_file) {
-            printf("Failed to open log file at %s\n", file_path);
-        }
     }
     assert(log_file);
     printf("Logging to %s\n",file_path);
