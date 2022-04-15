@@ -119,8 +119,7 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
         items->size = items->capacity;
     }
 
-    Item *new_item = malloc(sizeof(*new_item));
-    memset(new_item, 0, sizeof(Item));
+    Item *new_item = calloc(1, sizeof(*new_item));
     new_item->item_id = pack->item_id;
     new_item->flags = pack->flags;
     new_item->value = pack->value;

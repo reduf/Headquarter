@@ -79,7 +79,7 @@ static void ensure_agent_exist(GwClient *client, AgentId id)
         agents->size = agents->capacity;
     }
 
-    Agent *agent = calloc(1,sizeof(*agent));
+    Agent *agent = calloc(1, sizeof(*agent));
     agent->agent_id = id;
     agent->speed_modifier = 1.f;
     array_set(agents, id, agent);
@@ -615,7 +615,7 @@ void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
     Player *player = array_at(players, pack->player_id);
 
     if (player == NULL) {
-        player = malloc(sizeof(*player));
+        player = calloc(1, sizeof(*player));
         assert(player != NULL);
         init_player(player);
         array_set(players, pack->player_id, player);
