@@ -7,7 +7,11 @@
 
 void *dllopen(const char *filename)
 {
-    return dlopen(filename, RTLD_LAZY);
+    void* handle = dlopen(filename, RTLD_LAZY);
+    if (handle)
+        return handle;
+    printf("dlopen Error: %s\n", dlerror());
+    return handle;
 }
 
 int dllclose(void *handle)

@@ -53,7 +53,7 @@ bool plugin_load(const char *path)
 
     plugin->module = dllopen(temp_path);
     if (plugin->module == NULL) {
-        LogError("Couldn't load the plugin '%s'", temp_path);
+        LogError("Couldn't dllopen the plugin '%s'", temp_path);
         return false;
     }
 
@@ -62,7 +62,7 @@ bool plugin_load(const char *path)
     PluginEntry_pt PluginInit;
     *(void **)&PluginInit = dllsym(plugin->module, "PluginEntry");
     if (PluginInit == NULL) {
-        LogError("Couldn't load the plugin '%s'", path);
+        LogError("Couldn't dllsym plugin '%s'", path);
         plugin_unload(plugin);
         return false;
     }
