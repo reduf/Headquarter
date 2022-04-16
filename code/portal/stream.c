@@ -5,15 +5,21 @@
 
 void appendv(array_uint8_t *buffer, const char *fmt, va_list args)
 {
+    va_list args_copy;
+    va_copy(args_copy, args);
+
     int ret = vsnprintf(NULL, 0, fmt, args);
-    if (ret < 0)
+    if (ret < 0) {
+        va_end(args_copy);
         abort();
+    }
 
     // We need to allocate one more bytes, because  of `vsnprintf`.
     // We will pop this "\0" byte later.
     uint8_t *write_ptr = array_push(buffer, (size_t)ret + 1);
-    vsnprintf((char *)write_ptr, (size_t)ret + 1, fmt, args);
+    vsnprintf((char *)write_ptr, (size_t)ret + 1, fmt, args_copy);
     array_pop(buffer);
+    va_end(args_copy);
 }
 
 void appendf(array_uint8_t *buffer, const char *fmt, ...)
