@@ -168,11 +168,11 @@ void Network_Init(void)
     }
 #endif
 
-    char file_path[MAX_PATH];
+    char file_path[260];
     int length = 0;
     bool file_read_ok = false;
     FILE* file = 0;
-    char dir_path[MAX_PATH];
+    char dir_path[260];
     length = dlldir(dir_path, sizeof(dir_path));
     for (int i = 0; i < 6 && !file_read_ok; i++) {
         snprintf(file_path, sizeof(file_path), "%s/data/gw_%d.pub", dir_path, GUILD_WARS_VERSION);
