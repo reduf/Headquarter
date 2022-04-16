@@ -10,10 +10,14 @@
 #include <client/Headquarter.h>
 #include <common/macro.h>
 
-#define DllExport __declspec(dllexport)
+#ifdef _WIN32
+# define DllExport __declspec(dllexport)
+#else
+# define DllExport
+#endif
 
 static CallbackEntry chat_message_cb;
-static on_chat_message(EventType e, void *args, void *param)
+static void on_chat_message(EventType e, void *args, void *param)
 {
     Event_ChatMessage *evt = (Event_ChatMessage *)args;
 
