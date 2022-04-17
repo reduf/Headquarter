@@ -17,14 +17,16 @@
 #endif
 
 static CallbackEntry chat_message_cb;
-static void on_chat_message(EventType e, void *args, void *param)
+static void on_chat_message(Event *event, void *param)
 {
-    Event_ChatMessage *evt = (Event_ChatMessage *)args;
+    // We didn't register any other event to this callback, so it shouldn't
+    // be possible to ever be called with an other event type.
+    assert(event->type == EventType_ChatMessage);
 
     char message[256];
-    size_t message_len = MIN(sizeof(message), evt->message.length);
+    size_t message_len = MIN(sizeof(message), event->ChatMessage.message.length);
     for (size_t i = 0; i < message_len; ++i) {
-        uint16_t value = evt->message.buffer[i];
+        uint16_t value = event->ChatMessage.message.buffer[i];
         if ((value & ~0x7F) != 0) {
             value = '?';
         }
@@ -33,9 +35,9 @@ static void on_chat_message(EventType e, void *args, void *param)
     }
 
     char sender[32];
-    size_t sender_len = MIN(sizeof(sender), evt->sender.length);
+    size_t sender_len = MIN(sizeof(sender), event->ChatMessage.sender.length);
     for (size_t i = 0; i < sender_len; ++i) {
-        uint16_t value = evt->sender.buffer[i];
+        uint16_t value = event->ChatMessage.sender.buffer[i];
         if ((value & ~0x7F) != 0) {
             value = '?';
         }

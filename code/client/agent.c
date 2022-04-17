@@ -1091,8 +1091,9 @@ void HandleAgentPingeg(Connection *conn, size_t psize, Packet *packet)
     AgentPinged *pack = cast(AgentPinged *)packet;
     assert(client && client->game_srv.secured);
 
-    Event_AgentFocus params;
-    params.agent_id  = pack->agent_id;
-    params.player_id = pack->player_id;
-    broadcast_event(&client->event_mgr, EventType_AgentFocus, &params);
+    Event params;
+    Event_Init(&params, EventType_AgentFocus);
+    params.AgentFocus.agent_id  = pack->agent_id;
+    params.AgentFocus.player_id = pack->player_id;
+    broadcast_event(&client->event_mgr, &params);
 }

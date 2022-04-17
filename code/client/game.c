@@ -338,7 +338,9 @@ void HandleCinematicStart(Connection *conn, size_t psize, Packet *packet)
 
     client->world.in_cinematic = true;
     if (pack->start) {
-        broadcast_event(&client->event_mgr, EventType_CinematicPlay, NULL);
+        Event event;
+        Event_Init(&event, EventType_CinematicPlay);
+        broadcast_event(&client->event_mgr, &event);
     }
 }
 
@@ -427,17 +429,18 @@ void HandleFriendListMessage(Connection* conn, size_t psize, Packet* packet)
     
     LogInfo("Game server message %d %d %ls %ls", pack->type, pack->unk2, pack->subject, pack->message);
 
-    Event_ChatMessage params;
-    params.extra_id = 0;
+    Event params;
+    Event_Init(&params, EventType_ChatMessage);
+    params.ChatMessage.extra_id = 0;
     switch (pack->type) {
     case 2:
         // Outgoing whisper
-        params.channel = Channel_GWCA1;
+        params.ChatMessage.channel = Channel_GWCA1;
         break;
     case 54:
         // Player is not online, slap a message in.
-        params.channel = Channel_Warning;
-        params.sender.buffer = pack->subject;
+        params.ChatMessage.channel = Channel_Warning;
+        params.ChatMessage.sender.buffer = pack->subject;
         wchar_t new_message[ARRAY_SIZE(pack->message)];
         wchar_t sender_ws[ARRAY_SIZE(pack->subject)];
         int length = 0;
@@ -450,13 +453,13 @@ void HandleFriendListMessage(Connection* conn, size_t psize, Packet* packet)
             pack->message[i] = new_message[i];
     }
     
-    params.sender.buffer = pack->subject;
-    params.sender.length = u16len(pack->subject, ARRAY_SIZE(pack->subject));
+    params.ChatMessage.sender.buffer = pack->subject;
+    params.ChatMessage.sender.length = u16len(pack->subject, ARRAY_SIZE(pack->subject));
 
-    params.sender.buffer = pack->message;
-    params.sender.length = u16len(pack->message, ARRAY_SIZE(pack->message));
+    params.ChatMessage.sender.buffer = pack->message;
+    params.ChatMessage.sender.length = u16len(pack->message, ARRAY_SIZE(pack->message));
 
-    broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
+    broadcast_event(&client->event_mgr, &params);
 }
 
 void HandleMissionAddObjective(Connection *conn, size_t psize, Packet *packet)
@@ -696,7 +699,10 @@ void HandleCantEnterOutpost(Connection *conn, size_t psize, Packet *packet)
     LogInfo("Can't enter outpost: %d\n", pack->value);
     client->try_changing_zone = false;
 
-    broadcast_event(&client->event_mgr, EventType_WorldCantTravel, &pack->value);
+    Event event;
+    Event_Init(&event, EventType_WorldCantTravel);
+    event.WorldCantTravel.value = pack->value;
+    broadcast_event(&client->event_mgr, &event);
 }
 
 void GameSrv_PingReply(Connection *conn)

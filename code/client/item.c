@@ -361,9 +361,10 @@ void HandleWindowOwner(Connection *conn, size_t psize, Packet *packet)
     array_clear(&client->tmp_merchant_prices);
     client->merchant_agent_id = pack->agent_id;
     client->interact_with = pack->agent_id;
-    Event_DialogOpenned event;
-    event.sender_agent_id = pack->agent_id;
-    broadcast_event(&client->event_mgr, EventType_DialogOpenned, &event);
+    Event event;
+    Event_Init(&event, EventType_DialogOpen);
+    event.DialogOpen.sender_agent_id = pack->agent_id;
+    broadcast_event(&client->event_mgr, &event);
 }
 void HandleMerchantReady(GwClient* client) {
     Item* item;
@@ -379,9 +380,10 @@ void HandleMerchantReady(GwClient* client) {
         }
     }
     thread_mutex_unlock(&client->mutex);
-    Event_DialogOpenned event;
-    event.sender_agent_id = client->merchant_agent_id;
-    broadcast_event(&client->event_mgr, EventType_MerchantWindowOpened, &event);
+    Event event;
+    Event_Init(&event, EventType_DialogOpen);
+    event.DialogOpen.sender_agent_id = client->merchant_agent_id;
+    broadcast_event(&client->event_mgr, &event);
 }
 
 void HandleWindowAddItems(Connection *conn, size_t psize, Packet *packet)
@@ -467,10 +469,11 @@ void HandleItemPriceQuote(Connection *conn, size_t psize, Packet *packet)
     Item *item = array_at(items, pack->item_id);
 
     item->quote_price = pack->price;
-    Event_ItemPrice params;
-    params.item_id = item->item_id;
-    params.quote_price = item->quote_price;
-    broadcast_event(&client->event_mgr, EventType_ItemQuotePrice, &params);
+    Event params;
+    Event_Init(&params, EventType_ItemQuotePrice);
+    params.ItemPrice.item_id = item->item_id;
+    params.ItemPrice.quote_price = item->quote_price;
+    broadcast_event(&client->event_mgr, &params);
 }
 
 void HandleItemChangeLocation(Connection *conn, size_t psize, Packet *packet)
@@ -675,7 +678,12 @@ void HandleSalvageSessionStart(Connection *conn, size_t psize, Packet *packet)
     }
     session->is_open = true;
 
-    broadcast_event(&client->event_mgr, EventType_SalvageSessionStart, &pack->item_id); // @todo pass possible salvage options
+    Event event;
+    Event_Init(&event, EventType_SalvageSessionStart);
+    event.SalvageSessionStart.item_id = pack->item_id;
+
+    // @Enhancement: pass possible salvage options
+    broadcast_event(&client->event_mgr, &event);
 }
 
 void HandleSalvageSessionCancel(Connection *conn, size_t psize, Packet *packet)

@@ -37,12 +37,12 @@ bool is_event_subscribed(EventManager* mgr, EventType e)
     return 0 <= e && e < EventType_Count && !list_empty(&mgr->callbacks[e]);
 }
 
-void broadcast_event(EventManager *mgr, EventType e, void *args)
+void broadcast_event(EventManager *mgr, Event *event)
 {
-    assert(0 <= e && e < EventType_Count);
+    assert(0 <= event->type && event->type < EventType_Count);
 
-    struct list *it = list_first(&mgr->callbacks[e]);
-    while (!list_end(&mgr->callbacks[e], it)) {
+    struct list *it = list_first(&mgr->callbacks[event->type]);
+    while (!list_end(&mgr->callbacks[event->type], it)) {
         CallbackEntry *entry = list_entry(it, CallbackEntry, node);
 
         // We increment the iterator before processing the callback, because
@@ -51,7 +51,7 @@ void broadcast_event(EventManager *mgr, EventType e, void *args)
         it = list_next(it);
 
         if (entry->callback) {
-            entry->callback(e, args, entry->param);
+            entry->callback(event, entry->param);
         }
     }
 }

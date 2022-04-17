@@ -116,15 +116,16 @@ void HandleChatMessageLocal(Connection *conn, size_t psize, Packet *packet)
 
     array_u16_t *sb = &client->chat.str_builder;
 
-    Event_ChatMessage params;
-    params.extra_id = 0;
-    params.channel = channel;
-    params.sender.length = player->name.length;
-    params.sender.buffer = player->name.buffer;
-    params.message.length = sb->size;
-    params.message.buffer = sb->data;
+    Event params;
+    Event_Init(&params, EventType_ChatMessage);
+    params.ChatMessage.extra_id = 0;
+    params.ChatMessage.channel = channel;
+    params.ChatMessage.sender.length = player->name.length;
+    params.ChatMessage.sender.buffer = player->name.buffer;
+    params.ChatMessage.message.length = sb->size;
+    params.ChatMessage.message.buffer = sb->data;
 
-    broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
+    broadcast_event(&client->event_mgr, &params);
 
 clear_buffer_and_exit:
     array_clear(&client->chat.str_builder);
@@ -158,9 +159,10 @@ void HandleChatMessageGlobal(Connection *conn, size_t psize, Packet *packet)
     }
     array_u16_t* sb = &client->chat.str_builder;
 
-    Event_ChatMessage params;
-    params.extra_id = 0;
-    params.channel = channel;
+    Event params;
+    Event_Init(&params, EventType_ChatMessage);
+    params.ChatMessage.extra_id = 0;
+    params.ChatMessage.channel = channel;
     uint16_t sender_with_tag[48];
     int length = 0;
     for (int i = 0; i < ARRAY_SIZE(pack->sender) && pack->sender[i] != 0; i++) {
@@ -174,11 +176,11 @@ void HandleChatMessageGlobal(Connection *conn, size_t psize, Packet *packet)
     sender_with_tag[length++] = ']';
     sender_with_tag[length++] = 0;
 
-    params.sender.buffer = sender_with_tag;
-    params.sender.length = length;
-    params.message.length = sb->size;
-    params.message.buffer = sb->data;
-    broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
+    params.ChatMessage.sender.buffer = sender_with_tag;
+    params.ChatMessage.sender.length = length;
+    params.ChatMessage.message.length = sb->size;
+    params.ChatMessage.message.buffer = sb->data;
+    broadcast_event(&client->event_mgr, &params);
 
 clear_buffer_and_exit:
     array_clear(&client->chat.str_builder);
@@ -217,14 +219,15 @@ void HandleChatMessageServer(Connection *conn, size_t psize, Packet *packet)
 
     array_u16_t* sb = &client->chat.str_builder;
 
-    Event_ChatMessage params;
-    params.channel = channel;
-    params.sender.buffer = NULL;
-    params.sender.length = 0;
-    params.message.length = sb->size;
-    params.message.buffer = sb->data;
-    params.extra_id = pack->id;
-    broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
+    Event params;
+    Event_Init(&params, EventType_ChatMessage);
+    params.ChatMessage.channel = channel;
+    params.ChatMessage.sender.buffer = NULL;
+    params.ChatMessage.sender.length = 0;
+    params.ChatMessage.message.length = sb->size;
+    params.ChatMessage.message.buffer = sb->data;
+    params.ChatMessage.extra_id = pack->id;
+    broadcast_event(&client->event_mgr, &params);
 
 clear_buffer_and_exit:
     array_clear(&client->chat.str_builder);
@@ -257,15 +260,17 @@ void HandleWhisperReceived(Connection *conn, size_t psize, Packet *packet)
     kstr_read(&sender, pack->sender, ARRAY_SIZE(pack->sender));
     kstr_read(&message, pack->message, ARRAY_SIZE(pack->message));
 
-    Event_ChatMessage params;
-    params.extra_id = 0;
-    params.channel = Channel_Whisper;
-    params.sender.buffer = pack->sender;
-    params.sender.length = u16len(pack->sender, ARRAY_SIZE(pack->sender));
-    params.message.buffer = pack->message;
-    params.message.length = u16len(pack->message, ARRAY_SIZE(pack->message));
+    Event params;
+    Event_Init(&params, EventType_ChatMessage);
 
-    broadcast_event(&client->event_mgr, EventType_ChatMessage, &params);
+    params.ChatMessage.extra_id = 0;
+    params.ChatMessage.channel = Channel_Whisper;
+    params.ChatMessage.sender.buffer = pack->sender;
+    params.ChatMessage.sender.length = u16len(pack->sender, ARRAY_SIZE(pack->sender));
+    params.ChatMessage.message.buffer = pack->message;
+    params.ChatMessage.message.length = u16len(pack->message, ARRAY_SIZE(pack->message));
+
+    broadcast_event(&client->event_mgr, &params);
 }
 
 void GameSrv_SendChat(GwClient *client, Channel channel, struct kstr *msg)

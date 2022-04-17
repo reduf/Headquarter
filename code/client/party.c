@@ -192,8 +192,10 @@ void HandlePartyJoinRequest(Connection *conn, size_t psize, Packet *packet)
         return;
     }
 
-    uint32_t party_id = pack->party_id;
-    broadcast_event(&client->event_mgr, EventType_PartyInviteRequest, &party_id);
+    Event event;
+    Event_Init(&event, EventType_PartyInviteRequest);
+    event.PartyInviteRequest.party_id = pack->party_id;
+    broadcast_event(&client->event_mgr, &event);
 }
 
 void HandlePartyInviteCancel(Connection *conn, size_t psize, Packet *packet)
@@ -246,8 +248,10 @@ void HandlePartyYouAreLeader(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     assert(client && client->game_srv.secured);
 
+    Event event;
+    Event_Init(&event, EventType_PartyLeaderChanged);
     // This is bad
-    broadcast_event(&client->event_mgr, EventType_PartyLeaderChanged, NULL);
+    broadcast_event(&client->event_mgr, &event);
 }
 
 void HandlePartyPlayerAdd(Connection *conn, size_t psize, Packet *packet)
@@ -285,8 +289,10 @@ void HandlePartyPlayerAdd(Connection *conn, size_t psize, Packet *packet)
     party_player->connected = pack->is_loaded == 1;
     party->player_count++;
 
-    uint32_t party_id = pack->party_id;
-    broadcast_event(&client->event_mgr, EventType_PartyMembersChanged, &party_id);
+    Event event;
+    Event_Init(&event, EventType_PartyMembersChanged);
+    event.PartyInviteChanged.party_id = pack->party_id;
+    broadcast_event(&client->event_mgr, &event);
 }
 
 void HandlePartyPlayerRemove(Connection *conn, size_t psize, Packet *packet)
@@ -322,8 +328,10 @@ void HandlePartyPlayerRemove(Connection *conn, size_t psize, Packet *packet)
     player->party = NULL;
     party->player_count--;
 
-    uint32_t party_id = pack->party_id;
-    broadcast_event(&client->event_mgr, EventType_PartyMembersChanged, &party_id);
+    Event event;
+    Event_Init(&event, EventType_PartyMembersChanged);
+    event.PartyInviteChanged.party_id = pack->party_id;
+    broadcast_event(&client->event_mgr, &event);
 }
 
 void HandlePartyPlayerReady(Connection *conn, size_t psize, Packet *packet)
@@ -622,17 +630,19 @@ void HandlePartySearchAdvertisement(Connection *conn, size_t psize, Packet *pack
     PacketType *pack = cast(PacketType *)packet;
     assert(client && client->game_srv.secured);
 
-    Event_PartySearchAdvertisement params;
-    params.party_id = pack->ps_id;
-    params.district = pack->district;
-    params.party_size = pack->party_size;
-    params.hero_count = pack->hero_count;
-    params.search_type = pack->search_type;
-    params.sender.buffer = pack->player_name;
-    params.sender.length = u16len(pack->player_name, ARRAY_SIZE(pack->player_name));
-    params.message.buffer = pack->message;
-    params.message.length = u16len(pack->message, ARRAY_SIZE(pack->message));
-    broadcast_event(&client->event_mgr, EventType_PartySearchAdvertisement, &params);
+    Event params;
+    Event_Init(&params, EventType_PartySearchAdvertisement);
+
+    params.PartySearchAdvertisement.party_id = pack->ps_id;
+    params.PartySearchAdvertisement.district = pack->district;
+    params.PartySearchAdvertisement.party_size = pack->party_size;
+    params.PartySearchAdvertisement.hero_count = pack->hero_count;
+    params.PartySearchAdvertisement.search_type = pack->search_type;
+    params.PartySearchAdvertisement.sender.buffer = pack->player_name;
+    params.PartySearchAdvertisement.sender.length = u16len(pack->player_name, ARRAY_SIZE(pack->player_name));
+    params.PartySearchAdvertisement.message.buffer = pack->message;
+    params.PartySearchAdvertisement.message.length = u16len(pack->message, ARRAY_SIZE(pack->message));
+    broadcast_event(&client->event_mgr, &params);
 }
 
 void HandlePartySearchSeek(Connection *conn, size_t psize, Packet *packet)

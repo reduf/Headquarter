@@ -70,7 +70,7 @@ void HandleFriendUpdateInfo(Connection *conn, size_t psize, Packet *packet)
 
     //Event_FriendStatus event;
     //api_make_friend(&event.gwfriend, gwfriend);
-    //broadcast_event(&client->event_mgr, EventType_Friend_Updated, &event);
+    //broadcast_event(&client->event_mgr, EventType_FriendUpdated, &event);
     //LogInfo("Friend info updated: %ls (%ls), status %d, type %d, map %d", friend->name_buffer, friend->account_buffer, friend->status, friend->type, friend->zone);
 }
 
@@ -102,18 +102,18 @@ void HandleFriendUpdateStatus(Connection *conn, size_t psize, Packet *packet)
         gwfriend->name.length = 0;
         gwfriend->name.buffer[0] = 0;
         gwfriend->zone = 0;
-    }
-    else {
+    } else {
         // Online, read in player name
         kstr_read(&gwfriend->name, pack->played, ARRAY_SIZE(pack->played));
     }
 
-    if (!list_empty(&client->event_mgr.callbacks[EventType_Friend_Updated])) {
-        Event_FriendStatus event;
-        api_make_friend(&event.gwfriend, gwfriend);
-        broadcast_event(&client->event_mgr, EventType_Friend_Updated, &event);
+    if (!list_empty(&client->event_mgr.callbacks[EventType_FriendUpdated])) {
+        Event event;
+        Event_Init(&event, EventType_FriendUpdated);
+
+        api_make_friend(&event.FriendStatus.gwfriend, gwfriend);
+        broadcast_event(&client->event_mgr, &event);
     }
-    //LogInfo("Friend status updated: %ls (%ls), status %d, type %d, map %d", friend->name_buffer, friend->account_buffer, friend->status, friend->type, friend->zone);
 }
 
 void HandleFriendUpdateLocation(Connection *conn, size_t psize, Packet *packet)
@@ -140,10 +140,11 @@ void HandleFriendUpdateLocation(Connection *conn, size_t psize, Packet *packet)
     }
 
     gwfriend->zone = pack->map_id;
-    if (!list_empty(&client->event_mgr.callbacks[EventType_Friend_Updated])) {
-        Event_FriendStatus event;
-        api_make_friend(&event.gwfriend, gwfriend);
-        broadcast_event(&client->event_mgr, EventType_Friend_Updated, &event);
+    if (!list_empty(&client->event_mgr.callbacks[EventType_FriendUpdated])) {
+        Event event;
+        Event_Init(&event, EventType_FriendUpdated);
+        api_make_friend(&event.FriendStatus.gwfriend, gwfriend);
+        broadcast_event(&client->event_mgr, &event);
     }
     //LogInfo("Friend location updated: %ls (%ls), status %d, type %d, map %d", friend->name_buffer, friend->account_buffer, friend->status, friend->type, friend->zone);
 }

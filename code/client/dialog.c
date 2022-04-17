@@ -82,9 +82,11 @@ void HandleDialogSender(Connection *conn, size_t psize, Packet *packet)
 
     // @Cleanup: Check if we alway get this packet before
     array_clear(&dialog->buttons);
-    Event_DialogOpenned event;
-    event.sender_agent_id = pack->agent_id;
-    broadcast_event(&client->event_mgr, EventType_DialogOpenned, &event);
+
+    Event event;
+    Event_Init(&event, EventType_DialogOpen);
+    event.DialogOpen.sender_agent_id = pack->agent_id;
+    broadcast_event(&client->event_mgr, &event);
 }
 
 void GameSrv_SendDialog(GwClient *client, int dialog_id)

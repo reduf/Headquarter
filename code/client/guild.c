@@ -215,10 +215,11 @@ void HandleGuildPlayerChangeComplete(Connection* conn, size_t psize, Packet* pac
     assert(client&& client->game_srv.secured);
 
     GuildMember* member = complete_guildmember_update(client, pack->account_name, ARRAY_SIZE(pack->account_name));
-    if (member && !list_empty(&client->event_mgr.callbacks[EventType_GuildMember_Updated])) {
-        Event_GuildMemberUpdated event;
-        api_make_guild_member(&event.member, member);
-        broadcast_event(&client->event_mgr, EventType_GuildMember_Updated, &event);
+    if (member && !list_empty(&client->event_mgr.callbacks[EventType_GuildMemberUpdated])) {
+        Event event;
+        Event_Init(&event, EventType_GuildMemberUpdated);
+        api_make_guild_member(&event.GuildMemberUpdated.member, member);
+        broadcast_event(&client->event_mgr, &event);
     }
 }
 
@@ -274,10 +275,11 @@ void HandleGuildPlayerInfo(Connection* conn, size_t psize, Packet* packet)
     //found->last_login_date = 0;
     //LogInfo("Guild member added: %ls (%ls), unk %d, type %d, status %d", 
     //    found->account_name_buffer, found->player_name_buffer, pack->unk, found->member_type, found->status);
-    if (!list_empty(&client->event_mgr.callbacks[EventType_GuildMember_Updated])) {
-        Event_GuildMemberUpdated event;
-        api_make_guild_member(&event.member, found);
-        broadcast_event(&client->event_mgr, EventType_GuildMember_Updated, &event);
+    if (!list_empty(&client->event_mgr.callbacks[EventType_GuildMemberUpdated])) {
+        Event event;
+        Event_Init(&event, EventType_GuildMemberUpdated);
+        api_make_guild_member(&event.GuildMemberUpdated.member, found);
+        broadcast_event(&client->event_mgr, &event);
     }
 }
 
