@@ -2,9 +2,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <common/win32/win32.h>
-#include <Ws2tcpip.h>
-
 #include "utest.h"
 
 #include <common/array.h>
@@ -17,22 +14,7 @@
 #include <portal/sts.h>
 #include <portal/login.h>
 
-UTEST_STATE();
-int main(int argc, char **argv)
-{
-    int ret;
-
-    WSADATA wsa_data;
-    if ((ret = WSAStartup(MAKEWORD(2, 2), &wsa_data)) != 0) {
-        fprintf(stderr, "'WSAStartup' failed: %d\n", WSAGetLastError());
-        return 1;
-    }
-
-    ret = utest_main(argc, argv);
-
-    WSACleanup();
-    return ret;
-}
+UTEST_MAIN();
 
 #if 0
 UTEST(sts, ssl_tls12_write_client_hello)
@@ -62,12 +44,10 @@ UTEST(sts, ssl_tls12_write_client_hello)
 
     ssl_tls2_free(&ctx);
 }
+#endif
 
 UTEST(sts, sts_write_request)
 {
-    array_uint8_t request;
-    array_init(request, 1024);
-
     const char url[] = "/Sts/Connect";
     const char content[] = "<Connect>\n<ConnType>400</ConnType>\n<Address>127.127.1.127</Address>\n<ProductType>0</ProductType>\n<ProductName>Gw</ProductName>\n<AppIndex>1</AppIndex>\n<Epoch>666952962</Epoch>\n<Program>1</Program>\n<Build>1002</Build>\n<Process>1337</Process>\n</Connect>\n";
     const uint8_t expected[] = \
@@ -90,11 +70,19 @@ UTEST(sts, sts_write_request)
         "\x73\x3E\x31\x33\x33\x37\x3C\x2F\x50\x72\x6F\x63\x65\x73\x73\x3E"
         "\x0A\x3C\x2F\x43\x6F\x6E\x6E\x65\x63\x74\x3E\x0A";
 
-    sts_write_request(&request, url, ARRAY_SIZE(url) - 1, content, ARRAY_SIZE(content) - 1);
-    ASSERT_EQ(reply.size, ARRAY_SIZE(expected) - 1);
-    ASSERT_TRUE(!memcmp(reply.data, expected, reply.size));
+    array_uint8_t request;
+    array_init(&request);
+    int ret = sts_write_request(
+        &request,
+        url, ARRAY_SIZE(url) - 1,
+        content, ARRAY_SIZE(content) - 1);
+
+    ASSERT_EQ(ret, 0);
+    ASSERT_EQ(request.size, ARRAY_SIZE(expected) - 1);
+    ASSERT_TRUE(!memcmp(request.data, expected, request.size));
+
+    array_reset(&request);
 }
-#endif
 
 UTEST(sts, sts_write_request_with_sequence_number)
 {
@@ -118,16 +106,6 @@ UTEST(sts, sts_write_request_with_sequence_number)
     ASSERT_NE(ret, 0);
     ASSERT_EQ(request.size, ARRAY_SIZE(expected) - 1);
     ASSERT_TRUE(!memcmp(request.data, expected, request.size));
-}
-
-UTEST(sts, portal_login)
-{
-    int ret;
-
-    struct portal_login_result result;
-
-    ret = portal_login(&result, "user@email.com", "otot");
-    ASSERT_EQ(ret, 0);
 }
 
 UTEST(sts_parse_reply, parse_request_without_content)
