@@ -15,7 +15,7 @@ typedef struct Friend {
 } Friend;
 typedef array(Friend) FriendArray;
 
-Friend* get_friend(uint8_t* uuid, uint16_t* name);
+Friend* get_friend(const uint8_t* uuid, const uint16_t* name);
 
 void init_friend(Friend* friend)
 {

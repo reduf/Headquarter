@@ -3,8 +3,9 @@
 #endif
 #define CORE_FRIEND_C
 
-Friend* get_friend(uint8_t* uuid, uint16_t* name) {
-    Friend* gwfriend;
+Friend *get_friend(const uint8_t *uuid, const uint16_t *name)
+{
+    Friend *gwfriend;
     if (uuid) {
         array_foreach(gwfriend, &client->friends) {
             if (memcmp(uuid, gwfriend->uuid, 16) == 0)
@@ -12,10 +13,15 @@ Friend* get_friend(uint8_t* uuid, uint16_t* name) {
         }
     }
     if (name) {
-        struct kstr name_kstr;
         size_t length = 0;
-        for (length = 0; length < 20 && name[length]; length++) {};
-        kstr_init(&name_kstr, name, length, 20);
+        for (length = 0; length < 20 && name[length]; length++) {}
+
+        const struct kstr name_kstr = {
+            .length = length,
+            .capacity = length,
+            .buffer = (uint16_t *)name,
+        };
+
         array_foreach(gwfriend, &client->friends) {
             if (kstr_compare(&gwfriend->name, &name_kstr) == 0 || kstr_compare(&gwfriend->account, &name_kstr) == 0)
                 return gwfriend;
@@ -23,8 +29,10 @@ Friend* get_friend(uint8_t* uuid, uint16_t* name) {
     }
     return NULL;
 }
-Friend* get_or_create_friend(uint8_t* uuid, uint16_t* name) {
-    Friend* gwfriend = get_friend(uuid, name);
+
+Friend *get_or_create_friend(uint8_t *uuid, uint16_t *name)
+{
+    Friend *gwfriend = get_friend(uuid, name);
     if (gwfriend)
         return gwfriend;
     gwfriend = array_push(&client->friends, 1);
@@ -54,7 +62,7 @@ void HandleFriendUpdateInfo(Connection *conn, size_t psize, Packet *packet)
     UpdateInfo *pack = cast(UpdateInfo *)packet;
     assert(client);
 
-    Friend* gwfriend = get_or_create_friend(pack->uuid, pack->account);
+    Friend *gwfriend = get_or_create_friend(pack->uuid, pack->account);
     assert(gwfriend);
     kstr_read(&gwfriend->account, pack->account, ARRAY_SIZE(pack->account));
     uuid_dec_le(pack->uuid, gwfriend->uuid);
@@ -93,7 +101,7 @@ void HandleFriendUpdateStatus(Connection *conn, size_t psize, Packet *packet)
     UpdateStatus *pack = cast(UpdateStatus *)packet;
     assert(client);
     assert(pack->status >= 0 && pack->status <= 3);
-    Friend* gwfriend = get_or_create_friend(pack->uuid, NULL);
+    Friend *gwfriend = get_or_create_friend(pack->uuid, NULL);
     assert(gwfriend);
     gwfriend->status = pack->status;
     if (gwfriend->status < 1) {
@@ -133,7 +141,7 @@ void HandleFriendUpdateLocation(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     UpdateLocation *pack = cast(UpdateLocation *)packet;
     assert(client);
-    Friend* gwfriend = get_or_create_friend(NULL, pack->account);
+    Friend *gwfriend = get_or_create_friend(NULL, pack->account);
     if (!gwfriend) {
         LogError("Couldn't create or find a new friend (3)");
         return;

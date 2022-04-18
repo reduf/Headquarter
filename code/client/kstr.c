@@ -27,7 +27,7 @@ bool kstr_copy(struct kstr *dest, const struct kstr *src)
     return true;
 }
 
-int kstr_compare(struct kstr *s1, struct kstr *s2)
+int kstr_compare(const struct kstr *s1, const struct kstr *s2)
 {
     if (s1->length != s2->length)
         return (int)(s1->length - s2->length);
