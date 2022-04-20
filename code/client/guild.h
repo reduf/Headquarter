@@ -62,8 +62,7 @@ static void api_make_guild_member(ApiGuildMember* dest, GuildMember* src)
     kstr_write(&src->account_name, dest->account_name, ARRAY_SIZE(dest->account_name));
     if (dest->status == 1) {
         kstr_write(&src->player_name, dest->player_name, ARRAY_SIZE(dest->player_name));
-    }
-    else {
+    } else {
         dest->player_name[0] = 0;
     }
 }
