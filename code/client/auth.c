@@ -56,9 +56,9 @@ void HandleErrorMessage(Connection *conn, size_t psize, Packet *packet)
         LogDebug("(Code=%03d) %s", pack->code, error_s);
     }
     Event params;
-    Event_Init(&params, EventType_Error);
-    params.Error.code = pack->code;
-    params.Error.type = type;
+    Event_Init(&params, EventType_AuthError);
+    params.AuthError.code = pack->code;
+    params.AuthError.type = type;
     broadcast_event(&client->event_mgr, &params);
     switch (type) {
         case AsyncType_None:

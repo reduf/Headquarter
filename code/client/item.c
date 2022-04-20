@@ -471,8 +471,8 @@ void HandleItemPriceQuote(Connection *conn, size_t psize, Packet *packet)
     item->quote_price = pack->price;
     Event params;
     Event_Init(&params, EventType_ItemQuotePrice);
-    params.ItemPrice.item_id = item->item_id;
-    params.ItemPrice.quote_price = item->quote_price;
+    params.ItemQuotePrice.item_id = item->item_id;
+    params.ItemQuotePrice.quote_price = item->quote_price;
     broadcast_event(&client->event_mgr, &params);
 }
 

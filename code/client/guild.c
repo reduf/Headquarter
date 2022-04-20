@@ -22,7 +22,9 @@ void init_guildmember_update(GwClient *client)
     kstr_init(&gmu->player_name, gmu->player_name_buffer, 0, ARRAY_SIZE(gmu->player_name_buffer));
     reset_guildmember_update(client);
 }
-void calc_last_login(GuildMember* member, uint32_t minutes_since_login) {
+
+void calc_last_login(GuildMember *member, uint32_t minutes_since_login)
+{
     uint64_t last_login_utc = get_time_since_epoch();
     if (minutes_since_login) {
         last_login_utc -= ((uint64_t)minutes_since_login * 60);
@@ -30,7 +32,7 @@ void calc_last_login(GuildMember* member, uint32_t minutes_since_login) {
     member->last_login_utc = last_login_utc;
 }
 
-GuildMember* complete_guildmember_update(GwClient *client, uint16_t *account_name, size_t capacity)
+GuildMember *complete_guildmember_update(GwClient *client, uint16_t *account_name, size_t capacity)
 {
     GuildMemberUpdate* gmu = &client->guild_member_update;
     GuildMember* member = NULL;

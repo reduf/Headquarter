@@ -136,7 +136,7 @@ HQAPI bool              GetQuest(ApiQuest *quest, uint32_t quest_id);
 HQAPI size_t            GetQuests(ApiQuest *buffer, size_t length);
 
 HQAPI size_t            GetFriends(ApiFriend* buffer, size_t length);
-HQAPI bool              GetFriendByUuid(ApiFriend *gwfriend, uuid_t uuid);
+HQAPI bool              GetFriendByUuid(ApiFriend *friend, uuid_t uuid);
 
 HQAPI FactionPoint      GetLuxonPoints(void);
 HQAPI FactionPoint      GetKurzickPoints(void);

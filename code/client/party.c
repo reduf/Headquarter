@@ -250,7 +250,6 @@ void HandlePartyYouAreLeader(Connection *conn, size_t psize, Packet *packet)
 
     Event event;
     Event_Init(&event, EventType_PartyLeaderChanged);
-    // This is bad
     broadcast_event(&client->event_mgr, &event);
 }
 
@@ -291,7 +290,7 @@ void HandlePartyPlayerAdd(Connection *conn, size_t psize, Packet *packet)
 
     Event event;
     Event_Init(&event, EventType_PartyMembersChanged);
-    event.PartyInviteChanged.party_id = pack->party_id;
+    event.PartyMembersChanged.party_id = pack->party_id;
     broadcast_event(&client->event_mgr, &event);
 }
 
@@ -330,7 +329,7 @@ void HandlePartyPlayerRemove(Connection *conn, size_t psize, Packet *packet)
 
     Event event;
     Event_Init(&event, EventType_PartyMembersChanged);
-    event.PartyInviteChanged.party_id = pack->party_id;
+    event.PartyMembersChanged.party_id = pack->party_id;
     broadcast_event(&client->event_mgr, &event);
 }
 
