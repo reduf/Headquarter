@@ -66,57 +66,6 @@ HQAPI void FreePluginAndExitThread(PluginObject *plugin, int retval)
     thread_exit(retval);
 }
 
-HQAPI size_t GetItemModStruct(uint32_t item_id, uint32_t* buffer, size_t length)
-{
-    assert(client != NULL);
-    if (!length && buffer)
-        return 0;
-    size_t written = 0;
-    thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->world.hash))
-        goto leave;
-    Item* item = get_item_safe(client, item_id);
-    if (!item)
-        goto leave;
-    if (!buffer) {
-        while (item->mod_struct[written]) written++;
-        goto leave;
-    }
-    for (written = 0; written < length && item->mod_struct[written]; written++) {
-        buffer[written] = item->mod_struct[written];
-    }
-    buffer[written] = 0;
-leave:
-    thread_mutex_unlock(&client->mutex);
-    return written;
-}
-
-HQAPI size_t GetItemName(uint32_t item_id, uint16_t* buffer, size_t length)
-{
-    assert(client != NULL);
-    if (!length && buffer)
-        return 0;
-    size_t written = 0;
-    thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->world.hash))
-        goto leave;
-    Item* item = get_item_safe(client, item_id);
-    if (!item)
-        goto leave;
-    if (!buffer) {
-        written = item->name.length;
-        goto leave;
-    }
-    if (kstr_write(&item->name, buffer, length)) {
-        written = item->name.length;
-    } else {
-        written = 0;
-    }
-leave:
-    thread_mutex_unlock(&client->mutex);
-    return written;
-}
-
 HQAPI size_t GetPlugins(ApiPlugin *buffer, size_t length)
 {
     assert(client != NULL);
@@ -510,42 +459,6 @@ HQAPI AgentId GetMyAgentId(void)
     return client->player_agent_id;
 }
 
-HQAPI bool GetGuildInfo(ApiGuild* api_guild, uint32_t guild_id) {
-    assert(client != NULL);
-    bool success = false;
-    thread_mutex_lock(&client->mutex);
-    Guild* guild = get_guild_safe(client, guild_id);
-    if (!guild) goto leave;
-    api_make_guild(api_guild, guild);
-    success = true;
-leave:
-    thread_mutex_unlock(&client->mutex);
-    return success;
-}
-
-HQAPI size_t GetGuildMembers(ApiGuildMember* buffer, size_t length)
-{
-    assert(client != NULL);
-    size_t count = 0;
-    thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->player))
-        goto leave;
-    if (!client->player->guild)
-        goto leave;
-    ArrayGuildMember members = client->player->guild->members;
-    if (buffer == NULL) {
-        count = members.size;
-        goto leave;
-    }
-    for (size_t i = 0; (i < members.size) && (count < length); i++) {
-        ApiGuildMember* dest = &buffer[count++];
-        api_make_guild_member(dest, &members.data[i]);
-    }
-leave:
-    thread_mutex_unlock(&client->mutex);
-    return count;
-}
-
 HQAPI uint32_t GetMyGuildId(void)
 {
     assert(client != NULL);
@@ -570,6 +483,43 @@ HQAPI uint32_t GetMyPlayerId(void)
 leave:
     thread_mutex_unlock(&client->mutex);
     return player_id;
+}
+
+HQAPI bool GetGuildInfo(ApiGuild *api_guild, uint32_t guild_id)
+{
+    assert(client != NULL);
+    bool success = false;
+    thread_mutex_lock(&client->mutex);
+    Guild* guild = get_guild_safe(client, guild_id);
+    if (!guild) goto leave;
+    api_make_guild(api_guild, guild);
+    success = true;
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return success;
+}
+
+HQAPI size_t GetGuildMembers(ApiGuildMember *buffer, size_t length)
+{
+    assert(client != NULL);
+    size_t count = 0;
+    thread_mutex_lock(&client->mutex);
+    if (!(client->ingame && client->player))
+        goto leave;
+    if (!client->player->guild)
+        goto leave;
+    ArrayGuildMember members = client->player->guild->members;
+    if (buffer == NULL) {
+        count = members.size;
+        goto leave;
+    }
+    for (size_t i = 0; (i < members.size) && (count < length); i++) {
+        ApiGuildMember* dest = &buffer[count++];
+        api_make_guild_member(dest, &members.data[i]);
+    }
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return count;
 }
 
 HQAPI uint32_t GetGuildOfAgent(uint32_t agent_id)
@@ -786,6 +736,57 @@ leave:
     return bag;
 }
 
+HQAPI size_t GetItemModStruct(uint32_t item_id, uint32_t* buffer, size_t length)
+{
+    assert(client != NULL);
+    if (!length && buffer)
+        return 0;
+    size_t written = 0;
+    thread_mutex_lock(&client->mutex);
+    if (!(client->ingame && client->world.hash))
+        goto leave;
+    Item* item = get_item_safe(client, item_id);
+    if (!item)
+        goto leave;
+    if (!buffer) {
+        while (item->mod_struct[written]) written++;
+        goto leave;
+    }
+    for (written = 0; written < length && item->mod_struct[written]; written++) {
+        buffer[written] = item->mod_struct[written];
+    }
+    buffer[written] = 0;
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return written;
+}
+
+HQAPI size_t GetItemName(uint32_t item_id, uint16_t* buffer, size_t length)
+{
+    assert(client != NULL);
+    if (!length && buffer)
+        return 0;
+    size_t written = 0;
+    thread_mutex_lock(&client->mutex);
+    if (!(client->ingame && client->world.hash))
+        goto leave;
+    Item* item = get_item_safe(client, item_id);
+    if (!item)
+        goto leave;
+    if (!buffer) {
+        written = item->name.length;
+        goto leave;
+    }
+    if (kstr_write(&item->name, buffer, length)) {
+        written = item->name.length;
+    } else {
+        written = 0;
+    }
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return written;
+}
+
 HQAPI size_t GetBagCapacity(BagEnum bag)
 {
     assert(client != NULL);
@@ -926,6 +927,28 @@ leave:
     return found;
 }
 
+HQAPI size_t GetQuests(ApiQuest *buffer, size_t length)
+{
+    assert(client != NULL);
+
+    size_t count = 0;
+    thread_mutex_lock(&client->mutex);
+    if (!(client->ingame && client->world.hash))
+        goto leave;
+    ArrayQuest quests = client->world.quests;
+    if (buffer == NULL) {
+        count = quests.size;
+        goto leave;
+    }
+    for (size_t i = 0; (i < quests.size) && (count < length); i++) {
+        ApiQuest *quest = &buffer[count++];
+        api_make_quest(quest, &quests.data[i]);
+    }
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return count;
+}
+
 HQAPI size_t GetFriends(ApiFriend* buffer, size_t length)
 {
     assert(client != NULL);
@@ -946,7 +969,7 @@ leave:
     return count;
 }
 
-HQAPI bool GetFriendByUuid(ApiFriend* gwfriend, uuid_t uuid)
+HQAPI bool GetFriendByUuid(ApiFriend *gwfriend, uuid_t uuid)
 {
     assert(client != NULL);
     bool found = false;
@@ -974,28 +997,6 @@ HQAPI bool GetFriend(ApiFriend* gwfriend, const uint16_t* name)
 leave:
     thread_mutex_unlock(&client->mutex);
     return found;
-}
-
-HQAPI size_t GetQuests(ApiQuest *buffer, size_t length)
-{
-    assert(client != NULL);
-
-    size_t count = 0;
-    thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->world.hash))
-        goto leave;
-    ArrayQuest quests = client->world.quests;
-    if (buffer == NULL) {
-        count = quests.size;
-        goto leave;
-    }
-    for (size_t i = 0; (i < quests.size) && (count < length); i++) {
-        ApiQuest *quest = &buffer[count++];
-        api_make_quest(quest, &quests.data[i]);
-    }
-leave:
-    thread_mutex_unlock(&client->mutex);
-    return count;
 }
 
 HQAPI FactionPoint GetLuxonPoints(void)
