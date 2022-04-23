@@ -564,7 +564,8 @@ static int ssl_sts_connection_send_internal(
 static int parse_tls12_handshake(
     struct ssl_sts_connection *ssl,
     uint8_t content_type,
-    const uint8_t **subdata, size_t *sublen)
+    const uint8_t **subdata, size_t *sublen,
+    int include_msg_in_checksum)
 {
     const size_t HEADER_LEN = 5;
 
@@ -594,9 +595,11 @@ static int parse_tls12_handshake(
     *subdata = &data[HEADER_LEN];
     *sublen = client_sublen;
 
-    int ret;
-    if ((ret = mbedtls_sha256_update(&ssl->checksum, *subdata, *sublen)) != 0) {
-        return ERR_SSL_UNSUCCESSFUL;
+    if (include_msg_in_checksum) {
+        int ret;
+        if ((ret = mbedtls_sha256_update(&ssl->checksum, *subdata, *sublen)) != 0) {
+            return ERR_SSL_UNSUCCESSFUL;
+        }
     }
 
     return 0;
@@ -614,7 +617,7 @@ int ssl_sts_connection_recv_internal(
     size_t inner_len;
 
     for (;;) {
-        ret = parse_tls12_handshake(ssl, message_type, &inner_data, &inner_len);
+        ret = parse_tls12_handshake(ssl, message_type, &inner_data, &inner_len, 0);
 
         if (ret == 0)
             break;
@@ -947,8 +950,9 @@ static int ssl_srp_write_finished(struct ssl_sts_connection *ssl)
 {
     assert(ssl->state == AWAIT_CLIENT_HANDSHAKE);
 
-    size_t len = sizeof(ssl->client_finished);
+    size_t size_at_start = ssl->write.size;
 
+    size_t len = sizeof(ssl->client_finished);
     array_add(&ssl->write, SSL_HS_FINISHED);
     uint8_t *p = array_push(&ssl->write, 3);
     p[0] = (len >> 16) & 0xFF;
@@ -956,6 +960,12 @@ static int ssl_srp_write_finished(struct ssl_sts_connection *ssl)
     p[2] = len & 0xFF;
 
     array_insert(&ssl->write, sizeof(ssl->client_finished), ssl->client_finished);
+
+    int ret;
+    const uint8_t *pack = ssl->write.data + size_at_start;
+    size_t pack_size = ssl->write.size - size_at_start;
+    if ((ret = mbedtls_sha256_update(&ssl->checksum, pack, pack_size)) != 0)
+        return ERR_SSL_UNSUCCESSFUL;
 
     ssl->state = AWAIT_SERVER_CHANGE_CIPHER_SPEC;
     return 0;
@@ -1044,7 +1054,7 @@ static int ssl_srp_process_server_hello(struct ssl_sts_connection *ssl)
     const uint8_t *inner_data;
     size_t inner_len;
 
-    ret = parse_tls12_handshake(ssl, SSL_MSG_HANDSHAKE, &inner_data, &inner_len);
+    ret = parse_tls12_handshake(ssl, SSL_MSG_HANDSHAKE, &inner_data, &inner_len, 1);
     if (ret != 0) {
         return ret;
     }
@@ -1136,7 +1146,7 @@ static int ssl_srp_process_server_key_exchange(struct ssl_sts_connection *ssl)
     const uint8_t *inner_data;
     size_t inner_len;
 
-    if ((ret = parse_tls12_handshake(ssl, SSL_MSG_HANDSHAKE, &inner_data, &inner_len)) != 0) {
+    if ((ret = parse_tls12_handshake(ssl, SSL_MSG_HANDSHAKE, &inner_data, &inner_len, 1)) != 0) {
         return ret;
     }
 
@@ -1157,7 +1167,7 @@ static int ssl_srp_process_server_done(struct ssl_sts_connection *ssl)
     const uint8_t *inner_data;
     size_t inner_len;
 
-    if ((ret = parse_tls12_handshake(ssl, SSL_MSG_HANDSHAKE, &inner_data, &inner_len)) != 0) {
+    if ((ret = parse_tls12_handshake(ssl, SSL_MSG_HANDSHAKE, &inner_data, &inner_len, 1)) != 0) {
         return ret;
     }
 
@@ -1182,7 +1192,7 @@ static int ssl_srp_process_change_cipher_spec(struct ssl_sts_connection *ssl)
     const uint8_t *inner_data;
     size_t inner_len;
 
-    if ((ret = parse_tls12_handshake(ssl, SSL_MSG_CHANGE_CIPHER_SPEC, &inner_data, &inner_len)) != 0) {
+    if ((ret = parse_tls12_handshake(ssl, SSL_MSG_CHANGE_CIPHER_SPEC, &inner_data, &inner_len, 0)) != 0) {
         return ret;
     }
 
@@ -1221,10 +1231,28 @@ static int ssl_srp_process_encrypted_handshake(struct ssl_sts_connection *ssl)
         return ERR_SSL_BAD_INPUT_DATA;
     }
 
-    // The message should starts with, followed by the checksum computed
-    // by the server. Didn't reverse this part yet, but it's not important
-    // from a functioning point of view.
-    // Msg: "\x14\x00\x00\x0C..."
+    uint8_t checksum[32];
+    if ((ret = mbedtls_sha256_finish(&ssl->checksum, checksum)) != 0)
+        return ERR_SSL_UNSUCCESSFUL;
+
+    const char server_finished_lbl[] = "server finished";
+    ret = tls_prf_sha256(
+        ssl->master_secret, sizeof(ssl->master_secret),
+        server_finished_lbl, sizeof(server_finished_lbl) - 1,
+        checksum, sizeof(checksum),
+        ssl->server_finished, sizeof(ssl->server_finished));
+
+    if (ret != 0)
+        return ret;
+
+    // Not the best check, but it effecetively means:
+    // "SSL_MSG_CHANGE_CIPHER_SPEC", "length of 24 bits".
+    const uint8_t expected_header[] = "\x14\x00\x00\x0C";
+    if (memcmp(buffer, expected_header, sizeof(expected_header) - 1) != 0)
+        return ERR_SSL_BAD_INPUT_DATA;
+
+    if (memcmp(buffer + 4, ssl->server_finished, sizeof(ssl->server_finished)) != 0)
+        return ERR_SSL_BAD_INPUT_DATA;
 
     ssl->state = AWAIT_CLIENT_FINISHED;
     return 0;
@@ -1394,12 +1422,11 @@ static int ssl_sts_connection_setup_ciphers(struct ssl_sts_connection *ssl)
     serialize_tls12_random(random, &ssl->client_random);
     serialize_tls12_random(random + sizeof(struct tls12_random), &ssl->server_random);
 
-    uint8_t master_secret[48];
     ret = tls_prf_sha256(
         ssl->premaster_secret, sizeof(ssl->premaster_secret),
         master_secret_lbl, sizeof(master_secret_lbl) - 1,
         random, sizeof(random),
-        master_secret, sizeof(master_secret));
+        ssl->master_secret, sizeof(ssl->master_secret));
 
     if (ret != 0)
         return ret;
@@ -1413,7 +1440,7 @@ static int ssl_sts_connection_setup_ciphers(struct ssl_sts_connection *ssl)
 
     uint8_t key_expansion[104];
     ret = tls_prf_sha256(
-        master_secret, sizeof(master_secret),
+        ssl->master_secret, sizeof(ssl->master_secret),
         key_expansion_lbl, sizeof(key_expansion_lbl) - 1,
         random, sizeof(random),
         key_expansion, sizeof(key_expansion));
@@ -1456,13 +1483,20 @@ static int ssl_sts_connection_setup_ciphers(struct ssl_sts_connection *ssl)
 
     const char client_finished_lbl[] = "client finished";
 
+    mbedtls_sha256_context checksum_ctx;
+    mbedtls_sha256_init(&checksum_ctx);
+    mbedtls_sha256_clone(&checksum_ctx, &ssl->checksum);
+
     uint8_t checksum[32];
-    if ((ret = mbedtls_sha256_finish(&ssl->checksum, checksum)) != 0) {
+    ret = mbedtls_sha256_finish(&checksum_ctx, checksum);
+    mbedtls_sha256_free(&checksum_ctx);
+
+    if (ret != 0) {
         return ERR_SSL_UNSUCCESSFUL;
     }
 
     ret = tls_prf_sha256(
-        master_secret, sizeof(master_secret),
+        ssl->master_secret, sizeof(ssl->master_secret),
         client_finished_lbl, sizeof(client_finished_lbl) - 1,
         checksum, sizeof(checksum),
         ssl->client_finished, sizeof(ssl->client_finished));
@@ -1594,3 +1628,4 @@ int ssl_sts_connection_recv(
         buffer, buffer_len,
         retlen);
 }
+
