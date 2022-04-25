@@ -21,7 +21,8 @@
 
 #define SHA1_DIGEST_SIZE 20
 
-const char* ssl_err_string(const int error_code) {
+const char* ssl_err_string(const int error_code)
+{
     switch (error_code) {
     case ERR_SSL_UNSUCCESSFUL:
         return "Unsuccessul";
