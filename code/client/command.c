@@ -33,10 +33,12 @@ void print_help(bool terminate)
     if (terminate) exit(0);
 }
 
-void check_for_more_arguments(int argc, int i, int nargs)
+void check_for_more_arguments(int argc, const char **argv, int i, int nargs)
 {
-    if (argc <= i + nargs)
+    if (argc <= i + nargs) {
+        printf("Not enough arguments after '%s'\n", argv[i]);
         print_help(true);
+    }
 }
 
 void parse_command_args(int argc, const char **argv)
@@ -63,33 +65,36 @@ void parse_command_args(int argc, const char **argv)
         } else if (!strcmp(arg, "-authsrv")) {
             options.auth_srv = argv[++i];
         } else if (!strcmp(arg, "-account")) {
-            check_for_more_arguments(argc, i, 1);
+            check_for_more_arguments(argc, argv, i, 1);
             safe_strcpy(options.account, ARRAY_SIZE(options.account), argv[++i]);
         } else if (!strcmp(arg, "-email")) {
-            check_for_more_arguments(argc, i, 1);
+            check_for_more_arguments(argc, argv, i, 1);
 
             // @Remark: We need the email to be in lower cases, because
             // it is user to compute the static hash of the password.
             safe_strcpy(options.email, ARRAY_SIZE(options.email), argv[++i]);
             strlwc(options.email, ARRAY_SIZE(options.email));
         } else if (!strcmp(arg, "-password")) {
-            check_for_more_arguments(argc, i, 1);
+            check_for_more_arguments(argc, argv, i, 1);
             safe_strcpy(options.password, ARRAY_SIZE(options.password), argv[++i]);
         } else if (!strcmp(arg, "-character")) {
-            check_for_more_arguments(argc, i, 1);
+            check_for_more_arguments(argc, argv, i, 1);
             safe_strcpy(options.charname, ARRAY_SIZE(options.charname), argv[++i]);
         } else if (!strcmp(arg, "-oldauth")) {
             options.newauth = false;
         } else if (!strcmp(arg, "-mapid")) {
-            check_for_more_arguments(argc, i, 1);
+            check_for_more_arguments(argc, argv, i, 1);
             options.mapid = atoi(argv[++i]);
         } else if (!strcmp(arg, "-maptype")) {
             options.maptype = atoi(argv[++i]);
         } else if (!strcmp(arg, "-l")) {
-            check_for_more_arguments(argc, i, 1);
+            check_for_more_arguments(argc, argv, i, 1);
             safe_strcpy(options.log_file_name, ARRAY_SIZE(options.log_file_name), argv[++i]);
         } else {
-            if (options.script) print_help(true);
+            if (options.script) {
+                printf("You shouldn't specify more than one script to run\n");
+                print_help(true);
+            }
             options.script = arg;
         }
     }
