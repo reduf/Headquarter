@@ -11,7 +11,7 @@ void print_help(bool terminate)
 
             "    --version                  print version and exist\n"
             "    -c <config_file>           use config_file as configuration file\n"
-            "    -l <log_file>              Specify the name of the log file to write to\nn"
+            "    -l <log_file>              Specify the name of the log file to write to\n"
             "    -h, --help                 print this help\n\n"
 
             "    -account   <string>        Name of the account to use\n"
@@ -27,7 +27,7 @@ void print_help(bool terminate)
             "    -vv, --trace               Enable trace logs\n\n"
 
             "    -mapid                     Specify the map id you want to start in\n"
-            "    -maptype                   Specify the map type you want to start in\\nn"
+            "    -maptype                   Specify the map type you want to start in\n\n"
         );
 
     if (terminate) exit(0);
