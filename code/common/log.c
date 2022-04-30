@@ -43,35 +43,31 @@ log_print_level_s(unsigned int level)
 
 void log_init(const char *log_file_name)
 {
-    int error;
-
-#ifdef _NDEBUG
     log_print_level = LOG_INFO;
-#else
-    log_print_level = LOG_DEBUG;
-#endif
 
-    error = thread_mutex_init(&log_mutex);
+    int error = thread_mutex_init(&log_mutex);
     if (error) {
         assert(!"log_init: thread_mutex_init");
         return;
     }
 
-    char file_path[1128];
     int length = 0;
     char dir_path[1024];
-    length = dlldir(dir_path, sizeof(dir_path));
-    for (int i = 0; i < 4 && !log_file; i++) {
-        snprintf(file_path, sizeof(file_path), "%s/logs/%s", dir_path, log_file_name);
-        dir_path[length++] = '/';
-        dir_path[length++] = '.';
-        dir_path[length++] = '.';
-        dir_path[length] = 0;
-        log_file = fopen(file_path, "a");
+    if ((length = dlldir(dir_path, sizeof(dir_path))) <= 0) {
+        fprintf(stderr, "Failed to get the 'dlldir'\n");
+        return;
     }
-    assert(log_file);
-    printf("Logging to %s\n",file_path);
 
+    // @Cleanup: Ensure the directory exist.
+
+    char file_path[1128];
+    snprintf(file_path, sizeof(file_path), "%s/logs/%s", dir_path, log_file_name);
+    if ((log_file = fopen(file_path, "a")) == NULL) {
+        fprintf(stderr, "Failed to open the file '%s'\n", file_path);
+        return;
+    }
+
+    printf("Logging to %s\n",file_path);
 }
 
 void log_set_level(unsigned int level)
