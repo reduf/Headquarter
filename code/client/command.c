@@ -99,6 +99,26 @@ void parse_command_args(int argc, const char **argv)
         }
     }
 
+    if (!options.email[0]) {
+        printf("You need to specify '-email'\n");
+        print_help(true);
+    }
+
+    if (!options.password[0]) {
+        printf("You need to specify '-password'\n");
+        print_help(true);
+    }
+
+    if (!options.charname[0]) {
+        printf("You need to specify '-charname'\n");
+        print_help(true);
+    }
+
+    if (!options.script[0]) {
+        printf("You need to specify the script\n");
+        print_help(true);
+    }
+
     // Assign a default log file name if one wasn't provided
     if (!options.log_file_name[0]) {
         char timestamp[64];

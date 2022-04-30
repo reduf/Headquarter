@@ -101,12 +101,6 @@ int main(int argc, const char *argv[])
         print_help(true);
     }
 
-    if (wcsnul(options.charname) || wcsnul(options.password)
-        || wcsnul(options.email) || !options.script)
-    {
-        print_help(true);
-    }
-
     // @Enhancement: add arguments "-seed=23232"
     unsigned int seed = (unsigned int)time(NULL);
     srand(seed);
