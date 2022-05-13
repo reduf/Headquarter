@@ -9,6 +9,7 @@ typedef enum EventType {
     EventType_CinematicPlay,
     EventType_CinematicStop,
     EventType_DialogOpen,
+    EventType_DialogButton,
     EventType_AuthError,
     EventType_FriendStatus,
     EventType_GuildMemberUpdated,
@@ -48,6 +49,10 @@ typedef struct Event {
         struct {
             uint32_t sender_agent_id;
         } DialogOpen;
+        struct {
+            int button_id;
+            int icon_id;
+        } DialogButton;
         struct {
             uint32_t type;
             uint32_t code;

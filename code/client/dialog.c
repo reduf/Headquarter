@@ -36,6 +36,12 @@ void HandleDialogButton(Connection *conn, size_t psize, Packet *packet)
         LogInfo("DialogInfo::buttons needed a reallocation. Size before reallocation: %d", dialog->buttons.size);
     }
     array_add(&dialog->buttons, button);
+
+    Event event;
+    Event_Init(&event, EventType_DialogButton);
+    event.DialogButton.button_id = pack->dialog_id;
+    event.DialogButton.icon_id = pack->icon_id;
+    broadcast_event(&client->event_mgr, &event);
 }
 
 void HandleDialogBody(Connection *conn, size_t psize, Packet *packet)
@@ -82,6 +88,11 @@ void HandleDialogSender(Connection *conn, size_t psize, Packet *packet)
 
     // @Cleanup: Check if we alway get this packet before
     array_clear(&dialog->buttons);
+
+    // Any new dialog invalidates merchant window; if we don't do this, merchant items will still be for a previous NPC
+    array_clear(&client->merchant_items);
+    array_clear(&client->tmp_merchant_items);
+    array_clear(&client->tmp_merchant_prices);
 
     Event event;
     Event_Init(&event, EventType_DialogOpen);
