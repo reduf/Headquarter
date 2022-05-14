@@ -97,14 +97,12 @@ static int find_between(struct str *dest, struct str *src, const char *left, con
 
     size_t left_pos = s_find(src, &l);
     if (left_pos == (size_t)-1) {
-        fprintf(stderr, "Failed to find '%s'\n", left);
         return 1;
     }
 
     struct str rem = s_substr(src, (left_pos + l.len), SIZE_MAX);
     size_t right_pos = s_find(&rem, &r);
     if (right_pos == (size_t)-1) {
-        fprintf(stderr, "Failed to find '%s'\n", right);
         return 1;
     }
 
@@ -328,6 +326,21 @@ static int auth2f_upgrade_totp(
 
     if (reply.status_code != 200) {
         fprintf(stderr, "Reply to '%s' failed with status %u\n", url, reply.status_code);
+        array_reset(&response);
+        return 1;
+    }
+
+    struct str reply_content = s_from_unsigned_utf8(reply.content, reply.content_length);
+
+    struct str user_id;
+    if (find_between(&user_id, &reply_content, "<UserId>", "</UserId>") != 0) {
+        fprintf(stderr, "Failed to find UserId\n");
+        array_reset(&response);
+        return 1;
+    }
+
+    if (!s_parse_uuid(&user_id, &sts->user_id)) {
+        fprintf(stderr, "Failed to parse the user_id uuid '%.*s'\n", (int)user_id.len, user_id.ptr);
         array_reset(&response);
         return 1;
     }
