@@ -255,26 +255,27 @@ static int auth_login_finish(struct sts_connection *sts, struct ssl_sts_connecti
     return 0;
 }
 
-static int read_user_code(int *otp)
+static int read_user_code(char *buffer, size_t size, size_t *ret)
 {
     printf("Enter code: ");
 
-    char line[256];
-    if (fgets(line, sizeof(line), stdin) == NULL)
+    if (fgets(buffer, size, stdin) == NULL)
         return 1;
 
-    if (sscanf(line, "%d", otp) != 1) {
-        fprintf(stderr, "Couldn't extract the otp from '%s'\n", line);
+    // The complete line didn't fit in the buffer.
+    const char *newline;
+    if ((newline = strchr(buffer, '\n')) == NULL)
         return 1;
-    }
 
+    *ret = newline - buffer;
     return 0;
 }
 
 static int auth2f_upgrade_totp(
     struct sts_connection *sts,
     struct ssl_sts_connection *ssl,
-    int otp,
+    const char *otp,
+    size_t otp_len,
     int remember_me)
 {
     const char url[] = "/Auth2f/Upgrade";
@@ -285,7 +286,7 @@ static int auth2f_upgrade_totp(
     array_reserve(&content, 1024);
 
     appendf(&content, "<Request>\n");
-    appendf(&content, "<Otp>%06d</Otp>\n", otp);
+    appendf(&content, "<Otp>%.*s</Otp>\n", (int)otp_len, otp);
     if (remember_me != 0)
         appendf(&content, "<WhitelistIp/>\n");
     appendf(&content, "</Request>\n");
@@ -566,13 +567,14 @@ int portal_login(struct portal_login_result *result, const char *username, const
             goto cleanup;
         }
 
-        int otp;
-        if ((ret = read_user_code(&otp)) != 0) {
+        char otp[32];
+        size_t otp_len;
+        if ((ret = read_user_code(otp, sizeof(otp), &otp_len)) != 0) {
             goto cleanup;
         }
 
         const int remember_me = 1;
-        if ((ret = auth2f_upgrade_totp(&sts, &ssl, otp, remember_me)) != 0) {
+        if ((ret = auth2f_upgrade_totp(&sts, &ssl, otp, otp_len, remember_me)) != 0) {
             goto cleanup;
         }
     }
@@ -591,7 +593,7 @@ int portal_login(struct portal_login_result *result, const char *username, const
 cleanup:
     // TODO: This connection seems to need to stay open even after successful auth.
     // Its naughty, but for now leave the pointer hanging instead of closing the conn.
-    //ssl_sts_connection_free(&ssl);
+    // ssl_sts_connection_free(&ssl);
     sts_connection_free(&sts);
     mbedtls_entropy_free(&entropy);
     if (ret != 0)
