@@ -13,7 +13,7 @@
 UTEST_MAIN();
 
 static CallbackEntry unregister_event_from_handler_cb1;
-static void unregister_event_from_handler_func1(EventType event, void *args, void *param)
+static void unregister_event_from_handler_func1(Event *event, void *param)
 {
     EventManager *mgr = (EventManager *)param;
     events_rem_entry(mgr, &unregister_event_from_handler_cb1);
@@ -21,7 +21,7 @@ static void unregister_event_from_handler_func1(EventType event, void *args, voi
 
 static CallbackEntry unregister_event_from_handler_cb_before;
 static CallbackEntry unregister_event_from_handler_cb_after;
-static void unregister_event_from_handler_increment(EventType event, void *args, void *param)
+static void unregister_event_from_handler_increment(Event *event, void *param)
 {
     int *res = (int *)param;
     *res += 1;
@@ -47,11 +47,13 @@ UTEST(client_event, unregister_event_from_handler)
         unregister_event_from_handler_increment,
         &result);
 
-    events_add_entry(&mgr, EventType_Error, &unregister_event_from_handler_cb_before);
-    events_add_entry(&mgr, EventType_Error, &unregister_event_from_handler_cb1);
-    events_add_entry(&mgr, EventType_Error, &unregister_event_from_handler_cb_after);
+    events_add_entry(&mgr, EventType_AuthError, &unregister_event_from_handler_cb_before);
+    events_add_entry(&mgr, EventType_AuthError, &unregister_event_from_handler_cb1);
+    events_add_entry(&mgr, EventType_AuthError, &unregister_event_from_handler_cb_after);
 
-    broadcast_event(&mgr, EventType_Error, NULL);
+    Event event = {0};
+    event.type = EventType_AuthError;
+    broadcast_event(&mgr, &event);
 
     ASSERT_EQ(result, 2);
 }
