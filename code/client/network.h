@@ -140,8 +140,9 @@ void SendPacket(Connection *conn, size_t size, void *p);
  */
 bool AuthSrv_Connect(Connection *conn);
 
-bool GameSrv_Connect(Connection *conn, uuid_t account,
-    uuid_t character, uint32_t tok1, uint32_t tok2, uint32_t map);
+bool GameSrv_Connect(Connection *conn,
+    const struct uuid *account, const struct uuid *character,
+    uint32_t world_hash, uint32_t player_hash, uint32_t map);
 
 /*
  * Return the number of bytes written.

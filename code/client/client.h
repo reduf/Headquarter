@@ -94,7 +94,7 @@ typedef struct GwClient {
 
     thread_mutex_t      mutex;
 
-    uuid_t              uuid;
+    struct uuid         uuid;
 
     struct kstr         email;
     struct kstr         charname;

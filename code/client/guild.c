@@ -87,7 +87,7 @@ void reset_guildmember_update(GwClient *client)
 void init_guild(Guild *guild)
 {
     guild->guild_id = 0;
-    memset(guild->guild_uuid, 0, sizeof(guild->guild_uuid));
+    uuid_clear(&guild->guild_uuid);
     guild->allegiance = FactionType_Unknow;
     guild->faction_pts = 0;
 
@@ -115,7 +115,7 @@ void HandleGuildPlayerRole(Connection *conn, size_t psize, Packet *packet)
     typedef struct {
         Header  header;
         int16_t guild_id;
-        uuid_t  guild_uuid;
+        uint8_t guild_uuid[16];
         uint8_t member_type;
     } PlayerRole;
 #pragma pack(pop)
@@ -297,7 +297,7 @@ void HandleGuildGeneralInfo(Connection *conn, size_t psize, Packet *packet)
     typedef struct {
         Header header;
         int16_t guild_id;
-        uuid_t uuid;
+        uint8_t uuid[16];
         uint16_t name[32];
         uint16_t tag[6];
         uint8_t feature;
@@ -334,7 +334,7 @@ void HandleGuildGeneralInfo(Connection *conn, size_t psize, Packet *packet)
     Guild *guild = &array_at(guilds, pack->guild_id);
     init_guild(guild);
 
-    uuid_copy(guild->guild_uuid, pack->uuid);
+    uuid_dec_le(pack->uuid, &guild->guild_uuid);
     guild->guild_id = pack->guild_id;
 
     if (pack->allegiance < FactionType_Count) {

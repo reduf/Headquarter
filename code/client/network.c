@@ -105,8 +105,8 @@ typedef struct {
     uint32_t world_hash;
     uint32_t map_id;
     uint32_t player_hash;
-    uuid_t account_uuid;
-    uuid_t character_uuid;
+    uint8_t account_uuid[16];
+    uint8_t character_uuid[16];
     uint32_t unk2;      // 0
     uint32_t unk3;      // 0
 } GAME_CMSG_VERSION;
@@ -471,8 +471,9 @@ bool AuthSrv_Connect(Connection *conn)
     return true;
 }
 
-bool GameSrv_Connect(Connection *conn, uuid_t account,
-    uuid_t character, uint32_t world_hash, uint32_t player_hash, uint32_t map)
+bool GameSrv_Connect(Connection *conn,
+    const struct uuid *account, const struct uuid *character,
+    uint32_t world_hash, uint32_t player_hash, uint32_t map)
 {
     assert(Net_Initialized);
     int result;

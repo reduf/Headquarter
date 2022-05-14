@@ -7,7 +7,7 @@ typedef struct Character {
     struct kstr name;
     uint16_t    name_buffer[20];
 
-    uuid_t      uuid;
+    struct uuid uuid;
 
     Profession  prof1;
     Profession  prof2;

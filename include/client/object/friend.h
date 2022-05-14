@@ -15,7 +15,7 @@ typedef enum FriendType {
 } FriendType;
 
 typedef struct ApiFriend {
-    uint8_t uuid[16];
+    uint8_t  uuid[16];
     uint32_t type;
     uint32_t status;
     uint32_t map_id;

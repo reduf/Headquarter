@@ -129,8 +129,8 @@ void HandleAccountInfo(Connection *conn, size_t psize, Packet *packet)
         uint32_t unk0;
         uint8_t unk1[8];
         uint8_t unk2[8];
-        uuid_t account_uuid;
-        uuid_t character_uuid;
+        uint8_t account_uuid[16];
+        uint8_t character_uuid[16];
         uint32_t unk3;
         uint32_t n_unk4;
         uint8_t unk4[200];
@@ -146,13 +146,13 @@ void HandleAccountInfo(Connection *conn, size_t psize, Packet *packet)
     AccountInfo *pack = cast(AccountInfo *)packet;
     assert(client);
 
-    uuid_t char_uuid;
-    uuid_dec_le(pack->account_uuid, client->uuid);
-    uuid_dec_le(pack->character_uuid, char_uuid);
+    struct uuid char_uuid;
+    uuid_dec_le(pack->account_uuid, &client->uuid);
+    uuid_dec_le(pack->character_uuid, &char_uuid);
 
     Character *character;
     array_foreach(character, &client->characters) {
-        if (uuid_equals(character->uuid, char_uuid)) {
+        if (uuid_equals(&character->uuid, &char_uuid)) {
             client->current_character = character;
             break;
         }
@@ -168,7 +168,7 @@ void HandleCharacterInfo(Connection *conn, size_t psize, Packet *packet)
     typedef struct {
         Header   header;
         uint32_t trans_id;
-        uuid_t   uuid;
+        uint8_t  uuid[16];
         uint32_t unk0;
         uint16_t name[20];
         uint32_t n_extended;
@@ -194,7 +194,7 @@ void HandleCharacterInfo(Connection *conn, size_t psize, Packet *packet)
     init_character(character);
     character->map = pack->last_map_id;
     kstr_read(&character->name, pack->name, ARRAY_SIZE(pack->name));
-    uuid_dec_le(pack->uuid, character->uuid);
+    uuid_dec_le(pack->uuid, &character->uuid);
 }
 
 void AuthSrv_HeartBeat(Connection *conn, msec_t tick)

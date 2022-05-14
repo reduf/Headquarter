@@ -286,7 +286,7 @@ HQAPI void TravelHall(uint32_t guild_id)
     thread_mutex_lock(&client->mutex);
     Guild *guild = get_guild_safe(client, guild_id);
     if (!guild) goto leave;
-    GameSrv_TravelGH(client, guild->guild_uuid);
+    GameSrv_TravelGH(client, &guild->guild_uuid);
 leave:
     thread_mutex_unlock(&client->mutex);
 }
@@ -969,12 +969,15 @@ leave:
     return count;
 }
 
-HQAPI bool GetFriendByUuid(ApiFriend *friend, uuid_t uuid)
+HQAPI bool GetFriendByUuid(ApiFriend *friend, const uint8_t *uuid)
 {
     assert(client != NULL);
     bool found = false;
+    struct uuid u;
+    uuid_dec_le(uuid, &u);
+
     thread_mutex_lock(&client->mutex);
-    Friend* friend_ptr = get_friend(uuid, NULL);
+    Friend* friend_ptr = get_friend(&u, NULL);
     if (!friend_ptr)
         goto leave;
     api_make_friend(friend, friend_ptr);

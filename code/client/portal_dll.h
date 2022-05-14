@@ -8,5 +8,5 @@ void portal_dll_cleanup(void);
 void portal_dll_login(struct kstr *email, struct kstr *password);
 
 extern bool   portal_received_key;
-extern uuid_t portal_user_id;
-extern uuid_t portal_session_id;
+extern uint8_t portal_user_id[16];
+extern uint8_t portal_session_id[16];

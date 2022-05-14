@@ -10,12 +10,12 @@ typedef struct Friend {
     uint16_t        name_buffer[20];
     struct kstr     account;
     uint16_t        account_buffer[20];
-    uuid_t          uuid;
+    struct uuid     uuid;
     uint32_t        zone;
 } Friend;
 typedef array(Friend) FriendArray;
 
-Friend* get_friend(const uint8_t* uuid, const uint16_t* name);
+Friend* get_friend(const struct uuid *u, const uint16_t* name);
 
 void init_friend(Friend* friend)
 {
@@ -31,7 +31,7 @@ static void api_make_friend(ApiFriend* dest, Friend* src)
     dest->type = src->type;
     dest->status = src->status;
     dest->map_id = src->zone;
-    uuid_copy(dest->uuid, src->uuid);
+    uuid_enc_le(dest->uuid, &src->uuid);
     kstr_write(&src->account, dest->account, ARRAY_SIZE(dest->account));
     kstr_write(&src->name, dest->playing, ARRAY_SIZE(dest->playing));
 }

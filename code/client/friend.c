@@ -3,12 +3,12 @@
 #endif
 #define CORE_FRIEND_C
 
-Friend *get_friend(const uint8_t *uuid, const uint16_t *name)
+Friend *get_friend(const struct uuid *uuid, const uint16_t *name)
 {
     Friend *friend;
     if (uuid) {
         array_foreach(friend, &client->friends) {
-            if (memcmp(uuid, friend->uuid, 16) == 0)
+            if (uuid_cmp(uuid, &friend->uuid) == 0)
                 return friend;
         }
     }
@@ -23,14 +23,16 @@ Friend *get_friend(const uint8_t *uuid, const uint16_t *name)
         };
 
         array_foreach(friend, &client->friends) {
-            if (kstr_compare(&friend->name, &name_kstr) == 0 || kstr_compare(&friend->account, &name_kstr) == 0)
+            if (kstr_compare(&friend->name, &name_kstr) == 0 ||
+                kstr_compare(&friend->account, &name_kstr) == 0) {
                 return friend;
+            }
         }
     }
     return NULL;
 }
 
-Friend *get_or_create_friend(uint8_t *uuid, uint16_t *name)
+Friend *get_or_create_friend(struct uuid *uuid, const uint16_t *name)
 {
     Friend *friend = get_friend(uuid, name);
     if (friend)
@@ -62,10 +64,13 @@ void HandleFriendUpdateInfo(Connection *conn, size_t psize, Packet *packet)
     UpdateInfo *pack = cast(UpdateInfo *)packet;
     assert(client);
 
-    Friend *friend = get_or_create_friend(pack->uuid, pack->account);
+    struct uuid uuid;
+    uuid_dec_le(pack->uuid, &uuid);
+
+    Friend *friend = get_or_create_friend(&uuid, pack->account);
     assert(friend);
     kstr_read(&friend->account, pack->account, ARRAY_SIZE(pack->account));
-    uuid_dec_le(pack->uuid, friend->uuid);
+    uuid_copy(&friend->uuid, &uuid);
 
     friend->type = pack->type;
     if (friend->status < 1) {
@@ -101,8 +106,9 @@ void HandleFriendUpdateStatus(Connection *conn, size_t psize, Packet *packet)
     UpdateStatus *pack = cast(UpdateStatus *)packet;
     assert(client);
     assert(pack->status >= 0 && pack->status <= 3);
-    Friend *friend = get_or_create_friend(pack->uuid, NULL);
-    assert(friend);
+    struct uuid uuid;
+    uuid_dec_le(pack->uuid, &uuid);
+    Friend *friend = get_or_create_friend(&uuid, NULL);
     friend->status = pack->status;
     if (friend->status < 1) {
         // Offline, reset.

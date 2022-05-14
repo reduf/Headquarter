@@ -45,7 +45,7 @@ void TransferGameServer(GwClient *client)
     client->inventory.gold_storage = 0;
     client->game_srv.host = transfer->host;
 
-    if (!GameSrv_Connect(&client->game_srv, client->uuid, cc->uuid,
+    if (!GameSrv_Connect(&client->game_srv, &client->uuid, &cc->uuid,
         transfer->world_id, transfer->player_id, transfer->map_id)) {
 
         LogError("Game handshake failed !");
@@ -151,12 +151,12 @@ void HandleInstanceCountdown(Connection *conn, size_t psize, Packet *packet)
     world->pvp_timer_duration = pack->time;
 }
 
-void GameSrv_TravelGH(GwClient *client, const uuid_t guild_uuid)
+void GameSrv_TravelGH(GwClient *client, const struct uuid *guild_uuid)
 {
 #pragma pack(push, 1)
     typedef struct {
         Header header;
-        uuid_t uuid;
+        uint8_t uuid[16];
         int8_t unk1;
     } TravelHall;
 #pragma pack(pop)

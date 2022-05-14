@@ -18,7 +18,7 @@ typedef array(GuildMember) ArrayGuildMember;
 
 typedef struct Guild {
     uint32_t        guild_id;
-    uuid_t          guild_uuid;
+    struct uuid     guild_uuid;
 
     FactionType     allegiance;
     uint32_t        faction_pts;

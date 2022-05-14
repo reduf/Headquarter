@@ -28,9 +28,9 @@ static PortalGetUserId_t            PortalGetUserId;
 
 static HMODULE hPortal;
 
-bool   portal_received_key;
-uuid_t portal_user_id;
-uuid_t portal_session_id;
+bool    portal_received_key;
+uint8_t portal_user_id[16];
+uint8_t portal_session_id[16];
 
 static void OnPortalNotify(uint32_t msgid, uint32_t unk1, void *data, void *param)
 {

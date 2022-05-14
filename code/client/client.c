@@ -155,8 +155,8 @@ void PortalAccountConnect(GwClient *client, struct uuid *user_id, struct uuid *t
     typedef struct {
         Header   header;
         uint32_t transaction_id;
-        uuid_t   user_id;
-        uuid_t   session_id;
+        uint8_t  user_id[16];
+        uint8_t  session_id[16];
         uint16_t charname1[20]; // playing character
         uint16_t charname2[20]; // secret question
     } PortalAccountLogin;
@@ -176,17 +176,8 @@ void PortalAccountConnect(GwClient *client, struct uuid *user_id, struct uuid *t
     PortalAccountLogin packet = NewPacket(AUTH_CMSG_PORTAL_ACCOUNT_LOGIN);
     packet.transaction_id = trans_id;
 
-    // @Cleanup:
-    // This is totally meaningless, but we currently have to do that, because
-    // `uuid_t` is defined as an array of characters. We should just use
-    // `struct uuid`.
-    uuid_t token_buffer;
-    memcpy(&token_buffer, token, sizeof(token_buffer));
-    uuid_t user_id_buffer;
-    memcpy(&user_id_buffer, user_id, sizeof(user_id_buffer));
-
-    uuid_enc_le(packet.user_id, user_id_buffer);
-    uuid_enc_le(packet.session_id, token_buffer);
+    uuid_enc_le(packet.user_id, user_id);
+    uuid_enc_le(packet.session_id, token);
     
     assert(ARRAY_SIZE(packet.charname1) == ARRAY_SIZE(packet.charname2));
     if (ARRAY_SIZE(packet.charname1) < charname->length) {

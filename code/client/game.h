@@ -25,7 +25,7 @@ void GameSrv_HeroLoadAttributes(GwClient* client, uint32_t hero_index, ArrayAttr
 void GameSrv_HeroChangeSecondary(GwClient* client, uint32_t hero_index, Profession profession);
 void GameSrv_HeroSetBehavior(GwClient *client, AgentId agent_id, HeroBehavior behavior);
 void GameSrv_HeroSkillToggle(GwClient *client, AgentId agent_id, int skill_slot);
-void GameSrv_TravelGH(GwClient *client, const uuid_t guild_uuid);
+void GameSrv_TravelGH(GwClient *client, const struct uuid *guild_uuid);
 void GameSrv_LeaveGH(GwClient *client);
 void GameSrv_Travel(GwClient *client, uint16_t map_id, District district, uint16_t district_number);
 void GameSrv_ReturnToOutpost(GwClient *client);
