@@ -9,7 +9,6 @@
 #define ERR_SSL_UNSUPPORTED_PROTOCOL   4
 #define ERR_SSL_BAD_INPUT_DATA         5
 #define ERR_SSL_BUFFER_TOO_SMALL       6
-#define ERR_SSL_INVALID_EMAIL          7
 
 enum ssl_sts_state {
     AWAIT_CLIENT_HELLO,
@@ -84,6 +83,8 @@ struct ssl_sts_connection {
     char srp_username[256];
     size_t srp_username_len;
 
+    uint8_t *which_hash_verifier;
+    uint8_t static_legacy_hash[20];
     uint8_t static_verifier_hash[20];
     uint8_t verifier_hash[20];
 

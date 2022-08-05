@@ -11,13 +11,18 @@
 
 #define TLS_SRP_SHA_WITH_AES_256_CBC_SHA 0xC020
 #define TLS_SRP_SHA_WITH_AES_128_CBC_SHA 0xC01D
-#define TLS_ANET_INVALID_EMAIL           0xFF04
+#define TLS_SRP_SHA_WITH_LEGACY_PASSWORD 0xFF04
 
 #define SSL_MSG_CHANGE_CIPHER_SPEC     20
 #define SSL_MSG_ALERT                  21
 #define SSL_MSG_HANDSHAKE              22
 #define SSL_MSG_APPLICATION_DATA       23
 #define SSL_MSG_CID                    25
+
+#define SSL_ALERT_LEVEL_WARNING 1
+#define SSL_ALERT_LEVEL_FATAL   2
+
+#define SSL_ALERT_DESCRIPTION_BAD_RECORD_MAC 20
 
 #define SHA1_DIGEST_SIZE 20
 
@@ -36,8 +41,6 @@ const char* ssl_err_string(const int error_code)
         return "Bad Input Data";
     case ERR_SSL_BUFFER_TOO_SMALL:
         return "Buffer Too Small";
-    case ERR_SSL_INVALID_EMAIL:
-        return "Invalid Email";
     }
     return "Unknown Error";
 }
@@ -136,16 +139,72 @@ static int sha1_of_two_values_with_padding(
     return sha1_of_two_values(digest, buffer1, padding, buffer2, padding);
 }
 
+static int compute_legacy_hash(
+    uint8_t *digest,
+    const char *username, size_t username_len,
+    const char *password, size_t password_len)
+{
+    uint16_t buffer[256];
+
+    size_t buffer_required_size = (username_len + password_len) * 2;
+    if (sizeof(buffer) < buffer_required_size) {
+        fprintf(stderr, "Buffer is too short (%zu bytes) for the current username and password\n", sizeof(buffer));
+        return 1;
+    }
+
+    size_t i = 0;
+    for (size_t j = 0; j < password_len; j++, i++) {
+        if ((password[j] & ~0x7F) != 0) {
+            fprintf(stderr, "We currently don't support non-ascii character\n");
+            return 1;
+        }
+        buffer[i] = password[i];
+    }
+
+    for (size_t j = 0; j < username_len; j++, i++) {
+        if ((username[j] & ~0x7F) != 0) {
+            fprintf(stderr, "We currently don't support non-ascii character\n");
+            return 1;
+        }
+
+        buffer[i] = username[j];
+    }
+
+    int ret;
+    uint8_t temp_digest[SHA1_DIGEST_SIZE];
+    if ((ret = mbedtls_sha1((const uint8_t *)buffer, buffer_required_size, temp_digest)) != 0)
+        return 1;
+
+    // Yeah, the encoding of the words are reversed...
+    le32enc(&temp_digest[0], be32dec(&temp_digest[0]));
+    le32enc(&temp_digest[4], be32dec(&temp_digest[4]));
+    le32enc(&temp_digest[8], be32dec(&temp_digest[8]));
+    le32enc(&temp_digest[12], be32dec(&temp_digest[12]));
+    le32enc(&temp_digest[16], be32dec(&temp_digest[16]));
+
+    return compute_srp_hash(digest, (const uint8_t *)username, username_len, temp_digest, sizeof(temp_digest));
+}
+
 static int compute_static_hash(
     struct ssl_sts_connection *ssl,
     const char *username, size_t username_len,
     const char *password, size_t password_len)
 {
+    STATIC_ASSERT(SHA1_DIGEST_SIZE == sizeof(ssl->static_legacy_hash));
     STATIC_ASSERT(SHA1_DIGEST_SIZE == sizeof(ssl->static_verifier_hash));
-    return compute_srp_hash(
+
+    int ret = compute_srp_hash(
         ssl->static_verifier_hash,
         (const uint8_t *)username, username_len,
         (const uint8_t *)password, password_len);
+    if (ret != 0)
+        return ret;
+
+    ret = compute_legacy_hash(
+        ssl->static_legacy_hash,
+        username, username_len,
+        password, password_len);
+	return ret;
 }
 
 void ssl_sts_connection_init(struct ssl_sts_connection *ssl)
@@ -154,6 +213,7 @@ void ssl_sts_connection_init(struct ssl_sts_connection *ssl)
 
     ssl->fd = INVALID_SOCKET;
     ssl->state = AWAIT_CLIENT_HELLO;
+    ssl->which_hash_verifier = NULL;
 
     mbedtls_sha256_init(&ssl->checksum);
     mbedtls_sha256_starts(&ssl->checksum, 0);
@@ -562,6 +622,47 @@ static int ssl_sts_connection_send_internal(
     return 0;
 }
 
+static const char *alert_level_to_string(uint8_t level)
+{
+    switch (level)
+    {
+        case SSL_ALERT_LEVEL_WARNING:
+            return "Warning";
+		case SSL_ALERT_LEVEL_FATAL:
+            return "Fatal";
+        default:
+            return "Unknown";
+    }
+}
+
+static const char *alert_description_to_string(uint8_t description)
+{
+    switch (description)
+    {
+        case SSL_ALERT_DESCRIPTION_BAD_RECORD_MAC:
+            return "Bad Record MAC";
+        default:
+            return "Unknown";
+    }
+}
+
+static void show_alert_message(const uint8_t *data, size_t length)
+{
+    if (length < 2)
+    {
+        fprintf(stderr, "Not enough bytes (%zu instead of 2) for the alert message\n", length);
+        return;
+    }
+
+    uint8_t level = data[0];
+    uint8_t description = data[0];
+
+    fprintf(
+        stderr, "Alert message, level: %s (%hhu), Description: %s (%hhu)\n",
+        alert_level_to_string(level), level,
+        alert_description_to_string(description), description);
+}
+
 static int parse_tls12_handshake(
     struct ssl_sts_connection *ssl,
     uint8_t content_type,
@@ -578,9 +679,8 @@ static int parse_tls12_handshake(
     if (length < HEADER_LEN)
         return ERR_SSL_CONTINUE_PROCESSING;
 
-    if (data[0] != content_type)
-        return ERR_SSL_UNEXPECTED_MESSAGE;
-
+    // Parse that before the content type to avoid having to do it again in
+    // case of an alert message.
     if (data[1] != 3 && data[2] != 3)
         return ERR_SSL_UNSUPPORTED_PROTOCOL;
 
@@ -821,7 +921,7 @@ static int ssl_srp_write_client_hello_body(struct ssl_sts_connection *ssl)
         TLS_SRP_SHA_WITH_AES_128_CBC_SHA,
         0xFF02, // No ideas what this is...
         0xFF01, // No ideas what this is...
-        TLS_ANET_INVALID_EMAIL,
+        TLS_SRP_SHA_WITH_LEGACY_PASSWORD,
         0xFF03, // No ideas what this is...
     };
 
@@ -1024,9 +1124,11 @@ static int parse_server_hello(struct ssl_sts_connection *ssl, const uint8_t *dat
             // We should support this one, since we told the server we did.
             return ERR_SSL_BAD_INPUT_DATA;
         case TLS_SRP_SHA_WITH_AES_256_CBC_SHA:
+            ssl->which_hash_verifier = ssl->static_verifier_hash;
             break;
-        case TLS_ANET_INVALID_EMAIL:
-            return ERR_SSL_INVALID_EMAIL;
+        case TLS_SRP_SHA_WITH_LEGACY_PASSWORD:
+            ssl->which_hash_verifier = ssl->static_legacy_hash;
+            break;
         default:
             return ERR_SSL_BAD_INPUT_DATA;
     }
@@ -1267,7 +1369,7 @@ int ssl_srp_compute_premaster_secret(struct ssl_sts_connection *ssl)
     ret = sha1_of_two_values(
         verifier_digest,
         ssl->server_key.salt, sizeof(ssl->server_key.salt),
-        ssl->static_verifier_hash, sizeof(ssl->static_verifier_hash));
+        ssl->which_hash_verifier, SHA1_DIGEST_SIZE);
     if (ret != 0)
         return ret;
 
