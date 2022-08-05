@@ -39,6 +39,7 @@ int main(int argc, char **argv)
     return ret;
 }
 
+#if 0
 UTEST(test_with_fake_server, ensure_handhsake_work)
 {
     const uint8_t client_private[] = \
@@ -81,8 +82,112 @@ UTEST(test_with_fake_server, ensure_handhsake_work)
     ret = ssl_sts_connection_handshake(&ssl);
     ASSERT_EQ(ret, 0);
 }
+#endif
 
-UTEST(test_premaster_computationm, test_expected_results)
+UTEST(test_cipher_and_checksum, test_expected_results)
+{
+    const uint8_t mac_enc_key[] = \
+        "\x66\x7B\x8D\x28\x46\xCC\x45\x94\x7B\x64\xDA\x8B\x0D\xF9\xC7\x19"
+        "\xBE\x38\x2A\x32";
+    const size_t mac_enc_key_len = sizeof(mac_enc_key) - 1;
+    const uint8_t mac_dec_key[] = \
+        "\x5D\xAE\x02\x9C\x0D\x17\xD6\xC9\x2C\x78\x4D\x90\x26\xFC\xB6\x1A"
+        "\xD1\x4E\xB1\x9E";
+    const size_t mac_dec_key_len = sizeof(mac_dec_key) - 1;
+    const uint8_t cipher_enc_key[] = \
+        "\x03\xAD\xBD\xF2\x67\x3C\xAF\x9C\x0F\x43\xDB\x72\x82\x9E\xA1\x46"
+        "\x5A\xE4\xF9\x9E\x56\xAC\xE6\x65\xEC\xA8\xBC\x6E\xA4\x48\x4F\x6E";
+    const size_t cipher_enc_key_len = sizeof(cipher_enc_key) - 1;
+    const uint8_t cipher_dec_key[] = \
+        "\x18\xD7\xF5\x73\x54\xE8\x75\xDC\x2D\x21\xDF\xB0\x71\x43\x0D\xEC"
+        "\x2D\xD6\x0D\xAA\x6F\x2F\xCC\xE2\x2C\xE2\x17\xBD\x13\xF5\x57\x19";
+    const size_t cipher_dec_key_len = sizeof(cipher_dec_key) - 1;
+    uint8_t iv[] = "\x79\xFD\x7C\xF3\x82\x40\x87\xD7\x1D\x93\x88\x26\xE6\x7E\xEB\xB1";
+    const size_t iv_len = sizeof(iv) - 1;
+
+    const uint8_t packet_id[] = "\x00\x00\x00\x00\x00\x00\x00\x00";
+    const size_t packet_id_len = sizeof(packet_id) - 1;
+    const uint8_t hmac_data[] = \
+        "\x16\x03\x03\x00\x10\x14\x00\x00\x0C\x9C\x41\x13\x89\x57\xA4\x39"
+        "\x99\x0D\x3C\x9D\x0C";
+    const size_t hmac_data_len = sizeof(hmac_data) - 1;
+    const uint8_t hmac_expected[] = \
+        "\xB9\x49\x7B\x1D\x53\x4B\x4F\x36\xE2\x6E\xF4\x5F\xF9\x7F\x2E\xD6"
+        "\x09\x72\xAC\x90";
+    const size_t hmac_expected_len = sizeof(hmac_expected) - 1;
+
+    const uint8_t input[] = \
+        "\x14\x00\x00\x0C\x9C\x41\x13\x89\x57\xA4\x39\x99\x0D\x3C\x9D\x0C"
+        "\xB9\x49\x7B\x1D\x53\x4B\x4F\x36\xE2\x6E\xF4\x5F\xF9\x7F\x2E\xD6"
+        "\x09\x72\xAC\x90\x0B\x0B\x0B\x0B\x0B\x0B\x0B\x0B\x0B\x0B\x0B\x0B";
+    const size_t input_len = sizeof(input) - 1;
+
+    const uint8_t expected[] = \
+        "\x0C\xC6\x81\xB4\x90\xF2\xA7\xA8\xCC\xDD\x01\x55\xA2\x7B\x9D\xB8"
+        "\x17\x55\xA2\x48\x78\xD9\xD4\x80\xC6\x1C\x73\x6F\xE4\x8F\x22\x19"
+        "\x51\xA2\xB3\xC6\x73\x0B\x94\x21\x7A\x24\xD1\x4D\x1E\x93\x49\x19";
+    const size_t expected_len = sizeof(expected) - 1;
+
+    const mbedtls_md_info_t *md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA1);
+    ASSERT_NE(md_info, NULL);
+
+    int ret;
+    mbedtls_aes_context cipher_enc;
+    mbedtls_aes_context cipher_dec;
+    mbedtls_md_context_t mac_enc;
+    mbedtls_md_context_t mac_dec;
+
+    mbedtls_aes_init(&cipher_enc);
+    mbedtls_aes_init(&cipher_dec);
+    mbedtls_md_init(&mac_enc);
+    mbedtls_md_init(&mac_dec);
+
+    ret = mbedtls_aes_setkey_enc(&cipher_enc, cipher_enc_key, cipher_enc_key_len * 8);
+    ASSERT_EQ(ret, 0);
+    ret = mbedtls_aes_setkey_dec(&cipher_dec, cipher_dec_key, cipher_dec_key_len * 8);
+    ASSERT_EQ(ret, 0);
+
+    const int is_hmac = 1;
+    ret = mbedtls_md_setup(&mac_enc, md_info, is_hmac);
+    ASSERT_EQ(ret, 0);
+    ret = mbedtls_md_hmac_starts(&mac_enc, mac_enc_key, mac_enc_key_len);
+    ASSERT_EQ(ret, 0);
+    ret = mbedtls_md_setup(&mac_dec, md_info, is_hmac);
+    ASSERT_EQ(ret, 0);
+    ret = mbedtls_md_hmac_starts(&mac_dec, mac_dec_key, mac_dec_key_len);
+	ASSERT_EQ(ret, 0);
+
+    ret = mbedtls_md_hmac_update(&mac_enc, packet_id, packet_id_len);
+    ASSERT_EQ(ret, 0);
+    ret = mbedtls_md_hmac_update(&mac_enc, hmac_data, hmac_data_len);
+    ASSERT_EQ(ret, 0);
+
+    char hmac_result[sizeof(hmac_expected) - 1];
+    ret = mbedtls_md_hmac_finish(&mac_enc, hmac_result);
+    ASSERT_EQ(ret, 0);
+    ret = memcmp(hmac_result, hmac_expected, hmac_expected_len);
+    ASSERT_EQ(ret, 0);
+
+    uint8_t output[sizeof(expected) - 1];
+    ret = mbedtls_aes_crypt_cbc(
+        &cipher_enc,
+        MBEDTLS_AES_ENCRYPT,
+        input_len,
+        iv,
+        input,
+        output);
+    ASSERT_EQ(ret, 0);
+
+    ret = memcmp(output, expected, expected_len);
+    ASSERT_EQ(ret, 0);
+
+    mbedtls_aes_free(&cipher_enc);
+    mbedtls_aes_free(&cipher_dec);
+    mbedtls_md_free(&mac_enc);
+    mbedtls_md_free(&mac_dec);
+}
+
+UTEST(test_premaster_computation, test_expected_results)
 {
     const uint8_t prime[] = \
         "\xee\xaf\x0a\xb9\xad\xb3\x8d\xd6\x9c\x33\xf8\x0a\xfa\x8f\xc5\xe8"
