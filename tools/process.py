@@ -407,9 +407,9 @@ class ProcessScanner(object):
     """
     Class used to scan remote process's code section.
     """
-    def __init__(self, proc):
+    def __init__(self, proc, module = None):
         self.proc = proc
-        self.module = proc.module()
+        self.module = proc.module(module)
         if not self.module:
             raise RuntimeError("Couldn't find default module")
         # Very hacky but that will do it for now
