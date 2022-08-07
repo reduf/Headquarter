@@ -32,8 +32,22 @@ running the example plugin "chat".
 Assuming you created the cmake build folder at `$repo/build`, you can run the
 following command:
 ```
-> build/code/client/Debug/client.exe build\plugins\chat\Debug\chat.dll -email {email} -password {password} -character "{charname}" -mapid 449 -maptype 0
+> build/code/client/Debug/client.exe build\plugins\chat\Debug\chat.dll -email {email} -password {password} -character "{charname}" -mapid 449
 ```
+
+### Creating your own plugin
+This project unfortunately had very narrow use cases due to being private for
+most of it's lifetime and especially for the part when I was still actively
+working on it. Due to that, creating your own plugin might require some fiddling.
+
+Overall, you should always create your own plugin as a new directory in `plugins/`
+and add the new directory in `plugins/CMakeLists.txt`. This is somewhat a
+private namespace and should be easy to make any modifications you want without
+having difficulty pulling the latest changes from my repository.
+
+Any changes in other directory, especially in `code/` are likely to create
+extra works for you, if you ever choose to pull the latest changes. I would
+recommend to try to upstream any of those changes to this repo.
 
 ### CMake options
 You can customize how to build the project using the following CMake variable.
