@@ -25,8 +25,14 @@ typedef struct CommandOptions {
 
     int32_t     seed;
 
-    int         mapid;
-    int         maptype;
+    struct {
+        bool set;
+        int  map_id;
+    } opt_map_id;
+    struct {
+        bool set;
+        int  map_type;
+    } opt_map_type;
 } CommandOptions;
 
 extern CommandOptions options;

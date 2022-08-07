@@ -58,6 +58,44 @@ void compute_pswd_hash(struct kstr *email, struct kstr *pswd, char digest[20])
     Sha1(buffer, i * 2, digest);
 }
 
+struct area_info {
+    uint32_t campaign;
+    uint32_t continent;
+    Region region;
+    RegionType region_type;
+    uint32_t flags;
+};
+
+struct region_type_to_map_type {
+    uint32_t map_type;
+    RegionType region_type;
+};
+
+static uint32_t find_map_type_from_map_id(uint32_t map_id)
+{
+    static const struct area_info area_info_table[] = {
+        #include "data/area_info.data"
+    };
+    const size_t area_info_table_len = ARRAY_SIZE(area_info_table);
+
+    static const struct region_type_to_map_type region_type_to_map_type_table[] = {
+        #include "data/region_type_to_map_type.data"
+    };
+    const size_t region_type_to_map_type_table_len = ARRAY_SIZE(region_type_to_map_type_table);
+
+    assert(map_id < area_info_table_len);
+    const struct area_info *area_info = &area_info_table[map_id];
+
+    for (size_t i = 0; i < region_type_to_map_type_table_len; ++i) {
+        const struct region_type_to_map_type *entry = &region_type_to_map_type_table[i];
+        if (entry->region_type == area_info->region_type)
+            return entry->map_type;
+    }
+
+    LogError("Failed to find the map type from the map id %hu", map_id);
+    abort();
+}
+
 void ContinueAccountLogin(GwClient *client, uint32_t error_code)
 {
     assert(client->state == AwaitAccountConnection);
@@ -245,8 +283,23 @@ void ContinuePlayCharacter(GwClient *client, uint32_t error_code)
     uint32_t trans_id = issue_next_transaction(client, AsyncType_PlayCharacter);
     LogDebug("AuthSrv_RequestInstance: {trans_id: %lu}", trans_id);
     client->state = AwaitGameServerInfo;
+
+    uint32_t choosen_map_id;
+    if (options.opt_map_id.set) {
+        choosen_map_id = options.opt_map_id.map_id;
+    } else {
+        choosen_map_id = client->current_character->map;
+    }
+
+    uint32_t map_type;
+    if (options.opt_map_type.set) {
+        map_type = options.opt_map_type.map_type;
+    } else {
+        map_type = find_map_type_from_map_id(choosen_map_id);
+    }
+
     AuthSrv_RequestInstance(&client->auth_srv, trans_id,
-        options.mapid, options.maptype, DistrictRegion_America, 0, DistrictLanguage_Default);
+        choosen_map_id, map_type, DistrictRegion_America, 0, DistrictLanguage_Default);
 }
 
 void PlayCharacter(GwClient *client, struct kstr *name, PlayerStatus status)

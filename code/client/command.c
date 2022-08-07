@@ -47,8 +47,6 @@ void parse_command_args(int argc, const char **argv)
     // arguments following, we will print the help and exit. Maybe we just want
     // to returns with an error flag set.
 
-    options.mapid = 248; // By default with load GtoB first.
-    options.maptype = 3;   
     options.newauth = true;
 
     for (int i = 0; i < argc; i++) {
@@ -84,9 +82,11 @@ void parse_command_args(int argc, const char **argv)
             options.newauth = false;
         } else if (!strcmp(arg, "-mapid")) {
             check_for_more_arguments(argc, argv, i, 1);
-            options.mapid = atoi(argv[++i]);
+            options.opt_map_id.set = true;
+            options.opt_map_id.map_id = atoi(argv[++i]);
         } else if (!strcmp(arg, "-maptype")) {
-            options.maptype = atoi(argv[++i]);
+            options.opt_map_type.set = true;
+            options.opt_map_type.map_type = atoi(argv[++i]);
         } else if (!strcmp(arg, "-l")) {
             check_for_more_arguments(argc, argv, i, 1);
             safe_strcpy(options.log_file_name, ARRAY_SIZE(options.log_file_name), argv[++i]);
