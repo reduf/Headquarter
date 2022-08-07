@@ -696,6 +696,13 @@ static int parse_tls12_handshake(
     *subdata = &data[HEADER_LEN];
     *sublen = client_sublen;
 
+    if (data[0] != content_type)
+    {
+        if (data[0] == SSL_MSG_ALERT)
+            show_alert_message(*subdata, *sublen);
+        return ERR_SSL_UNEXPECTED_MESSAGE;
+    }
+
     if (include_msg_in_checksum) {
         int ret;
         if ((ret = mbedtls_sha256_update(&ssl->checksum, *subdata, *sublen)) != 0) {
