@@ -83,20 +83,19 @@ if __name__ == '__main__':
 
     prev_handler = signal.signal(signal.SIGINT, signal_handler)
 
-    dbg = ProcessDebugger(proc)
-    # dbg.add_hook(sha256_update_addr, on_sha256_update)
-    # dbg.add_hook(sha256_finish_addr, on_sha256_finish)
-    # dbg.add_hook(cbc_encrypt_addr,   on_cbc_encrypt)
-    # dbg.add_hook(some_random_func_addr, on_some_random_func)
-    dbg.add_hook(prf_init_addr, on_prf_init)
-    dbg.add_hook(prf_process_label_addr, on_prf_process_label)
-    dbg.add_hook(prf_update_addr, on_prf_update)
-    # dbg.add_hook(prf_finish_addr, on_prf_finish)
+    with ProcessDebugger(proc) as dbg:
+        # dbg.add_hook(sha256_update_addr, on_sha256_update)
+        # dbg.add_hook(sha256_finish_addr, on_sha256_finish)
+        # dbg.add_hook(cbc_encrypt_addr,   on_cbc_encrypt)
+        # dbg.add_hook(some_random_func_addr, on_some_random_func)
+        dbg.add_hook(prf_init_addr, on_prf_init)
+        dbg.add_hook(prf_process_label_addr, on_prf_process_label)
+        dbg.add_hook(prf_update_addr, on_prf_update)
+        # dbg.add_hook(prf_finish_addr, on_prf_finish)
 
-    while not stop:
-        dbg.poll(32)
+        while not stop:
+            dbg.poll(32)
 
-    dbg.detach()
     signal.signal(signal.SIGINT, prev_handler)
 
     print('<============ traces ============>')

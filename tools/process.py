@@ -1,8 +1,27 @@
+# The MIT License (MIT)
+#
+# Copyright (c) 2019-2022 Laurent Dufresne
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 from ctypes import (
     Structure,
-    Array,
-    Union,
-
     POINTER,
     sizeof,
     byref,
@@ -15,30 +34,37 @@ import ctypes
 import struct
 import functools
 
-CHAR = ctypes.c_char
-BYTE = ctypes.c_byte
-WORD = ctypes.c_ushort
-LONG = ctypes.c_long
-BOOL = ctypes.c_long
-UINT = ctypes.c_uint
-WCHAR = ctypes.c_wchar
-DWORD = ctypes.c_ulong
-ULONG = ctypes.c_ulong
-FLOAT = ctypes.c_float
-LPSTR = ctypes.c_char_p
-LPWSTR = ctypes.c_wchar_p
-PVOID = ctypes.c_void_p
-LPVOID = ctypes.c_void_p
-SIZE_T = ctypes.c_size_t
-ULONG_PTR = SIZE_T
-ULONGLONG = ctypes.c_ulonglong
+BOOL        = ctypes.c_long
+BYTE        = ctypes.c_byte
+CHAR        = ctypes.c_char
+DWORD       = ctypes.c_ulong
+DWORD64     = ctypes.c_ulonglong
+FLOAT       = ctypes.c_float
+LONG        = ctypes.c_long
+LONGLONG    = ctypes.c_longlong
+LPSTR       = ctypes.c_char_p
+LPVOID      = ctypes.c_void_p
+LPWSTR      = ctypes.c_wchar_p
+PVOID       = ctypes.c_void_p
+SIZE_T      = ctypes.c_size_t
+UINT        = ctypes.c_uint
+ULONG       = ctypes.c_ulong
+ULONG_PTR   = SIZE_T
+ULONGLONG   = ctypes.c_ulonglong
+WCHAR       = ctypes.c_wchar
+WORD        = ctypes.c_ushort
 
-HANDLE = ctypes.c_void_p
-HMODULE = HANDLE
-NTSTATUS = LONG
+HANDLE      = ctypes.c_void_p
+HMODULE     = HANDLE
+NTSTATUS    = LONG
 
-# probably a better way
-_PROCESS_IS_64_BITS = sys.maxsize > 2 ** 32
+PBOOL       = POINTER(BOOL)
+PDWORD      = POINTER(DWORD)
+PDWORD64    = POINTER(DWORD64)
+PHANDLE     = POINTER(HANDLE)
+PULONG      = POINTER(ULONG)
+
+_PYTHON_IS_64_BITS = sys.maxsize > 2 ** 32
 
 # standard access rights
 _DELETE                             = 0x00010000
@@ -59,16 +85,16 @@ _PROCESS_CREATE_PROCESS             = 0x0080
 _PROCESS_SET_QUOTA                  = 0x0100
 _PROCESS_SET_INFORMATION            = 0x0200
 _PROCESS_QUERY_INFORMATION          = 0x0400
-_PROCESS_SUSPEN_RESUME              = 0x0800
+_PROCESS_SUSPEND_RESUME             = 0x0800
 _PROCESS_QUERY_LIMITED_INFORMATION  = 0x1000
 _PROCESS_SET_LIMITED_INFORMATION    = 0x2000
 _PROCESS_ALL_ACCESS = _STANDARD_RIGHTS_ALL | 0xFFFF
 
 _THREAD_TERMINATE                   = 0x0001
 _THREAD_SUSPEND_RESUME              = 0x0002
-_THREAD_GET_CONTEXT                 = 0x0004
-_THREAD_SET_CONTEXT                 = 0x0008
-_THREAD_QUERY_INFORMATION           = 0x0010
+_THREAD_GET_CONTEXT                 = 0x0008
+_THREAD_SET_CONTEXT                 = 0x0010
+_THREAD_QUERY_INFORMATION           = 0x0040
 _THREAD_SET_INFORMATION             = 0x0020
 _THREAD_SET_THREAD_TOKEN            = 0x0080
 _THREAD_IMPERSONATE                 = 0x0100
@@ -184,11 +210,20 @@ class _MEMORY_BASIC_INFORMATION64(Structure):
     _pack_   = 8
     _fields_ = [('BaseAddress',ULONGLONG),('AllocationBase',ULONGLONG),('AllocationProtect',DWORD),('__alignment1',DWORD),('RegionSize',ULONGLONG),('State',DWORD),('Protect',DWORD),('Type',DWORD),('__alignment2',DWORD)]
 
-class _FLOATING_SAVE_AREA(Structure):
+class _WOW64_FLOATING_SAVE_AREA(Structure):
     _fields_ = [('ControlWord',DWORD),('StatusWord',DWORD),('TagWord',DWORD),('ErrorOffset',DWORD),('ErrorSelector',DWORD),('DataOffset',DWORD),('DataSelector',DWORD),('RegisterArea',BYTE*80),('Spare0',DWORD)]
 
-class _CONTEXT(Structure):
-    _fields_ = [('ContextFlags',DWORD),('Dr0',DWORD),('Dr1',DWORD),('Dr2',DWORD),('Dr3',DWORD),('Dr6',DWORD),('Dr7',DWORD),('FloatSave',_FLOATING_SAVE_AREA),('SegGs',DWORD),('SegFs',DWORD),('SegEs',DWORD),('SegDs',DWORD),('Edi',DWORD),('Esi',DWORD),('Ebx',DWORD),('Edx',DWORD),('Ecx',DWORD),('Eax',DWORD),('Ebp',DWORD),('Eip',DWORD),('SegCs',DWORD),('EFlags',DWORD),('Esp',DWORD),('SegSs',DWORD),('ExtendedRegisters',BYTE*512)]
+class _WOW64_CONTEXT(Structure):
+    _fields_ = [('ContextFlags',DWORD),('Dr0',DWORD),('Dr1',DWORD),('Dr2',DWORD),('Dr3',DWORD),('Dr6',DWORD),('Dr7',DWORD),('FloatSave',_WOW64_FLOATING_SAVE_AREA),('SegGs',DWORD),('SegFs',DWORD),('SegEs',DWORD),('SegDs',DWORD),('Edi',DWORD),('Esi',DWORD),('Ebx',DWORD),('Edx',DWORD),('Ecx',DWORD),('Eax',DWORD),('Ebp',DWORD),('Eip',DWORD),('SegCs',DWORD),('EFlags',DWORD),('Esp',DWORD),('SegSs',DWORD),('ExtendedRegisters',BYTE*512)]
+
+class _M128A(Structure):
+    _fields_ = [('Low',ULONGLONG),('High',LONGLONG)]
+
+class _FLOATING_SAVE_AREA64(Structure):
+    _fields_ = [('Header',_M128A*2),('Legacy',_M128A*8),('Xmm0',_M128A),('Xmm1',_M128A),('Xmm2',_M128A),('Xmm3',_M128A),('Xmm4',_M128A),('Xm5',_M128A),('Xmm6',_M128A),('Xmm7',_M128A),('Xmm8',_M128A),('Xmm9',_M128A),('Xmm10',_M128A),('Xmm11',_M128A),('Xmm12',_M128A),('Xmm13',_M128A),('Xmm14',_M128A),('Xmm15',_M128A)]
+
+class _CONTEXT64(Structure):
+    _fields_ = [('P1Home',DWORD64),('P2Home',DWORD64),('P3Home',DWORD64),('P4Home',DWORD64),('P5Home',DWORD64),('P6Home',DWORD64),('ContextFlags',DWORD),('MxCsr',DWORD),('SegCs',WORD),('SegDs',WORD),('SegEs',WORD),('SegFs',WORD),('SegGs',WORD),('SegSs',WORD),('EFlags',DWORD),('Dr0',DWORD64),('Dr1',DWORD64),('Dr2',DWORD64),('Dr3',DWORD64),('Dr6',DWORD64),('Dr7',DWORD64),('Rax',DWORD64),('Rcx',DWORD64),('Rdx',DWORD64),('Rbx',DWORD64),('Rsp',DWORD64),('Rbp',DWORD64),('Rsi',DWORD64),('Rdi',DWORD64),('R8',DWORD64),('R9',DWORD64),('R10',DWORD64),('R11',DWORD64),('R12',DWORD64),('R13',DWORD64),('R14',DWORD64),('R15',DWORD64),('Rip',DWORD64),('FltSave',_FLOATING_SAVE_AREA64),('VectorRegister',_M128A*26),('VectorControl',DWORD64),('DebugControl',DWORD64),('LastBranchToRip',DWORD64),('LastBranchFromRip',DWORD64),('LastExceptionToRip',DWORD64),('LastExceptionFromRip',DWORD64)]
 
 class _EXCEPTION_DEBUG_INFO(Structure):
     EXCEPTION_MAXIMUM_PARAMETERS = 15
@@ -230,11 +265,16 @@ class _CLIENT_ID(Structure):
 class _THREAD_BASIC_INFORMATION(Structure):
     _fields_ = [('ExitStatus',DWORD),('TebBaseAddress',LPVOID),('ClientId',_CLIENT_ID),('AffinityMask',ULONG_PTR),('Priority',LONG),('BasePriority',LONG)]
 
+if _PYTHON_IS_64_BITS:
+    _CONTEXT = _CONTEXT64
+else:
+    _CONTEXT = _WOW64_CONTEXT
+
 _CloseHandle                        = _kernel32.CloseHandle
 _CloseHandle.argtypes               = [HANDLE]
 _CloseHandle.restype                = BOOL
 _DuplicateHandle                    = _kernel32.DuplicateHandle
-_DuplicateHandle.argtypes           = [HANDLE, HANDLE, HANDLE, POINTER(HANDLE), DWORD, BOOL, DWORD]
+_DuplicateHandle.argtypes           = [HANDLE, HANDLE, HANDLE, PHANDLE, DWORD, BOOL, DWORD]
 _DuplicateHandle.restype            = BOOL
 _GetLastError                       = _kernel32.GetLastError
 _GetLastError.argtypes              = []
@@ -261,23 +301,32 @@ _SuspendThread                      = _kernel32.SuspendThread
 _SuspendThread.argtypes             = [HANDLE]
 _SuspendThread.restype              = DWORD
 _CreateRemoteThread                 = _kernel32.CreateRemoteThread
-_CreateRemoteThread.argtypes        = [HANDLE, LPVOID, SIZE_T, LPVOID, LPVOID, DWORD, POINTER(DWORD)]
+_CreateRemoteThread.argtypes        = [HANDLE, LPVOID, SIZE_T, LPVOID, LPVOID, DWORD, PDWORD]
 _CreateRemoteThread.restype         = HANDLE
 _TerminateThread                    = _kernel32.TerminateThread
 _TerminateThread.argtypes           = [HANDLE, DWORD]
 _TerminateThread.restype            = BOOL
 _GetExitCodeThread                  = _kernel32.GetExitCodeThread
-_GetExitCodeThread.argtypes         = [HANDLE, POINTER(DWORD)]
+_GetExitCodeThread.argtypes         = [HANDLE, PDWORD]
 _GetExitCodeThread.restype          = BOOL
 _GetExitCodeProcess                 = _kernel32.GetExitCodeProcess
-_GetExitCodeProcess.argtypes        = [HANDLE, POINTER(DWORD)]
+_GetExitCodeProcess.argtypes        = [HANDLE, PDWORD]
 _GetExitCodeProcess.restype         = BOOL
+_IsWow64Process                     = _kernel32.IsWow64Process
+_IsWow64Process.argtypes            = [HANDLE, PBOOL]
+_IsWow64Process.restype             = BOOL
 _GetThreadContext                   = _kernel32.GetThreadContext
 _GetThreadContext.argtypes          = [HANDLE, POINTER(_CONTEXT)]
 _GetThreadContext.restype           = BOOL
 _SetThreadContext                   = _kernel32.SetThreadContext
 _SetThreadContext.argtypes          = [HANDLE, POINTER(_CONTEXT)]
 _SetThreadContext.restype           = BOOL
+_Wow64GetThreadContext              = _kernel32.Wow64GetThreadContext
+_Wow64GetThreadContext.argtypes     = [HANDLE, POINTER(_WOW64_CONTEXT)]
+_Wow64GetThreadContext.restype      = BOOL
+_Wow64SetThreadContext              = _kernel32.Wow64SetThreadContext
+_Wow64SetThreadContext.argtypes     = [HANDLE, POINTER(_WOW64_CONTEXT)]
+_Wow64SetThreadContext.restype      = BOOL
 
 _VirtualAllocEx                     = _kernel32.VirtualAllocEx
 _VirtualAllocEx.argtypes            = [HANDLE, LPVOID, SIZE_T, DWORD, DWORD]
@@ -286,7 +335,7 @@ _VirtualFreeEx                      = _kernel32.VirtualFreeEx
 _VirtualFreeEx.argtypes             = [HANDLE, LPVOID, SIZE_T, DWORD]
 _VirtualFreeEx.restype              = BOOL
 _VirtualProtectEx                   = _kernel32.VirtualProtectEx
-_VirtualProtectEx.argtypes          = [HANDLE, LPVOID, SIZE_T, DWORD, POINTER(DWORD)]
+_VirtualProtectEx.argtypes          = [HANDLE, LPVOID, SIZE_T, DWORD, PDWORD]
 _VirtualProtectEx.restype           = BOOL
 _VirtualQueryEx                     = _kernel32.VirtualQueryEx
 _VirtualQueryEx.argtypes            = [HANDLE, LPVOID, LPVOID, SIZE_T]
@@ -358,26 +407,13 @@ _GetModuleHandleW.argtypes          = [LPWSTR]
 _GetModuleHandleW.restype           = HMODULE
 
 _NtQueryInformationThread           = _ntdll.NtQueryInformationThread
-_NtQueryInformationThread.argtypes  = [HANDLE, DWORD, PVOID, ULONG, POINTER(ULONG)]
+_NtQueryInformationThread.argtypes  = [HANDLE, DWORD, PVOID, ULONG, PULONG]
 _NtQueryInformationThread.restype   = NTSTATUS
 
 def _create_buffer(size):
     """Create a ctypes buffer of a given size."""
     buftype = (CHAR * size)
     return buftype()
-
-def _get_ctype_string(type):
-    """Returns the type string to be used with unpack/pack"""
-    from ctypes import _SimpleCData
-    if issubclass(type, _SimpleCData):
-        return type._type_
-    elif issubclass(type, Array):
-        elem_type = _get_ctype_string(type._type_)
-        return '%d%s' % (type._length_, elem_type)
-    elif issubclass(type, Structure):
-        return ''.join(_get_ctype_string(t) for n,t in type._fields_)
-    else:
-        raise RuntimeError("The type %s is not supported" % str(type))
 
 def _FormatMessage(error):
     """Format a Win32 error code to the corresponding message. (See MSDN)"""
@@ -413,9 +449,8 @@ class ProcessScanner(object):
         if not self.module:
             raise RuntimeError("Couldn't find default module")
         # Very hacky but that will do it for now
-        self.base = self.module.base + 0x1000
-        size, _ = proc.page_info(self.base)
-        self.buffer, = proc.read(self.base, '%ds' % size)
+        self.base = self.module.base
+        self.buffer, = proc.read(self.base, '%ds' % self.module.size)
 
     def find(self, pattern, offset = 0):
         """Returns address of the pattern if found."""
@@ -430,7 +465,7 @@ class ProcessScanner(object):
 class ProcessModule(object):
     """
     A Win32 process module object.
-    
+
     Properties:
         - handle
         - pid
@@ -521,7 +556,7 @@ class ProcessThread(object):
         count = _SuspendThread(self.handle)
         if count == 0xffffffff:
             raise Win32Exception()
-    
+
     def join(self, timeout = _INFINITE):
         """Waits until the thread exit and returns the exit code."""
         reason = _WaitForSingleObject(self.handle, timeout)
@@ -533,14 +568,30 @@ class ProcessThread(object):
             raise Win32Exception()
         return code.value
 
+    def context32(self, flags = _CONTEXT_FULL):
+        """Retrieves the context of the ProcessThread."""
+        if _PYTHON_IS_64_BITS:
+            context = _WOW64_CONTEXT()
+            context.ContextFlags = flags
+            if not _Wow64GetThreadContext(self.handle, byref(context)):
+                raise Win32Exception()
+            return context
+        else:
+            return self.context(flags)
+
     def context(self, flags = _CONTEXT_FULL):
         """Retrieves the context of the ProcessThread."""
         context = _CONTEXT()
         context.ContextFlags = flags
-        success = _GetThreadContext(self.handle, byref(context))
-        if not success:
+        if not _GetThreadContext(self.handle, byref(context)):
             raise Win32Exception()
         return context
+
+    def set_context32(self, context):
+        """Sets the context for the ProcessThread."""
+        success = _Wow64SetThreadContext(self.handle, byref(context))
+        if not success:
+            raise Win32Exception()
 
     def set_context(self, context):
         """Sets the context for the ProcessThread."""
@@ -598,7 +649,7 @@ class Hook(object):
         self.callconv = callconv
         self.argtypes = argtypes
 
-        self.argstr = ''.join(_get_ctype_string(arg) for arg in argtypes)
+        self.argstr = ''.join(arg._type_ for arg in argtypes)
         self.extargs = []
 
     def __hash__(self):
@@ -669,44 +720,40 @@ class ProcessHook(object):
 class ProcessDebugger(object):
     """
     """
-    def __init__(self, proc = None):
-        self.hooks = dict();
-        self.attached = False
+    def __init__(self, proc):
+        self.proc = proc
+        self.is32bit = self.proc.is32bit();
         _DebugSetProcessKillOnExit(False)
-        if not proc is None:
-            self.attach(proc)
 
-    def __del__(self):
-        self.detach()
+    def __enter__(self):
+        self.breakpoints = {};
+        self.single_step_breakpoints = {}
+        if not _DebugActiveProcess(self.proc.id):
+            raise Win32Exception()
+        return self
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        # First we disable all the hooks which will restore the original
+        # instructions.
+        for breakpoint in self.breakpoints.values():
+            breakpoint.disable()
+        self.breakpoints = {}
+
+        # Before stopping to debug the remote process we need to process all
+        # debug events, because otherwise we might crash the remote process.
+        self.poll(0)
+        _DebugActiveProcessStop(self.proc.id)
 
     def __repr__(self):
         return '<ProcessDebugger for Process %d>' % self.proc.id
 
     def add_hook(self, addr, hook):
-        proc_hook = ProcessHook(self.proc, addr, hook)
-        if addr in self.hooks:
-            old_hook = self.hooks[addr]
-            old_hook.disable()
-            
-        self.hooks[addr] = proc_hook
-        proc_hook.enable()
-
-    def attach(self, proc):
-        if self.attached:
-            raise RuntimeError('ProcessDebugger already attached')
-        self.proc = proc
-        if not _DebugActiveProcess(proc.id):
-            raise Win32Exception()
-        self.attached = True
-
-    def detach(self):
-        if not self.attached:
-            return
-        with suppress(Exception):
-            for hook in self.hooks.values():
-                hook.disable()
-        _DebugActiveProcessStop(self.proc.id)
-        self.attached = False
+        new_bp = ProcessHook(self.proc, addr, hook)
+        if addr in self.breakpoints:
+            old_bp = self.breakpoints[addr]
+            old_bp.disable()
+        self.breakpoints[addr] = new_bp
+        new_bp.enable()
 
     def run(self, **kw):
         frequency = kw.pop('frequency', _INFINITE)
@@ -716,56 +763,43 @@ class ProcessDebugger(object):
     def poll(self, timeout = _INFINITE):
         """Poll the next event dispatch it"""
         evt = _DEBUG_EVENT()
-        if not _WaitForDebugEvent(byref(evt), timeout):
-            return
+        while _WaitForDebugEvent(byref(evt), timeout):
+            if evt.dwProcessId != self.proc.id:
+                _ContinueDebugEvent(evt.dwProcessId, evt.dwThreadId, _DBG_EXCEPTION_NOT_HANDLED)
+                return
 
-        if evt.dwProcessId != self.proc.id:
-            _ContinueDebugEvent(evt.dwProcessId, evt.dwThreadId, _DBG_EXCEPTION_NOT_HANDLED)
-            return
+            if evt.dwDebugEventCode == _EXIT_PROCESS_DEBUG_EVENT:
+                # This mostly avoid exceptions when exiting the Python process,
+                # because we can't restore breakpoints in a non-existent process.
+                for breakpoint in self.breakpoints.values():
+                    breakpoint.disable()
+                self.breakpoints = {}
+                _ContinueDebugEvent(evt.dwProcessId, evt.dwThreadId, _DBG_CONTINUE)
 
-        continue_status = _DBG_CONTINUE
-        event_code = evt.dwDebugEventCode
-        thread = ProcessThread(evt.dwThreadId, self.proc)
+            if evt.dwDebugEventCode != _EXCEPTION_DEBUG_EVENT:
+                _ContinueDebugEvent(evt.dwProcessId, evt.dwThreadId, _DBG_EXCEPTION_NOT_HANDLED)
+                return
 
-        if event_code == _EXCEPTION_DEBUG_EVENT:
-            continue_status = self._on_debug_event(thread, evt.u.Exception)
-        elif event_code == _CREATE_THREAD_DEBUG_EVENT:
-            self.OnCreateThreadDebugEvent(thread, evt.u.CreateThread)
-        elif event_code == _CREATE_PROCESS_DEBUG_EVENT:
-            self.OnCreateProcessDebugEvent(thread, evt.u.CreateProcessInfo)
-        elif event_code == _EXIT_THREAD_DEBUG_EVENT:
-            self.OnExitThreadDebugEvent(thread, evt.u.ExitThread)
-        elif event_code == _EXIT_PROCESS_DEBUG_EVENT:
-            self.exit_code = evt.u.ExitProcess.dwExitCode
-            self.OnExitProcessDebugEvent(thread, evt.u.ExitProcess)
-            self.detach()
-        elif event_code == _LOAD_DLL_DEBUG_EVENT:
-            self.OnLoadDllDebugEvent(thread, evt.u.LoadDll)
-        elif event_code == _UNLOAD_DLL_DEBUG_EVENT:
-            self.OnUnloadDllDebugEvent(thread, evt.u.UnloadDll)
-        elif event_code == _OUTPUT_DEBUG_STRING_EVENT:
-            self.OnOutputDebugStringEvent(thread, evt.u.DebugString)
-        elif event_code == _RIP_EVENT:
-            self.OnRipEvent(evt.u.RipInfo)
-
-        _ContinueDebugEvent(evt.dwProcessId, evt.dwThreadId, continue_status)
+            continue_status = _DBG_CONTINUE
+            try:
+                thread = ProcessThread(evt.dwThreadId, self.proc)
+                continue_status = self._on_debug_event(thread, evt.u.Exception)
+            finally:
+                _ContinueDebugEvent(evt.dwProcessId, evt.dwThreadId, continue_status)
 
     def _on_single_step(self, thread, addr):
-        hook = self.ss_hook
-        if not hook:
-            return _DBG_EXCEPTION_NOT_HANDLED
-
-        hook.enable()
+        # The single step is done on a int3 which is a single bytes. This mean
+        # the address of the hook is the previous instruction. Note that the hook
+        # structure may not exist anymore in which case the original instruction
+        # should be restored.
+        breakpoint_addr = self.single_step_breakpoints.pop(thread.id)
+        breakpoint = self.breakpoints.get(breakpoint_addr, None)
+        if breakpoint is not None:
+            breakpoint.enable()
         return _DBG_CONTINUE
 
-    def _on_breakpoint(self, thread, addr):
-        proc_hook = self.hooks.get(addr, None)
-        if not proc_hook:
-            return _DBG_EXCEPTION_NOT_HANDLED
-
-        proc_hook.disable()
-
-        ctx = thread.context()
+    def _on_breakpoint32(self, thread, proc_hook):
+        ctx = thread.context32()
         args = list()
 
         hook = proc_hook.hook
@@ -783,16 +817,67 @@ class ProcessDebugger(object):
         args.extend(stack_args)
 
         # What should we do here ??? (We don't want to crash the remote process)
-        with suppress(Exception):
+        try:
             hook(*args)
-
-        # This will enable a "single-step" breakpoint
-        # We cannot reach an other breakpoint before raising Single-Step exception
-        self.ss_hook = proc_hook
-        ctx.Eip -= 1
-        ctx.EFlags |= 0x100 # TRAP_FLAG
-        thread.set_context(ctx)
+        finally:
+            ctx.Eip -= 1
+            ctx.EFlags |= 0x100 # TRAP_FLAG
+            thread.set_context(ctx)
         return _DBG_CONTINUE
+
+    def _on_breakpoint64(self, thread, breakpoint):
+        ctx = thread.context()
+
+        args = list()
+        hook = breakpoint.hook
+        conv = hook.callconv
+        argc = len(hook.argtypes)
+
+        if 1 <= argc:
+            args.append(ctx.Rcx)
+        if 2 <= argc:
+            args.append(ctx.Rdx)
+        if 3 <= argc:
+            args.append(ctx.R8)
+        if 4 <= argc:
+            args.append(ctx.R9)
+
+        argstr = hook.argstr[len(args):]
+        argc = argc - len(args)
+        stack_args = self.proc.read(ctx.Rsp + 8, argstr)
+        args.extend(stack_args)
+
+        try:
+            hook(*args)
+        finally:
+            ctx.Rip -= 1
+            ctx.EFlags |= 0x100 # TRAP_FLAG
+            thread.set_context(ctx)
+        return _DBG_CONTINUE
+
+    def _on_breakpoint(self, thread, addr):
+        breakpoint = self.breakpoints.get(addr, None)
+        if not breakpoint:
+            return _DBG_EXCEPTION_NOT_HANDLED
+        breakpoint.disable()
+
+        # When single stepping, we don't know whether the next instruction
+        # will jump elsewhere in the code. For this reason, we need to save
+        # the breakpoint to re-enable it after the single step.
+        #
+        # - We save one breakpoint per thread, because we can't have more than
+        #   one concurrent breakpoint on the same thread. This guarantee the
+        #   next debug event is this breakpoint.
+        # - We save only the address, because if the breakpoint get deleted in
+        #   the mean time, we can detect it and not re-enable it.
+        if thread.id in self.single_step_breakpoints:
+            raise RuntimeError("It shouldn't be possible to have two breakpoints to restore on the same thread")
+        self.single_step_breakpoints[thread.id] = addr
+
+        if self.is32bit:
+            return self._on_breakpoint32(thread, breakpoint)
+        else:
+            return self._on_breakpoint64(thread, breakpoint)
 
     def _on_debug_event(self, thread, info):
         """This is internal, but if you were to overload it, return the continuation status"""
@@ -805,42 +890,6 @@ class ProcessDebugger(object):
         if code == _EXCEPTION_BREAKPOINT:
             return self._on_breakpoint(thread, addr)
         return _DBG_EXCEPTION_NOT_HANDLED
-
-    def OnCreateThreadDebugEvent(self, thread, info):
-        """Can be overloaded to hook this event"""
-        pass
-
-    def OnCreateThreadDebugEvent(self, thread, info):
-        """Can be overloaded to hook this event"""
-        pass
-
-    def OnCreateProcessDebugEvent(self, thread, info):
-        """Can be overloaded to hook this event"""
-        pass
-
-    def OnExitThreadDebugEvent(self, thread, info):
-        """Can be overloaded to hook this event"""
-        pass
-
-    def OnExitProcessDebugEvent(self, thread, info):
-        """Can be overloaded to hook this event"""
-        pass
-
-    def OnLoadDllDebugEvent(self, thread, info):
-        """Can be overloaded to hook this event"""
-        pass
-
-    def OnUnloadDllDebugEvent(self, thread, info):
-        """Can be overloaded to hook this event"""
-        pass
-
-    def OnOutputDebugStringEvent(self, thread, info):
-        """Can be overloaded to hook this event"""
-        pass
-
-    def OnRipEvent(self):
-        """Can be overloaded to hook this event"""
-        pass
 
 class Process(object):
     """
@@ -867,7 +916,7 @@ class Process(object):
 
     def __repr__(self):
         return '<Process %d, handle %d at 0x%08x>' % (self.id, self.handle, id(self))
-    
+
     @property
     def name(self):
         """Returns the name of the process."""
@@ -977,7 +1026,7 @@ class Process(object):
 
     def page_info(self, addr):
         """Returns (size, access right) about a range of pages in the virtual address space of a process."""
-        if not _PROCESS_IS_64_BITS:
+        if not _PYTHON_IS_64_BITS:
             buffer = _MEMORY_BASIC_INFORMATION()
         else:
             buffer = _MEMORY_BASIC_INFORMATION64()
@@ -992,6 +1041,12 @@ class Process(object):
             raise Win32Exception()
         return ProcessThread(id, self, handle)
 
+    def is32bit(self):
+        wow64 = BOOL()
+        if not _IsWow64Process(self.handle, byref(wow64)):
+            raise Win32Exception()
+        return wow64.value == 1
+
     @classmethod
     def from_name(cls, name):
         """Creates a Process from his name."""
@@ -1002,7 +1057,7 @@ class Process(object):
 
 def GetProcesses(name, right = _PROCESS_ALL_ACCESS):
     """Returns a list of Process that have the give name."""
-    name = name.encode('ascii')
+    name = name.encode('ascii').lower()
     entries = list()
 
     buffer = _PROCESSENTRY32()
@@ -1011,25 +1066,8 @@ def GetProcesses(name, right = _PROCESS_ALL_ACCESS):
         raise Win32Exception()
 
     while _Process32Next(snapshot, byref(buffer)):
-        if buffer.szExeFile == name:
+        if buffer.szExeFile.lower() == name:
             entries.append( Process(buffer.th32ProcessID, right) )
 
     _CloseHandle(snapshot)
     return entries
-
-def InjectDll(proc, name, entry = None):
-    """Inject a dll with CreateRemoteThread in the remote process"""
-    kernel32 = _GetModuleHandleA(b'kernel32')
-    if not kernel32:
-        raise Win32Exception()
-    LoadLibraryEx = _GetProcAddress(kernel32, b'LoadLibraryA')
-    if not LoadLibraryEx:
-        raise Win32Exception()
-    size = len(name) + 1
-    path = proc.mmap(size)
-    proc.write(path, name.encode('ascii'), b'\0')
-    thread = proc.spawn_thread(LoadLibraryEx, path)
-    thread.resume()
-    retval = thread.join()
-    proc.unmap(path)
-    return retval
