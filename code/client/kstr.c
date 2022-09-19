@@ -3,7 +3,8 @@
 #endif
 #define CORE_KSTR_C
 
-size_t u16len(const uint16_t* src, size_t size) {
+size_t u16len(const uint16_t *src, size_t size)
+{
     size_t length;
     for (length = 0; length < size; length++) {
         if (!src[length])
@@ -11,6 +12,7 @@ size_t u16len(const uint16_t* src, size_t size) {
     }
     return length;
 }
+
 void kstr_init(struct kstr *str, uint16_t *buffer, size_t length, size_t capacity)
 {
     str->length = length;
@@ -29,20 +31,42 @@ bool kstr_copy(struct kstr *dest, const struct kstr *src)
 
 int kstr_compare(const struct kstr *s1, const struct kstr *s2)
 {
-    if (s1->length != s2->length)
-        return (int)(s1->length - s2->length);
+    if (s1->length < s2->length)
+        return -1;
+    else if (s2->length < s1->length)
+        return 1;
     else
         return memcmp(s1->buffer, s2->buffer, s1->length * 2);
 }
 
+size_t kstr_find_codepoint(const struct kstr *str, uint16_t codepoint)
+{
+    for (size_t idx = 0; idx < str->length; ++idx) {
+        if (str->buffer[idx] == codepoint)
+            return idx;
+    }
+    return (size_t)-1;
+}
+
+struct kstr kstr_substr(const struct kstr *str, size_t pos, size_t length)
+{
+    if (str->length < pos)
+        pos = str->length;
+    if ((str->length - pos) < length)
+        length = str->length - pos;
+    size_t capacity = str->capacity - pos;
+    return (struct kstr){ .length = length, .capacity = capacity, .buffer = str->buffer + pos };
+}
+
 bool kstr_read(struct kstr *str, const uint16_t *src, size_t size)
 {
-    size_t length = u16len(src, size) + 1;
-    const struct kstr source = {
-        .length = length,
-        .capacity = length,
-        .buffer = cast(uint16_t *)src,
-    };
+    struct kstr source;
+    kstr_init(&source, src, size, size);
+
+    size_t trim;
+    if ((trim = kstr_find_codepoint(&source, 0)) != (size_t)-1) {
+        source = kstr_substr(&source, 0, trim + 1);
+    }
 
     return kstr_copy(str, &source);
 }
