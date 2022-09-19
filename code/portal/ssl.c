@@ -213,7 +213,6 @@ void ssl_sts_connection_init(struct ssl_sts_connection *ssl)
 
     ssl->fd = INVALID_SOCKET;
     ssl->state = AWAIT_CLIENT_HELLO;
-    ssl->which_hash_verifier = NULL;
 
     mbedtls_sha256_init(&ssl->checksum);
     mbedtls_sha256_starts(&ssl->checksum, 0);
@@ -1129,12 +1128,15 @@ static int parse_server_hello(struct ssl_sts_connection *ssl, const uint8_t *dat
         case TLS_SRP_SHA_WITH_AES_128_CBC_SHA:
             // @Cleanup:
             // We should support this one, since we told the server we did.
+            fprintf(stderr, "Received TLS_SRP_SHA_WITH_AES_128_CBC_SHA (0x%X) which we didn't implement\n", TLS_SRP_SHA_WITH_AES_128_CBC_SHA);
             return ERR_SSL_BAD_INPUT_DATA;
         case TLS_SRP_SHA_WITH_AES_256_CBC_SHA:
-            ssl->which_hash_verifier = ssl->static_verifier_hash;
+            STATIC_ASSERT(sizeof(ssl->which_hash_verifier) == sizeof(ssl->static_verifier_hash));
+            memcpy(ssl->which_hash_verifier, ssl->static_verifier_hash, sizeof(ssl->which_hash_verifier));
             break;
         case TLS_SRP_SHA_WITH_LEGACY_PASSWORD:
-            ssl->which_hash_verifier = ssl->static_legacy_hash;
+            STATIC_ASSERT(sizeof(ssl->which_hash_verifier) == sizeof(ssl->static_legacy_hash));
+            memcpy(ssl->which_hash_verifier, ssl->static_legacy_hash, sizeof(ssl->which_hash_verifier));
             break;
         default:
             return ERR_SSL_BAD_INPUT_DATA;
@@ -1376,7 +1378,7 @@ int ssl_srp_compute_premaster_secret(struct ssl_sts_connection *ssl)
     ret = sha1_of_two_values(
         verifier_digest,
         ssl->server_key.salt, sizeof(ssl->server_key.salt),
-        ssl->which_hash_verifier, SHA1_DIGEST_SIZE);
+        ssl->which_hash_verifier, sizeof(ssl->which_hash_verifier));
     if (ret != 0)
         return ret;
 

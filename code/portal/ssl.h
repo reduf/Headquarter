@@ -83,7 +83,7 @@ struct ssl_sts_connection {
     char srp_username[256];
     size_t srp_username_len;
 
-    uint8_t *which_hash_verifier;
+    uint8_t which_hash_verifier[20];
     uint8_t static_legacy_hash[20];
     uint8_t static_verifier_hash[20];
     uint8_t verifier_hash[20];
