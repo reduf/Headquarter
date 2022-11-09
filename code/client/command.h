@@ -23,6 +23,7 @@ typedef struct CommandOptions {
     bool        launch_service;
     int         service_option; // windows => {'r', 'i', 'u'} or linux => {'r', 's'}
 
+    int         online_status;
     int32_t     seed;
 
     struct {

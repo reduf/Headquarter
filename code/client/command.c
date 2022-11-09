@@ -18,6 +18,7 @@ void print_help(bool terminate)
             "    -email     <string>        Sets the client's email\n"
             "    -password  <string>        Enable auto-loging. use with -email and -charname\n"
             "    -character <string>        Sets the client's security question\n"
+            "    -status    <number>        Sets the login online status (0 = offline, 1 = online, 2 = busy, 3 = away)\n"
             "    -authsrv                   Specify authserver IP to connect to\n\n"
 
             "    -oldauth                   The client will use Portal connection\n\n"
@@ -48,6 +49,7 @@ void parse_command_args(int argc, const char **argv)
     // to returns with an error flag set.
 
     options.newauth = true;
+    options.online_status = 1;
 
     for (int i = 0; i < argc; i++) {
         const char *arg = argv[i];
@@ -62,6 +64,12 @@ void parse_command_args(int argc, const char **argv)
             options.trace = true;
         } else if (!strcmp(arg, "-authsrv")) {
             options.auth_srv = argv[++i];
+        } else if (!strcmp(arg, "-status")) {
+            options.online_status = atoi(argv[++i]);
+            if (options.online_status < 0 || options.online_status > 3) {
+                printf("Invalid -status\n");
+                print_help(true);
+            }
         } else if (!strcmp(arg, "-account")) {
             check_for_more_arguments(argc, argv, i, 1);
             safe_strcpy(options.account, ARRAY_SIZE(options.account), argv[++i]);
