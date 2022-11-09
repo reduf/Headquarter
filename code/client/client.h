@@ -125,6 +125,7 @@ typedef struct GwClient {
     FriendArray         friends;
     CharacterArray      characters;
     Character          *current_character;
+    Character          *pending_character;
 
     GuildMemberUpdate   guild_member_update;
 
@@ -178,6 +179,7 @@ void PlayCharacter(GwClient *client, struct kstr *name, PlayerStatus status);
 void ContinueAccountLogin(GwClient *client, uint32_t error_code);
 void ContinueSendHardwareInfo(GwClient *client, uint32_t error_code);
 void ContinuePlayCharacter(GwClient *client, uint32_t error_code);
+void ContinueChangeCharacter(GwClient *client, uint32_t error_code);
 
 // Id `name` is NULL, it will uses the last played character
 void GameSrv_PlayCharacter(GwClient *client, struct kstr *name, PlayerStatus status);

@@ -302,6 +302,39 @@ void ContinuePlayCharacter(GwClient *client, uint32_t error_code)
         choosen_map_id, map_type, DistrictRegion_America, 0, DistrictLanguage_Default);
 }
 
+void ContinueChangeCharacter(GwClient *client, uint32_t error_code)
+{
+    assert(client->state == AwaitChangeCharacter && client->pending_character);
+
+    if (error_code != 0) {
+        LogInfo("ContinueChangeCharacter failed (Code=%03d)", error_code);
+        return;
+    }
+    client->current_character = client->pending_character;
+    client->pending_character = NULL;
+    client->state = AwaitPlayCharacter;
+    PlayCharacter(client, NULL, 0);
+}
+// Returns true
+bool ChangeCharacter(GwClient* client, struct kstr* name) {
+    
+    Character *cc = client->current_character;
+    if (!(name && kstr_compare(&cc->name, name) != 0))
+        return false;
+    array_foreach(cc, &client->characters) {
+        if (kstr_compare(&cc->name, name) == 0) {
+            client->state = AwaitChangeCharacter;
+            client->pending_character = cc;
+            uint32_t trans_id = issue_next_transaction(client, AsyncType_ChangeCharacter);
+
+            LogDebug("AuthSrv_ChangeCharacter {trans_id: %lu}", trans_id);
+            AuthSrv_ChangeCharacter(&client->auth_srv, trans_id, name);
+            return true;
+        }
+    }
+    assert("Failed to find character matching required name" && false);
+    return false;
+}
 void PlayCharacter(GwClient *client, struct kstr *name, PlayerStatus status)
 {
     assert(client->state == AwaitPlayCharacter);
@@ -310,18 +343,10 @@ void PlayCharacter(GwClient *client, struct kstr *name, PlayerStatus status)
         AuthSrv_SetPlayerStatus(&client->auth_srv, status);
         client->player_status = status;
     }
-
+    if (ChangeCharacter(client, name))
+        return;
     client->state = AwaitChangeCharacter;
-    Character *cc = client->current_character;
-    if (name && kstr_compare(&cc->name, name)) {
-        uint32_t trans_id = issue_next_transaction(client, AsyncType_ChangeCharacter);
-
-        LogDebug("AuthSrv_ChangeCharacter {trans_id: %lu}", trans_id);
-        AuthSrv_ChangeCharacter(&client->auth_srv, trans_id, name);
-    } else {
-        // @Remark: We can assume we changed character.
-        ContinuePlayCharacter(client, 0);
-    }
+    ContinuePlayCharacter(client, 0);
 }
 
 void GameSrv_Disconnect(GwClient *client)

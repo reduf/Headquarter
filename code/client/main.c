@@ -39,7 +39,10 @@ static void main_loop(void)
         // We gotta think a bit more about theses condition
         if (client->state == AwaitPlayCharacter) {
             assert(NetConn_IsShutdown(&client->game_srv));
-            PlayCharacter(client, NULL, PlayerStatus_Online);
+
+            DECLARE_KSTR(charname_kstr, 20);
+            assert(kstr_read_ascii(&charname_kstr, options.charname, 20));
+            PlayCharacter(client, &charname_kstr, options.online_status);
         }
 
         if (client->state == AwaitGameServerDisconnect &&
