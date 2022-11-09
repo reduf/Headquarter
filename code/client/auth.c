@@ -66,6 +66,9 @@ void HandleErrorMessage(Connection *conn, size_t psize, Packet *packet)
         case AsyncType_AccountLogin:
             ContinueAccountLogin(client, pack->code);
             break;
+        case AsyncType_ChangeCharacter:
+            ContinueChangeCharacter(client, pack->code);
+            break;
         case AsyncType_PlayCharacter:
             ContinuePlayCharacter(client, pack->code);
             break;
