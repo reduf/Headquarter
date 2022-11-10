@@ -18,7 +18,7 @@ void appendv(array_uint8_t *buffer, const char *fmt, va_list args)
     // We will pop this "\0" byte later.
     uint8_t *write_ptr = array_push(buffer, (size_t)ret + 1);
     vsnprintf((char *)write_ptr, (size_t)ret + 1, fmt, args_copy);
-    array_pop(buffer);
+    (void)array_pop(buffer);
     va_end(args_copy);
 }
 

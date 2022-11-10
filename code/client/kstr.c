@@ -61,7 +61,7 @@ struct kstr kstr_substr(const struct kstr *str, size_t pos, size_t length)
 bool kstr_read(struct kstr *str, const uint16_t *src, size_t size)
 {
     struct kstr source;
-    kstr_init(&source, src, size, size);
+    kstr_init(&source, (uint16_t *)src, size, size);
 
     size_t trim;
     if ((trim = kstr_find_codepoint(&source, 0)) != (size_t)-1) {

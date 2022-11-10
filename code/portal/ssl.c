@@ -1124,6 +1124,8 @@ static int parse_server_hello(struct ssl_sts_connection *ssl, const uint8_t *dat
     if ((ret = chk_stream_read16(&content, &content_len, &cipher_suite)) != 0)
         return ret;
 
+    STATIC_ASSERT(sizeof(ssl->which_hash_verifier) == sizeof(ssl->static_legacy_hash));
+    STATIC_ASSERT(sizeof(ssl->which_hash_verifier) == sizeof(ssl->static_verifier_hash));
     switch (cipher_suite) {
         case TLS_SRP_SHA_WITH_AES_128_CBC_SHA:
             // @Cleanup:
@@ -1131,11 +1133,9 @@ static int parse_server_hello(struct ssl_sts_connection *ssl, const uint8_t *dat
             fprintf(stderr, "Received TLS_SRP_SHA_WITH_AES_128_CBC_SHA (0x%X) which we didn't implement\n", TLS_SRP_SHA_WITH_AES_128_CBC_SHA);
             return ERR_SSL_BAD_INPUT_DATA;
         case TLS_SRP_SHA_WITH_AES_256_CBC_SHA:
-            STATIC_ASSERT(sizeof(ssl->which_hash_verifier) == sizeof(ssl->static_verifier_hash));
             memcpy(ssl->which_hash_verifier, ssl->static_verifier_hash, sizeof(ssl->which_hash_verifier));
             break;
         case TLS_SRP_SHA_WITH_LEGACY_PASSWORD:
-            STATIC_ASSERT(sizeof(ssl->which_hash_verifier) == sizeof(ssl->static_legacy_hash));
             memcpy(ssl->which_hash_verifier, ssl->static_legacy_hash, sizeof(ssl->which_hash_verifier));
             break;
         default:
