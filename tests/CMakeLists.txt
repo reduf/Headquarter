@@ -21,3 +21,12 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/code/client
   ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(test_event PRIVATE utest common)
+
+add_executable(test_kstr test_kstr.c)
+target_include_directories(
+  test_kstr
+
+  PRIVATE
+  ${CMAKE_SOURCE_DIR}/code/client
+  ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(test_kstr PRIVATE utest common)

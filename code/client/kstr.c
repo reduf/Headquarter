@@ -65,7 +65,7 @@ bool kstr_read(struct kstr *str, const uint16_t *src, size_t size)
 
     size_t trim;
     if ((trim = kstr_find_codepoint(&source, 0)) != (size_t)-1) {
-        source = kstr_substr(&source, 0, trim + 1);
+        source = kstr_substr(&source, 0, trim);
     }
 
     return kstr_copy(str, &source);
@@ -76,7 +76,7 @@ bool kstr_write(struct kstr *str, uint16_t *buffer, size_t size)
     if (str->length >= size)
         return false;
     memcpy(buffer, str->buffer, str->length * sizeof(uint16_t));
-    buffer[str->length++] = 0;
+    buffer[str->length] = 0;
     return true;
 }
 
