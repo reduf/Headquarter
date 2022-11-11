@@ -63,8 +63,10 @@ void parse_command_args(int argc, const char **argv)
         } else if (!strcmp(arg, "-vv") || !strcmp(arg, "--trace")) {
             options.trace = true;
         } else if (!strcmp(arg, "-authsrv")) {
+            check_for_more_arguments(argc, argv, i, 1);
             options.auth_srv = argv[++i];
         } else if (!strcmp(arg, "-status")) {
+            check_for_more_arguments(argc, argv, i, 1);
             options.online_status = atoi(argv[++i]);
             if (options.online_status < 0 || options.online_status > 3) {
                 printf("Invalid -status\n");

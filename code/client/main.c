@@ -41,7 +41,11 @@ static void main_loop(void)
             assert(NetConn_IsShutdown(&client->game_srv));
 
             DECLARE_KSTR(charname_kstr, 20);
-            assert(kstr_read_ascii(&charname_kstr, options.charname, 20));
+            if (!kstr_read_ascii(&charname_kstr, options.charname, 20)) {
+                LogError("Failed to read '%s' in a kstr", options.charname);
+                return;
+            }
+
             PlayCharacter(client, &charname_kstr, options.online_status);
         }
 

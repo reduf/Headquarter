@@ -315,9 +315,9 @@ void ContinueChangeCharacter(GwClient *client, uint32_t error_code)
     client->state = AwaitPlayCharacter;
     PlayCharacter(client, NULL, 0);
 }
-// Returns true
-bool ChangeCharacter(GwClient* client, struct kstr* name) {
-    
+
+bool ChangeCharacter(GwClient* client, struct kstr* name)
+{
     Character *cc = client->current_character;
     if (!(name && kstr_compare(&cc->name, name) != 0))
         return false;
@@ -332,9 +332,11 @@ bool ChangeCharacter(GwClient* client, struct kstr* name) {
             return true;
         }
     }
-    assert("Failed to find character matching required name" && false);
+
+    LogError("Failed to find character matching required name");
     return false;
 }
+
 void PlayCharacter(GwClient *client, struct kstr *name, PlayerStatus status)
 {
     assert(client->state == AwaitPlayCharacter);
