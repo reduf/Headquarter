@@ -171,7 +171,6 @@ void compute_pswd_hash(struct kstr *email, struct kstr *pswd, char digest[20]);
 // If `pswd` is NULL, it will use the hash in `client->password`
 void AccountLogin(GwClient *client);
 void AccountLogout(GwClient *client);
-void OldAccountConnect(GwClient *client, struct kstr *email, struct kstr *pswd, struct kstr *pseudo);
 void PortalAccountConnect(GwClient *client, struct uuid *user_id, struct uuid *token, struct kstr *charname);
 
 void PlayCharacter(GwClient *client, struct kstr *name, PlayerStatus status);

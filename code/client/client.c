@@ -121,72 +121,6 @@ void ContinueSendHardwareInfo(GwClient *client, uint32_t error_code)
     client->connected = true;
 }
 
-void OldAccountConnect(GwClient *client, struct kstr *email, struct kstr *pswd, struct kstr *charname)
-{
-#pragma pack(push, 1)
-    typedef struct {
-        Header   header;
-        uint32_t transaction_id;
-        uint32_t client_salt;
-        char     password[20];
-        uint16_t email[64];
-        uint16_t charname1[20]; // playing character
-        uint16_t charname2[20]; // secret question
-    } AccountLogin;
-#pragma pack(pop)
-
-    char buffer[256];
-    char digest[20];
-
-    Connection *auth = &client->auth_srv;
-
-    if (client->state != AwaitAccountConnect) {
-        LogError("You must connect & send computer infos before calling OldAccountConnect");
-        return;
-    }
-
-    // @Remark: If pswd isn't set, it will use the static hash of the password.
-    // It must be computed before. (compute_pswd_hash can help)
-    if (pswd && pswd->length) {
-        compute_pswd_hash(email, pswd, client->password);
-    }
-
-    uint32_t client_salt = (uint32_t)time(NULL);
-    ((uint32_t *)buffer)[0] = client_salt;
-    ((uint32_t *)buffer)[1] = client->static_salt;
-    memcpy(buffer + 8, client->password, 20);
-    Sha1(buffer, 28, digest);
-
-    uint32_t trans_id = issue_next_transaction(client, AsyncType_AccountLogin);
-
-    AccountLogin packet = NewPacket(AUTH_CMSG_ACCOUNT_LOGIN);
-    packet.transaction_id = trans_id;
-    packet.client_salt = client_salt;
-    memcpy(packet.password, digest, 20);
-
-    size_t max_email = ARRAY_SIZE(packet.email) - 1;
-    if (max_email < email->length) {
-        LogError("Email is too long. Length: %zu, Max: %zu", email->length, max_email);
-        return;
-    }
-    memcpy(packet.email, email->buffer, email->length * 2);
-    packet.email[email->length] = 0;
-
-    assert(ARRAY_SIZE(packet.charname1) == ARRAY_SIZE(packet.charname2));
-    if (ARRAY_SIZE(packet.charname1) < charname->length) {
-        LogError("Charname is too long. Length: %zu, Max: %zu", charname->length, ARRAY_SIZE(packet.charname1));
-        return;
-    }
-
-    memcpy(packet.charname1, charname->buffer, charname->length * 2); // playing character
-    memcpy(packet.charname2, charname->buffer, charname->length * 2);
-    packet.charname1[charname->length] = 0;
-    packet.charname2[charname->length] = 0;
-
-    LogDebug("OldAccountConnect: {trans_id: %lu}", trans_id);
-    SendPacket(auth, sizeof(packet), &packet);
-}
-
 void PortalAccountConnect(GwClient *client, struct uuid *user_id, struct uuid *token, struct kstr *charname)
 {
 #pragma pack(push, 1)
@@ -195,8 +129,7 @@ void PortalAccountConnect(GwClient *client, struct uuid *user_id, struct uuid *t
         uint32_t transaction_id;
         uint8_t  user_id[16];
         uint8_t  session_id[16];
-        uint16_t charname1[20]; // playing character
-        uint16_t charname2[20]; // secret question
+        uint16_t charname[20];
     } PortalAccountLogin;
 #pragma pack(pop)
 
@@ -217,18 +150,15 @@ void PortalAccountConnect(GwClient *client, struct uuid *user_id, struct uuid *t
     uuid_enc_le(packet.user_id, user_id);
     uuid_enc_le(packet.session_id, token);
     
-    assert(ARRAY_SIZE(packet.charname1) == ARRAY_SIZE(packet.charname2));
-    if (ARRAY_SIZE(packet.charname1) < charname->length) {
-        LogError("Charname is too long. Length: %zu, Max: %zu", charname->length, ARRAY_SIZE(packet.charname1));
+    if (ARRAY_SIZE(packet.charname) < charname->length) {
+        LogError("Charname is too long. Length: %zu, Max: %zu", charname->length, ARRAY_SIZE(packet.charname));
         return;
     }
 
     // @Cleanup: This seem to now be unsupported, it causes issues
     //
-    // memcpy(packet.charname1, charname->buffer, charname->length * 2); // playing character
-    // memcpy(packet.charname2, charname->buffer, charname->length * 2);
-    // packet.charname1[charname->length] = 0;
-    // packet.charname2[charname->length] = 0;
+    // memcpy(packet.charname, charname->buffer, charname->length * 2);
+    // packet.charname[charname->length] = 0;
 
     LogDebug("PortalAccountConnect: {trans_id: %lu}", trans_id);
     SendPacket(&client->auth_srv, sizeof(packet), &packet);
@@ -240,7 +170,7 @@ void AccountLogin(GwClient *client)
     if (options.newauth) {
         PortalAccountConnect(client, &client->portal_user_id, &client->portal_token, &client->charname);
     } else {
-        OldAccountConnect(client, &client->email, NULL, &client->charname);
+        LogError("Legacy connection is not working anymore, please use '-newauth'");
     }
     client->state = AwaitAccountConnection;
     // client->state.connection_pending = true;
