@@ -62,19 +62,23 @@ uint64_t time_get_ms(void)
 {
     return GetTickCount64();
 }
-uint64_t get_time_since_epoch(void) {
+
+uint64_t get_time_since_epoch(void)
+{
     return (uint64_t)time(NULL);
 }
+
 long time_diff_nsec(struct timespec *end, struct timespec *beginning)
 {
     double diffsec = difftime(end->tv_sec, beginning->tv_sec);
     long diffnsec = end->tv_nsec - beginning->tv_nsec;
     return (long)(diffsec * 1000000000) + diffnsec;
 }
-struct tm* time_localtime(const time_t* timep, struct tm* result) {
-    if (result) {
-        localtime_s(result, timep);
-        return result;
-    }
-    return localtime(timep);
+
+bool time_localtime(const time_t* timep, struct tm* result)
+{
+	errno_t err;
+	if ((err = localtime_s(result, timep)) != 0)
+		return false;
+    return true;
 }

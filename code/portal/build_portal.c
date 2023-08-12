@@ -55,6 +55,10 @@
 #include <common/process.h>
 #include <common/uuid.h>
 
+#ifdef _WIN32
+#pragma warning(disable: 4100 4189)
+#endif
+
 #include "stream.h"
 #include "socket.h"
 

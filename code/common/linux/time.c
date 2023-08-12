@@ -102,8 +102,10 @@ long time_diff_nsec(struct timespec *end, struct timespec *beginning)
     long diffnsec = end->tv_nsec - beginning->tv_nsec;
     return (long)(diffsec * 1000000000) + diffnsec;
 }
-struct tm* time_localtime(const time_t* timep, struct tm* result) {
-    if (result)
-        return localtime_r(timep, result);
-    return localtime(timep);
+
+bool time_localtime(const time_t* timep, struct tm* result)
+{
+	if (localtime_r(timep, result) == NULL)
+		return false;
+	return true;
 }

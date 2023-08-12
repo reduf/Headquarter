@@ -20,5 +20,5 @@ void time_sleep_sec(unsigned int sec);
 uint64_t time_get_ms(void);
 
 long time_diff_nsec(struct timespec *end, struct timespec *beginning);
-struct tm* time_localtime(const time_t* timep, struct tm* result);
+bool time_localtime(const time_t* timep, struct tm* result);
 #endif // COMMON_TIME_H

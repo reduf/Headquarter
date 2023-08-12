@@ -65,6 +65,10 @@
 
 #include <client/Headquarter.h>
 
+#ifdef _WIN32
+#pragma warning(disable: 4100 4189)
+#endif
+
 #include "arc4.h"
 #include "command.h"
 #include "error.h"

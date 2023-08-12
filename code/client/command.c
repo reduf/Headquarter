@@ -136,7 +136,12 @@ void parse_command_args(int argc, const char **argv)
         struct tm ts;
         // @Robustness: Deal with the error?
         time_localtime(&t, &ts);
-        assert(strftime(timestamp, sizeof(timestamp), "%Y-%m-%d_%H-%M-%S", &ts) > 0);
-        assert(snprintf(options.log_file_name, sizeof(options.log_file_name), "%s_%d.txt", timestamp, getpid()) != -1);
+		if (strftime(timestamp, sizeof(timestamp), "%Y-%m-%d_%H-%M-%S", &ts) <= 0) {
+			abort();
+		}
+
+		if (snprintf(options.log_file_name, sizeof(options.log_file_name), "%s_%d.txt", timestamp, getpid()) == -1) {
+			abort();
+		}
     }
 }
