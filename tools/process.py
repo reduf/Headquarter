@@ -643,6 +643,7 @@ class Hook(object):
     _stdcall  = 1
     _fastcall = 2
     _thiscall = 3
+    _rawcall  = 4
 
     def __init__(self, callback, callconv, argtypes):
         self.callback = callback
@@ -689,6 +690,10 @@ class Hook(object):
             proc = Hook(function, Hook._thiscall, argtypes)
             return proc
         return wrapper
+
+    def rawcall(function):
+        proc = Hook(function, Hook._rawcall, [])
+        return proc
 
 class ProcessHook(object):
     """
@@ -800,21 +805,25 @@ class ProcessDebugger(object):
 
     def _on_breakpoint32(self, thread, proc_hook):
         ctx = thread.context32()
-        args = list()
 
+        args = list()
         hook = proc_hook.hook
         conv = hook.callconv
-        argc = len(hook.argtypes)
 
-        if (argc >= 1) and ((conv == Hook._fastcall) or (conv == Hook._thiscall)):
-            args.append(ctx.Ecx)
-        if (argc >= 2) and (conv == Hook._fastcall):
-            args.append(ctx.Edx)
+        if conv == Hook._rawcall:
+            args.append(ctx)
+        else:
+            argc = len(hook.argtypes)
 
-        argstr = hook.argstr[len(args):]
-        argc = argc - len(args)
-        stack_args = self.proc.read(ctx.Esp + 4, argstr)
-        args.extend(stack_args)
+            if (argc >= 1) and ((conv == Hook._fastcall) or (conv == Hook._thiscall)):
+                args.append(ctx.Ecx)
+            if (argc >= 2) and (conv == Hook._fastcall):
+                args.append(ctx.Edx)
+
+            argstr = hook.argstr[len(args):]
+            argc = argc - len(args)
+            stack_args = self.proc.read(ctx.Esp + 4, argstr)
+            args.extend(stack_args)
 
         # What should we do here ??? (We don't want to crash the remote process)
         try:
