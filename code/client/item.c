@@ -18,6 +18,12 @@ uint32_t item_mod_arg2(uint32_t mod)
     return (mod & 0x000000FF);
 }
 
+void free_item(Item *item)
+{
+    array_reset(&item->mod_struct);
+    free(item);
+}
+
 void remove_item_from_bag(Item *item)
 {
     if (!item->bag) return;
@@ -129,6 +135,12 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
     new_item->value = pack->value;
     kstr_read(&new_item->name, pack->name, ARRAY_SIZE(pack->name));
 
+    array_init(&new_item->mod_struct);
+    array_resize(&new_item->mod_struct, pack->n_modifier);
+    for(size_t i=0;i<pack->n_modifier;i++) {
+        array_set(&new_item->mod_struct, i, pack->modifier[i]);
+    }
+
     // @Cleanup: Save modifier
 
     array_set(items, pack->item_id, new_item);
@@ -157,7 +169,7 @@ void HandleItemRemove(Connection *conn, size_t psize, Packet *packet)
 
     array_set(items, pack->item_id, NULL);
     remove_item_from_bag(item);
-    free(item);
+    free_item(item);
 }
 
 void HandleItemWeaponSet(Connection *conn, size_t psize, Packet *packet)
