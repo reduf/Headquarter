@@ -36,7 +36,7 @@ static void reset_world(World *world)
 {
     Item **item;
     array_foreach(item, &world->items) {
-        free(*item);
+        free_item(*item);
     }
 
     Agent **agent;

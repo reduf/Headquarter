@@ -736,12 +736,12 @@ leave:
     return bag;
 }
 
-HQAPI size_t GetItemModStruct(uint32_t item_id, uint32_t* buffer, size_t length)
+HQAPI int GetItemModStruct(uint32_t item_id, uint32_t* buffer, size_t length)
 {
     assert(client != NULL);
+    int written = -1;
     if (!length && buffer)
-        return 0;
-    size_t written = 0;
+        goto leave;
     thread_mutex_lock(&client->mutex);
     if (!(client->ingame && client->world.hash))
         goto leave;
@@ -749,13 +749,14 @@ HQAPI size_t GetItemModStruct(uint32_t item_id, uint32_t* buffer, size_t length)
     if (!item)
         goto leave;
     if (!buffer) {
-        while (item->mod_struct[written]) written++;
+        written = item->mod_struct.size;
         goto leave;
     }
-    for (written = 0; written < length && item->mod_struct[written]; written++) {
-        buffer[written] = item->mod_struct[written];
+    if (length < item->mod_struct.size)
+        goto leave;
+    for (written = 0; written < (int)item->mod_struct.size; written++) {
+        buffer[written] = array_at(&item->mod_struct, written);
     }
-    buffer[written] = 0;
 leave:
     thread_mutex_unlock(&client->mutex);
     return written;

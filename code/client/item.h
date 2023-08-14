@@ -14,7 +14,7 @@ typedef struct Item {
 
     struct kstr name;
     uint16_t    name_buffer[8];
-    uint32_t    mod_struct[12];
+    array(uint32_t) mod_struct;
 
     Bag        *bag;
     ItemType    type;
@@ -30,6 +30,7 @@ static void api_make_item(ApiItem *dest, Item *src)
     dest->type      = src->type;
 }
 
+void free_item(Item* src);
 
 void remove_item_from_bag(Item *item);
 Item *get_item_safe(GwClient *client, int32_t id);
