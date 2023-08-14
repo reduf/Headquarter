@@ -81,6 +81,8 @@
 // @Cleanup: Temporary
 typedef struct GwClient GwClient;
 
+typedef array(uint32_t) array_uint32_t;
+
 #include "bag.h"
 #include "chat.h"
 #include "item.h"

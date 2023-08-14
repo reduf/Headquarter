@@ -35,8 +35,6 @@ typedef struct GameServerTransfer {
     struct sockaddr host;
 } GameServerTransfer;
 
-typedef array(uint32_t) array_uint32_t;
-
 //
 // AwaitState is used to connect and start playing a character.
 // Every state should be added here to precisely know what is

@@ -124,7 +124,7 @@ HQAPI uint32_t          GetNpcIdOfAgent(AgentId agent_id);
 HQAPI bool              GetItem(ApiItem *item, uint32_t item_id);
 HQAPI bool              GetItemOfAgent(ApiItem *item, AgentId agent_id);
 HQAPI BagEnum           GetItemLocation(uint32_t item_id, unsigned int *slot);
-HQAPI int            GetItemModStruct(uint32_t item_id, uint32_t *buffer, size_t length);
+HQAPI size_t            GetItemModStruct(uint32_t item_id, uint32_t *buffer, size_t length);
 HQAPI size_t            GetItemName(uint32_t item_id, uint16_t* buffer, size_t length);
 HQAPI size_t            GetBagCapacity(BagEnum bag);
 HQAPI size_t            GetBagItems(BagEnum bag, ApiItem *buffer, size_t length);

@@ -14,7 +14,7 @@ typedef struct Item {
 
     struct kstr name;
     uint16_t    name_buffer[8];
-    array(uint32_t) mod_struct;
+    array_uint32_t mod_struct;
 
     Bag        *bag;
     ItemType    type;

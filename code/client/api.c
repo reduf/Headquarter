@@ -736,10 +736,10 @@ leave:
     return bag;
 }
 
-HQAPI int GetItemModStruct(uint32_t item_id, uint32_t* buffer, size_t length)
+HQAPI size_t GetItemModStruct(uint32_t item_id, uint32_t* buffer, size_t length)
 {
     assert(client != NULL);
-    int written = -1;
+    size_t written = 0;
     if (!length && buffer)
         goto leave;
     thread_mutex_lock(&client->mutex);
@@ -754,7 +754,7 @@ HQAPI int GetItemModStruct(uint32_t item_id, uint32_t* buffer, size_t length)
     }
     if (length < item->mod_struct.size)
         goto leave;
-    for (written = 0; written < (int)item->mod_struct.size; written++) {
+    for (written = 0; written < item->mod_struct.size; ++written) {
         buffer[written] = array_at(&item->mod_struct, written);
     }
 leave:
