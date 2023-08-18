@@ -9,8 +9,8 @@ void init_client(GwClient *client)
 
     thread_mutex_init(&client->mutex);
 
-    kstr_init(&client->email, client->email_buffer, 0, ARRAY_SIZE(client->email_buffer));
-    kstr_init(&client->charname, client->charname_buffer, 0, ARRAY_SIZE(client->charname_buffer));
+    kstr_hdr_init(&client->email, client->email_buffer, ARRAY_SIZE(client->email_buffer));
+    kstr_hdr_init(&client->charname, client->charname_buffer, ARRAY_SIZE(client->charname_buffer));
 
     client->state = AwaitAuthServer;
     client->ingame = false;
@@ -168,7 +168,9 @@ void AccountLogin(GwClient *client)
 {
     assert(client->state == AwaitAccountConnect);
     if (options.newauth) {
-        PortalAccountConnect(client, &client->portal_user_id, &client->portal_token, &client->charname);
+        struct kstr charname;
+        kstr_init_from_kstr_hdr(&charname, &client->charname);
+        PortalAccountConnect(client, &client->portal_user_id, &client->portal_token, &charname);
     } else {
         LogError("Legacy connection is not working anymore, please use '-newauth'");
     }
@@ -249,10 +251,10 @@ void ContinueChangeCharacter(GwClient *client, uint32_t error_code)
 bool ChangeCharacter(GwClient* client, struct kstr* name)
 {
     Character *cc = client->current_character;
-    if (!(name && kstr_compare(&cc->name, name) != 0))
+    if (!(name && kstr_hdr_compare_kstr(&cc->name, name) != 0))
         return false;
     array_foreach(cc, &client->characters) {
-        if (kstr_compare(&cc->name, name) == 0) {
+        if (kstr_hdr_compare_kstr(&cc->name, name) == 0) {
             client->state = AwaitChangeCharacter;
             client->pending_character = cc;
             uint32_t trans_id = issue_next_transaction(client, AsyncType_ChangeCharacter);

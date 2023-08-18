@@ -19,7 +19,7 @@ Guild *get_guild_safe(GwClient *client, uint32_t guild_id)
 void init_guildmember_update(GwClient *client)
 {
     GuildMemberUpdate *gmu = &client->guild_member_update;
-    kstr_init(&gmu->player_name, gmu->player_name_buffer, 0, ARRAY_SIZE(gmu->player_name_buffer));
+    kstr_hdr_init(&gmu->player_name, gmu->player_name_buffer, ARRAY_SIZE(gmu->player_name_buffer));
     reset_guildmember_update(client);
 }
 
@@ -49,7 +49,7 @@ GuildMember *complete_guildmember_update(GwClient *client, uint16_t *account_nam
     kstr_init(&account_name_kstr, account_name, length, capacity);
     
     array_foreach(member, &client->player->guild->members) {
-        if (kstr_compare(&member->account_name, &account_name_kstr) != 0)
+        if (kstr_hdr_compare_kstr(&member->account_name, &account_name_kstr) != 0)
             continue;
         if (gmu->status >= 0) {
             // Status changed e.g. online
@@ -57,7 +57,7 @@ GuildMember *complete_guildmember_update(GwClient *client, uint16_t *account_nam
             if (member->status == 0)
                 member->player_name.length = 0;
             else
-                kstr_copy(&member->player_name, &gmu->player_name);
+                kstr_hdr_copy(&member->player_name, &gmu->player_name);
             calc_last_login(member, gmu->minutes_since_login);
             member->status = gmu->status;
         }
@@ -91,8 +91,8 @@ void init_guild(Guild *guild)
     guild->allegiance = FactionType_Unknow;
     guild->faction_pts = 0;
 
-    kstr_init(&guild->tag, guild->tag_buffer, 0, ARRAY_SIZE(guild->tag_buffer));
-    kstr_init(&guild->name, guild->name_buffer, 0, ARRAY_SIZE(guild->name_buffer));
+    kstr_hdr_init(&guild->tag, guild->tag_buffer, ARRAY_SIZE(guild->tag_buffer));
+    kstr_hdr_init(&guild->name, guild->name_buffer, ARRAY_SIZE(guild->name_buffer));
 
     guild->members.capacity = 0;
 }
@@ -104,9 +104,9 @@ void init_guildmember(GuildMember* member)
     member->member_type = 0;
     member->last_login_utc = 0;
 
-    kstr_init(&member->account_name, member->account_name_buffer, 0, ARRAY_SIZE(member->account_name_buffer));
-    //kstr_init(&member->invited_by, member->invited_by_buffer, 0, ARRAY_SIZE(member->invited_by_buffer));
-    kstr_init(&member->player_name, member->player_name_buffer, 0, ARRAY_SIZE(member->player_name_buffer));
+    kstr_hdr_init(&member->account_name, member->account_name_buffer, ARRAY_SIZE(member->account_name_buffer));
+    //kstr_hdr_init(&member->invited_by, member->invited_by_buffer, ARRAY_SIZE(member->invited_by_buffer));
+    kstr_hdr_init(&member->player_name, member->player_name_buffer, ARRAY_SIZE(member->player_name_buffer));
 }
 
 void HandleGuildPlayerRole(Connection *conn, size_t psize, Packet *packet)
@@ -266,7 +266,7 @@ void HandleGuildPlayerInfo(Connection* conn, size_t psize, Packet* packet)
     array_foreach(member, &client->player->guild->members) {
         if (found)
             break;
-        if (kstr_compare(&invname_kstr, &member->account_name) != 0)
+        if (kstr_hdr_compare_kstr(&member->account_name, &invname_kstr) != 0)
             break;
         found = member;
     }
@@ -274,9 +274,9 @@ void HandleGuildPlayerInfo(Connection* conn, size_t psize, Packet* packet)
         found = array_push(&client->player->guild->members,1);
         init_guildmember(found);
         //found->join_date = pack->join_date;
-        kstr_copy(&found->account_name, &invname_kstr);
+        kstr_hdr_copy_from_kstr(&found->account_name, &invname_kstr);
     }
-    kstr_read(&found->player_name, pack->player_name, ARRAY_SIZE(pack->player_name));
+    kstr_hdr_read(&found->player_name, pack->player_name, ARRAY_SIZE(pack->player_name));
     found->status = pack->status;
     found->member_type = pack->member_type;
     calc_last_login(found, pack->minutes_since_login);
@@ -346,8 +346,8 @@ void HandleGuildGeneralInfo(Connection *conn, size_t psize, Packet *packet)
 
     guild->faction_pts = pack->guild_faction;
 
-    kstr_read(&guild->tag, pack->tag, ARRAY_SIZE(pack->tag));
-    kstr_read(&guild->name, pack->name, ARRAY_SIZE(pack->name));
+    kstr_hdr_read(&guild->tag, pack->tag, ARRAY_SIZE(pack->tag));
+    kstr_hdr_read(&guild->name, pack->name, ARRAY_SIZE(pack->name));
 }
 
 void HandleGuildChangeFaction(Connection *conn, size_t psize, Packet *packet)

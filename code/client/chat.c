@@ -121,7 +121,7 @@ void HandleChatMessageLocal(Connection *conn, size_t psize, Packet *packet)
     params.ChatMessage.extra_id = 0;
     params.ChatMessage.channel = channel;
     params.ChatMessage.sender.length = player->name.length;
-    params.ChatMessage.sender.buffer = player->name.buffer;
+    params.ChatMessage.sender.buffer = player->name_buffer;
     params.ChatMessage.message.length = sb->size;
     params.ChatMessage.message.buffer = sb->data;
 

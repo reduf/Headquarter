@@ -12,9 +12,9 @@ typedef struct Item {
     uint32_t    quantity;
     uint32_t    model_id;
 
-    struct kstr name;
-    uint16_t    name_buffer[8];
-    array_uint32_t mod_struct;
+    struct kstr_hdr name;
+    uint16_t        name_buffer[8];
+    array_uint32_t  mod_struct;
 
     Bag        *bag;
     ItemType    type;

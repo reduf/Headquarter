@@ -23,8 +23,8 @@ Friend *get_friend(const struct uuid *uuid, const uint16_t *name)
         };
 
         array_foreach(friend, &client->friends) {
-            if (kstr_compare(&friend->name, &name_kstr) == 0 ||
-                kstr_compare(&friend->account, &name_kstr) == 0) {
+            if (kstr_hdr_compare_kstr(&friend->name, &name_kstr) == 0 ||
+                kstr_hdr_compare_kstr(&friend->account, &name_kstr) == 0) {
                 return friend;
             }
         }
@@ -69,7 +69,7 @@ void HandleFriendUpdateInfo(Connection *conn, size_t psize, Packet *packet)
 
     Friend *friend = get_or_create_friend(&uuid, pack->account);
     assert(friend);
-    kstr_read(&friend->account, pack->account, ARRAY_SIZE(pack->account));
+    kstr_hdr_read(&friend->account, pack->account, ARRAY_SIZE(pack->account));
     uuid_copy(&friend->uuid, &uuid);
 
     friend->type = pack->type;
@@ -77,7 +77,7 @@ void HandleFriendUpdateInfo(Connection *conn, size_t psize, Packet *packet)
         // Offline, reset.
         friend->status = 0;
         friend->name.length = 0;
-        friend->name.buffer[0] = 0;
+        friend->name_buffer[0] = 0;
         friend->zone = 0;
     }
 
@@ -114,11 +114,11 @@ void HandleFriendUpdateStatus(Connection *conn, size_t psize, Packet *packet)
         // Offline, reset.
         friend->status = 0;
         friend->name.length = 0;
-        friend->name.buffer[0] = 0;
+        friend->name_buffer[0] = 0;
         friend->zone = 0;
     } else {
         // Online, read in player name
-        kstr_read(&friend->name, pack->played, ARRAY_SIZE(pack->played));
+        kstr_hdr_read(&friend->name, pack->played, ARRAY_SIZE(pack->played));
     }
 
     if (!list_empty(&client->event_mgr.callbacks[EventType_FriendStatus])) {

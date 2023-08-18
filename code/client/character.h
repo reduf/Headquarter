@@ -4,7 +4,7 @@
 #define CORE_CHARACTER_H
 
 typedef struct Character {
-    struct kstr name;
+    struct kstr_hdr name;
     uint16_t    name_buffer[20];
 
     struct uuid uuid;
@@ -17,7 +17,7 @@ typedef array(Character) CharacterArray;
 
 static void init_character(Character *character)
 {
-    kstr_init(&character->name, character->name_buffer, 0, ARRAY_SIZE(character->name_buffer));
+    kstr_hdr_init(&character->name, character->name_buffer, ARRAY_SIZE(character->name_buffer));
 
     character->prof1 = Profession_None;
     character->prof2 = Profession_None;

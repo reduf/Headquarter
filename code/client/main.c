@@ -150,8 +150,8 @@ int main(int argc, const char *argv[])
     }
 
     {
-        kstr_read_ascii(&client->email, options.email, ARRAY_SIZE(options.email));
-        kstr_read_ascii(&client->charname, options.charname, ARRAY_SIZE(options.charname));
+        kstr_hdr_read_ascii(&client->email, options.email, ARRAY_SIZE(options.email));
+        kstr_hdr_read_ascii(&client->charname, options.charname, ARRAY_SIZE(options.charname));
 
         DECLARE_KSTR(password, 100);
         kstr_read_ascii(&password, options.password, ARRAY_SIZE(options.password));
@@ -171,7 +171,9 @@ int main(int argc, const char *argv[])
             client->portal_user_id = result.user_id;
         #endif
         } else {
-            compute_pswd_hash(&client->email, &password, client->password);
+            struct kstr email;
+            kstr_init_from_kstr_hdr(&email, &client->email);
+            compute_pswd_hash(&email, &password, client->password);
         }
 
     #if defined(HEADQUARTER_CONSOLE)

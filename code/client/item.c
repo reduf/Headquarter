@@ -143,7 +143,7 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
     new_item->quantity = pack->quantity;
     new_item->type = pack->type;
     new_item->value = pack->value;
-    kstr_read(&new_item->name, pack->name, ARRAY_SIZE(pack->name));
+    kstr_hdr_read(&new_item->name, pack->name, ARRAY_SIZE(pack->name));
 
     uint32_t *buffer = array_push(&new_item->mod_struct, pack->n_modifier);
     for(size_t i = 0; i < pack->n_modifier; ++i) {

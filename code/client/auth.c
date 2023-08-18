@@ -161,8 +161,8 @@ void HandleAccountInfo(Connection *conn, size_t psize, Packet *packet)
         }
     }
 
-    struct kstr name = client->current_character->name;
-    LogInfo("Current character: %.*ls", name.length, name.buffer);
+    Character *cc = client->current_character;
+    LogInfo("Current character: %.*ls", cc->name.length, cc->name_buffer);
 }
 
 void HandleCharacterInfo(Connection *conn, size_t psize, Packet *packet)
@@ -196,7 +196,7 @@ void HandleCharacterInfo(Connection *conn, size_t psize, Packet *packet)
     }
     init_character(character);
     character->map = pack->last_map_id;
-    kstr_read(&character->name, pack->name, ARRAY_SIZE(pack->name));
+    kstr_hdr_read(&character->name, pack->name, ARRAY_SIZE(pack->name));
     uuid_dec_le(pack->uuid, &character->uuid);
 }
 

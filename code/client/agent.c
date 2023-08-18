@@ -628,7 +628,7 @@ void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
     player->player_id = pack->player_id;
     player->agent_id = pack->agent_id;
 
-    kstr_read(&player->name, pack->name, ARRAY_SIZE(pack->name));
+    kstr_hdr_read(&player->name, pack->name, ARRAY_SIZE(pack->name));
     agent->player_id = pack->player_id;
 }
 

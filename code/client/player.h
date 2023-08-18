@@ -20,8 +20,8 @@ typedef struct Player {
     uint32_t    player_id;
     AgentId     agent_id;
 
-    struct kstr name;
-    uint16_t    name_buffer[64];
+    struct kstr_hdr name;
+    uint16_t name_buffer[64];
 
     Guild      *guild;
     Party      *party;
@@ -41,5 +41,5 @@ static void api_make_player(ApiPlayer *dest, Player *src)
 
 static void init_player(Player *player)
 {
-    kstr_init(&player->name, player->name_buffer, 0, ARRAY_SIZE(player->name_buffer));
+    kstr_hdr_init(&player->name, player->name_buffer, ARRAY_SIZE(player->name_buffer));
 }

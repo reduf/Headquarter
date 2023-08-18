@@ -107,3 +107,90 @@ bool kstr_write_ascii(struct kstr *str, char *buffer, size_t size)
     buffer[str->length] = 0;
     return true;
 }
+
+uint16_t *kstr_hdr_buf(struct kstr_hdr *hdr)
+{
+    // assert alignment?
+    return (uint16_t*)((uintptr_t)hdr + sizeof(*hdr));
+}
+
+const uint16_t *kstr_hdr_const_buf(const struct kstr_hdr *hdr)
+{
+    return (const uint16_t*)((uintptr_t)hdr + sizeof(*hdr));
+}
+
+void kstr_init_from_kstr_hdr(struct kstr *str, struct kstr_hdr *hdr)
+{
+    kstr_init(str, kstr_hdr_buf(hdr), hdr->length, hdr->capacity);
+}
+
+void kstr_hdr_init(struct kstr_hdr *hdr, uint16_t *buffer, size_t capacity)
+{
+    if (kstr_hdr_buf(hdr) != buffer) {
+        abort();
+    }
+
+    hdr->length = 0;
+    hdr->capacity = capacity;
+}
+
+bool kstr_hdr_copy(struct kstr_hdr *dest, const struct kstr_hdr *src)
+{
+    if (dest->capacity < src->length)
+        return false;
+    memcpy(kstr_hdr_buf(dest), kstr_hdr_const_buf(src), src->length * sizeof(uint16_t));
+    dest->length = src->length;
+    return true;
+}
+
+bool kstr_hdr_copy_from_kstr(struct kstr_hdr *dest, const struct kstr *src)
+{
+    if (dest->capacity < src->length)
+        return false;
+    memcpy(kstr_hdr_buf(dest), src->buffer, src->length * sizeof(uint16_t));
+    dest->length = src->length;
+    return true;
+}
+
+bool kstr_hdr_read(struct kstr_hdr *hdr, const uint16_t *src, size_t size)
+{
+    struct kstr temp;
+    kstr_init_from_kstr_hdr(&temp, hdr);
+    if (!kstr_read(&temp, src, size)) {
+        return false;
+    }
+    hdr->length = temp.length;
+    return true;
+}
+
+bool kstr_hdr_write(struct kstr_hdr *hdr, uint16_t *buffer, size_t size)
+{
+    struct kstr temp;
+    kstr_init_from_kstr_hdr(&temp, hdr);
+    return kstr_write(&temp, buffer, size);
+}
+
+bool kstr_hdr_read_ascii(struct kstr_hdr *hdr, const char *src, size_t size)
+{
+    struct kstr temp;
+    kstr_init_from_kstr_hdr(&temp, hdr);
+    if (!kstr_read_ascii(&temp, src, size)) {
+        return false;
+    }
+    hdr->length = temp.length;
+    return true;
+}
+
+bool kstr_hdr_write_ascii(struct kstr_hdr *hdr, char *buffer, size_t size)
+{
+    struct kstr temp;
+    kstr_init_from_kstr_hdr(&temp, hdr);
+    return kstr_write_ascii(&temp, buffer, size);
+}
+
+int kstr_hdr_compare_kstr(const struct kstr_hdr *s1, const struct kstr *s2)
+{
+    struct kstr temp;
+    kstr_init_from_kstr_hdr(&temp, (struct kstr_hdr *)s1);
+    return kstr_compare(&temp, s2);
+}

@@ -94,11 +94,11 @@ typedef struct GwClient {
 
     struct uuid         uuid;
 
-    struct kstr         email;
-    struct kstr         charname;
-    char                password[20]; // sha1(pswd:mail)
+    struct kstr_hdr     email;
     uint16_t            email_buffer[100];
+    struct kstr_hdr     charname;
     uint16_t            charname_buffer[64];
+    char                password[20]; // sha1(pswd:mail)
 
     struct uuid         portal_token;
     struct uuid         portal_user_id;

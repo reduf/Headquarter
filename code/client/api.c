@@ -355,7 +355,7 @@ HQAPI size_t GetCharacterName(char *buffer, size_t length)
         goto leave;
     Character *cc = client->current_character;
     if (!cc) goto leave;
-    if (kstr_write_ascii(&cc->name, buffer, length)) {
+    if (kstr_hdr_write_ascii(&cc->name, buffer, length)) {
         written = cc->name.length;
     } else {
         written = length;
@@ -405,7 +405,7 @@ HQAPI size_t GetPlayerName(uint32_t player_id, uint16_t *buffer, size_t length)
         written = player->name.length;
         goto leave;
     }
-    if (kstr_write(&player->name, buffer, length)) {
+    if (kstr_hdr_write(&player->name, buffer, length)) {
         written = player->name.length;
     } else {
         written = 0;
@@ -778,7 +778,7 @@ HQAPI size_t GetItemName(uint32_t item_id, uint16_t* buffer, size_t length)
         written = item->name.length;
         goto leave;
     }
-    if (kstr_write(&item->name, buffer, length)) {
+    if (kstr_hdr_write(&item->name, buffer, length)) {
         written = item->name.length;
     } else {
         written = 0;
