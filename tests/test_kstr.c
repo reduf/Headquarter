@@ -16,7 +16,7 @@ const size_t test_value_len = ARRAY_SIZE(test_value);
 
 UTEST_MAIN();
 
-UTEST(kstr_copy, init_works)
+UTEST(kstr_init, init_works)
 {
     DECLARE_KSTR(dest1, 32);
     DECLARE_KSTR(dest2, 64);

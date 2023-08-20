@@ -124,6 +124,13 @@ void kstr_init_from_kstr_hdr(struct kstr *str, struct kstr_hdr *hdr)
     kstr_init(str, kstr_hdr_buf(hdr), hdr->length, hdr->capacity);
 }
 
+struct kstr kstr_get_from_kstr_hdr(struct kstr_hdr *hdr)
+{
+    struct kstr result;
+    kstr_init(&result, kstr_hdr_buf(hdr), hdr->length, hdr->capacity);
+    return result;
+}
+
 void kstr_hdr_init(struct kstr_hdr *hdr, uint16_t *buffer, size_t capacity)
 {
     if (kstr_hdr_buf(hdr) != buffer) {
