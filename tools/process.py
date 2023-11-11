@@ -459,6 +459,9 @@ class ProcessScanner(object):
             raise RuntimeError("Couldn't find the pattern.")
         return self.base + match + offset
 
+    def read(self, *args, **kw):
+        return self.proc.read(*args, **kw)
+
     def __repr__(self):
         return '<Scanner 0x%08x for Process %d>' % (id(self), self.proc.id)
 
@@ -959,7 +962,7 @@ class Process(object):
         if not success:
             raise Win32Exception()
 
-    def read(self, addr, format = 'I'):
+    def read(self, addr, format = '<I'):
         """Reads in remote process at given address and return the given format."""
         size = struct.calcsize(format)
         buffer = _create_buffer(size)

@@ -1,37 +1,44 @@
+import argparse
 import os
-import pefile
 import sys
-import struct
+from scanner import FileScanner
 
-# \x8B\xC8\x33\xDB\x39\x8D\xC0\xFD\xFF\xFF\x0F\x95\xC3
+def follow_call(scanner, call_rva):
+    op, call_param = scanner.read(call_rva, '<BI')
+    if op != 0xE8 and op != 0xE9:
+        raise RuntimeError(f"Unsupported opcode '0x{op:02X} ({op})'")
+    return call_rva + call_param + 5
 
-def parse_file(path):
-    print(f"Processing file '{path}'")
-    parsed = pefile.PE(path, fast_load=True)
-    for section in parsed.sections:
-        if section.Name == b'.text\x00\x00\x00':
-            data = section.get_data()
-            offset = data.find(b'\x8B\xC8\x33\xDB\x39\x8D\xC0\xFD\xFF\xFF\x0F\x95\xC3')
-            if offset == -1:
-                print('Failed to find the pattern in the .text section')
-                os.exit(1)
-            offset -= 5
-            print(f'Found the pattern in the .text section, offset: 0x{offset:X}')
-            call_param, = struct.unpack_from('<I', data, offset + 1)
-            function_offset = call_param + offset + 5
-            print(f'Function offset is: 0x{function_offset:X}')
-            file_id, = struct.unpack_from('<I', data, function_offset + 1)
-            print(f'File id: {file_id}')
-            break
-    else:
-        print('Failed to find the .text section')
+def get_file_id(scanner):
+    function_call_rva = scanner.find(b'\x8B\xC8\x33\xDB\x39\x8D\xC0\xFD\xFF\xFF\x0F\x95\xC3', -5)
+    function_rva = follow_call(scanner, function_call_rva)
+    file_id, = scanner.read(function_rva + 1, '<I')
+    return file_id
 
 def main(args):
-    if len(args) == 0:
-        print('Usage: program <path to game exe>')
-        os.exit(1)
+    if args.pid:
+        import process
+        proc = process.Process(args.pid)
+        scanner = process.ProcessScanner(proc)
+    elif args.file:
+        from scanner import FileScanner
+        scanner = FileScanner(args.file)
+    elif args.proc:
+        import process
+        proc = process.Process.from_name(args.proc)
+        scanner = process.ProcessScanner(proc)
 
-    parse_file(args[0])
+    file_id = get_file_id(scanner)
+    print(f'File id: {file_id}')
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--pid", type=int, required=False,
+        help="Process id of the target Guild Wars instance.")
+    parser.add_argument("--proc", type=str, default='Gw.exe',
+        help="Process name of the target Guild Wars instance.")
+    parser.add_argument("--file", type=str, required=False,
+        help="Path to the file on disk.")
+    args = parser.parse_args()
+
+    main(args)
