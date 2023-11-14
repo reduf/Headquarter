@@ -282,8 +282,3 @@ if __name__ == '__main__':
         open(args.output, 'wb').write(result)
     else:
         sys.stdout.buffer.write(result)
-
-    # input = open('D:/Headquarter/filesrv/gcomp/381372.download', 'rb').read()
-    # expected = open('D:/Headquarter/filesrv/gcomp/381372.result', 'rb').read()
-    # result = inflate(input, len(expected))
-    # assert(result == expected)
