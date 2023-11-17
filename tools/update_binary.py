@@ -5,6 +5,7 @@ import inflate
 import os
 import print_gw_exe_file_id
 from scanner import FileScanner
+import sys
 import utils
 
 try:
