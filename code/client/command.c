@@ -12,23 +12,25 @@ void print_help(bool terminate)
             "    --version                  print version and exist\n"
             "    -c <config_file>           use config_file as configuration file\n"
             "    -l <log_file>              Specify the name of the log file to write to\n"
-            "    -h, --help                 print this help\n\n"
-
+            "    -h, --help                 print this help\n"
+            "\n"
             "    -account   <string>        Name of the account to use\n"
             "    -email     <string>        Sets the client's email\n"
             "    -password  <string>        Enable auto-loging. use with -email and -charname\n"
             "    -character <string>        Sets the client's security question\n"
             "    -status    <number>        Sets the login online status (0 = offline, 1 = online, 2 = busy, 3 = away)\n"
-            "    -authsrv                   Specify authserver IP to connect to\n\n"
-
-            "    -oldauth                   The client will use Portal connection\n\n"
-
+            "    -authsrv                   Specify authserver IP to connect to\n"
+            "\n"
+            "    -oldauth                   The client will use Portal connection\n"
+            "\n"
             "    -seed                      Specify the seed for pseudo random generation\n"
             "    -v, --verbose              Enable debug logs\n"
-            "    -vv, --trace               Enable trace logs\n\n"
-
+            "    -vv, --trace               Enable trace logs\n"
+            "    -file-game-version <path>  Provide a path to a file with the game version\n"
+            "\n"
             "    -mapid                     Specify the map id you want to start in\n"
-            "    -maptype                   Specify the map type you want to start in\n\n"
+            "    -maptype                   Specify the map type you want to start in\n"
+            "\n"
         );
 
     if (terminate) exit(0);
@@ -100,6 +102,9 @@ void parse_command_args(int argc, const char **argv)
         } else if (!strcmp(arg, "-l")) {
             check_for_more_arguments(argc, argv, i, 1);
             safe_strcpy(options.log_file_name, ARRAY_SIZE(options.log_file_name), argv[++i]);
+        } else if (!strcmp(arg, "-file-game-version")) {
+            check_for_more_arguments(argc, argv, i, 1);
+            safe_strcpy(options.file_game_version, ARRAY_SIZE(options.file_game_version), argv[++i]);
         } else {
             if (options.script) {
                 printf("You shouldn't specify more than one script to run\n");
@@ -143,5 +148,33 @@ void parse_command_args(int argc, const char **argv)
 		if (snprintf(options.log_file_name, sizeof(options.log_file_name), "%s_%d.txt", timestamp, getpid()) == -1) {
 			abort();
 		}
+    }
+
+    if (!options.file_game_version[0]) {
+        options.game_version = GUILD_WARS_VERSION;
+    } else {
+        FILE *file;
+        if ((file = fopen(options.file_game_version, "rb")) == NULL) {
+            fprintf(stderr, "Failed to open '%s', err: %d\n", options.file_game_version, errno);
+            abort();
+        }
+
+        char buffer[16];
+        size_t size;
+        if (sizeof(buffer) < (size = fread(buffer, 1, sizeof(buffer), file))) {
+            fprintf(stderr, "Couldn't read '%s', err: %d\n", options.file_game_version, errno);
+            abort();
+        }
+
+        size_t length = size < sizeof(buffer) ? size : sizeof(buffer) - 1;
+        buffer[length] = 0;
+
+        int game_version = atoi(buffer);
+        if (game_version <= 0) {
+            fprintf(stderr, "Invalid game version '%s'\n", buffer);
+            abort();
+        }
+
+        options.game_version = (uint32_t)game_version;
     }
 }

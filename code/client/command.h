@@ -18,7 +18,10 @@ typedef struct CommandOptions {
     char        email[64];
     char        password[100];
     char        charname[20];
-    char        log_file_name[100];
+    char        log_file_name[256];
+
+    uint32_t    game_version;
+    char        file_game_version[256];
 
     bool        launch_service;
     int         service_option; // windows => {'r', 'i', 'u'} or linux => {'r', 's'}

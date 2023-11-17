@@ -258,7 +258,7 @@ void AuthSrv_ComputerInfo(Connection *conn)
     kstr_write(&username, info.username, ARRAY_SIZE(info.username));
 
     ComputerHash hash = NewPacket(AUTH_CMSG_SEND_COMPUTER_HASH);
-    hash.version = GUILD_WARS_VERSION;
+    hash.version = options.game_version;
     memcpy(hash.hash, "\x19\x0D\xB0\x37\xE6\x05\x13\x6B\x86\x18\x66\x28\x45\x7E\xDD\xB5", 16);
 
     SendPacket(conn, sizeof(info), &info);

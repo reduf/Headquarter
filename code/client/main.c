@@ -129,14 +129,7 @@ int main(int argc, const char *argv[])
 
     Network_Init();
 
-#if 0
-    if (options.newauth) {
-        if (!portal_dll_init()) {
-            LogError("portal_dll_init failed");
-            return 1;
-        }
-    }
-#endif
+    LogInfo("Initialization complete, running with client version %u\n", options.game_version);
 
     client = malloc(sizeof(*client));
     init_client(client);
@@ -157,9 +150,6 @@ int main(int argc, const char *argv[])
         kstr_read_ascii(&password, options.password, ARRAY_SIZE(options.password));
 
         if (options.newauth) {
-        #if 0
-            portal_dll_login(&client->email, &password);
-        #else
             struct portal_login_result result;
             int ret = portal_login(&result, options.email, options.password);
             if (ret != 0) {
@@ -169,7 +159,6 @@ int main(int argc, const char *argv[])
 
             client->portal_token = result.token;
             client->portal_user_id = result.user_id;
-        #endif
         } else {
             struct kstr email;
             kstr_init_from_kstr_hdr(&email, &client->email);
@@ -193,12 +182,6 @@ int main(int argc, const char *argv[])
         Plugin *it = plugin_first();
         plugin_unload(it);
     }
-
-#if 0
-    if (options.newauth) {
-        portal_dll_cleanup();
-    }
-#endif
 
     Network_Shutdown();
     printf("Quit cleanly !!\n");

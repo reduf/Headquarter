@@ -175,7 +175,7 @@ void Network_Init(void)
     char dir_path[260];
     length = dlldir(dir_path, sizeof(dir_path));
     for (int i = 0; i < 6 && !file_read_ok; i++) {
-        snprintf(file_path, sizeof(file_path), "%s/data/gw_%d.pub", dir_path, GUILD_WARS_VERSION);
+        snprintf(file_path, sizeof(file_path), "%s/data/gw_%d.pub", dir_path, options.game_version);
         dir_path[length++] = '/';
         dir_path[length++] = '.';
         dir_path[length++] = '.';
@@ -450,7 +450,7 @@ bool AuthSrv_Connect(Connection *conn)
     version.source = 0;
     version.length = 4;
     version.size = 12;
-    version.version = GUILD_WARS_VERSION;
+    version.version = options.game_version;
     version.unk0 = 1;
     version.unk1 = 4;
 
@@ -506,7 +506,7 @@ bool GameSrv_Connect(Connection *conn,
     GAME_CMSG_VERSION version;
     version.source = 0;
     version.length = 5;
-    version.version = GUILD_WARS_VERSION;
+    version.version = options.game_version;
     version.world_hash = world_hash;
     version.map_id = map;
     version.player_hash = player_hash;
