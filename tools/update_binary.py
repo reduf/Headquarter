@@ -25,6 +25,7 @@ def main(args):
     if os.path.isfile(exe_path):
         scanner = FileScanner(exe_path)
         file_id = print_gw_exe_file_id.get_file_id(scanner)
+        del scanner
     else:
         file_id = 0
     
