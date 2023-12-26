@@ -608,17 +608,17 @@ void HandlePartySearchAdvertisement(Connection *conn, size_t psize, Packet *pack
         Header header;
         uint16_t ps_id;
         uint16_t district;
-        uint8_t  unk1;
+        uint8_t  language;
         uint8_t  party_size;
         uint8_t  hero_count;
         uint8_t  search_type;
-        uint8_t  unk2;
+        uint8_t  hardmode;
         uint16_t message[32];
         uint16_t player_name[20];
-        uint8_t  unk3;
-        uint8_t  unk4;
-        uint8_t  unk5;
-        uint32_t unk6;
+        uint8_t  primary;
+        uint8_t  secondary;
+        uint8_t  level;
+        uint32_t timestamp;
     } PacketType;
 #pragma pack(pop)
 
@@ -641,6 +641,7 @@ void HandlePartySearchAdvertisement(Connection *conn, size_t psize, Packet *pack
     params.PartySearchAdvertisement.sender.length = u16len(pack->player_name, ARRAY_SIZE(pack->player_name));
     params.PartySearchAdvertisement.message.buffer = pack->message;
     params.PartySearchAdvertisement.message.length = u16len(pack->message, ARRAY_SIZE(pack->message));
+    params.PartySearchAdvertisement.hardmode = pack->hardmode;
     broadcast_event(&client->event_mgr, &params);
 }
 
@@ -673,7 +674,15 @@ void HandlePartySearchRemove(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(PacketType) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
+    PacketType *pack = cast(PacketType *)packet;
     assert(client && client->game_srv.secured);
+
+    Event params;
+    Event_Init(&params, EventType_PartySearchRemoved);
+
+    params.PartySearchAdvertisement.party_id = pack->ps_id;
+
+    broadcast_event(&client->event_mgr, &params);
 }
 
 void HandlePartySearchSize(Connection *conn, size_t psize, Packet *packet)
@@ -691,7 +700,17 @@ void HandlePartySearchSize(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(PacketType) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
+    PacketType *pack = cast(PacketType *)packet;
     assert(client && client->game_srv.secured);
+
+    Event params;
+    Event_Init(&params, EventType_PartySearchSize);
+
+    params.PartySearchAdvertisement.party_id = pack->ps_id;
+    params.PartySearchAdvertisement.party_size = pack->party_size;
+    params.PartySearchAdvertisement.hero_count = pack->hero_count;
+
+    broadcast_event(&client->event_mgr, &params);
 }
 
 void HandlePartySearchType(Connection *conn, size_t psize, Packet *packet)
@@ -700,8 +719,8 @@ void HandlePartySearchType(Connection *conn, size_t psize, Packet *packet)
     typedef struct {
         Header header;
         uint16_t ps_id;
-        uint8_t type; // 0=hunting, 1=mission, 2=quest, 3=trade, 4=guild
-        uint8_t difficulty; // 0=normal, 1=hard
+        uint8_t search_type; // 0=hunting, 1=mission, 2=quest, 3=trade, 4=guild
+        uint8_t hardmode; // 0=normal, 1=hard
     } PacketType;
 #pragma pack(pop)
 
@@ -709,7 +728,17 @@ void HandlePartySearchType(Connection *conn, size_t psize, Packet *packet)
     assert(sizeof(PacketType) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
+    PacketType *pack = cast(PacketType *)packet;
     assert(client && client->game_srv.secured);
+
+    Event params;
+    Event_Init(&params, EventType_PartySearchType);
+
+    params.PartySearchAdvertisement.party_id = pack->ps_id;
+    params.PartySearchAdvertisement.search_type = pack->search_type;
+    params.PartySearchAdvertisement.hardmode = pack->hardmode;
+
+    broadcast_event(&client->event_mgr, &params);
 }
 
 void GameSrv_PS_SeekParty(GwClient *client, PartySearchType type, struct kstr *msg)
