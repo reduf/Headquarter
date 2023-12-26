@@ -18,6 +18,9 @@ typedef enum EventType {
     EventType_PartyLeaderChanged,
     EventType_PartyMembersChanged,
     EventType_PartySearchAdvertisement,
+    EventType_PartySearchRemoved,
+    EventType_PartySearchSize,
+    EventType_PartySearchType,
     EventType_SalvageSessionStart,
     EventType_WorldCantTravel,
     EventType_WorldMapEnter,
@@ -77,7 +80,8 @@ typedef struct Event {
             uint16_t            party_id;
             uint8_t             party_size;
             uint8_t             hero_count;
-            uint8_t             search_type;
+            uint8_t             search_type; // 0=hunting, 1=mission, 2=quest, 3=trade, 4=guild
+            uint8_t             hardmode;
             uint16_t            district;
             struct {
                 size_t          length;
