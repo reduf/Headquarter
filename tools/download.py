@@ -2,15 +2,15 @@ import socket
 import struct
 import time
 import inflate
+import sys
 
-class FileNotFoundError(RuntimeError):
-
-    def __init__(self, fileid):
-        super().__init__()
-
+try:
+    from tqdm import tqdm
+except:
+    print("Install tqdm 'pip install tqdm'")
+    sys.exit(1)
 
 class FileRequest(object):
-
     def __init__(self, cli, fileid, sz_cmp, sz_dcmp, crc):
         self.cli = cli
         self.fileid = fileid
@@ -59,8 +59,9 @@ class FileRequest(object):
 
     def decompressed(self):
         assert self.complete
-        result = inflate.inflate(self.buffer)
+        result = inflate.inflate(self.buffer, self.size_decompressed)
         assert(len(result) == self.size_decompressed)
+        print(f'len(result) = {len(result)}, self.size_decompressed = {self.size_decompressed}')
         return result
 
     def finalize_download(self):
@@ -327,7 +328,11 @@ if __name__ == '__main__':
         file_id = client.file_id_latest_exe
 
     fr = client.request_file(file_id)
-    for percent in fr.download():
-        print("Complete percent: %{:3>f}".format(percent * 100))
-    with open(f'{fr.fileid}.download', 'wb') as fd:
+    with tqdm(total=fr.size_compressed, unit='B') as progress:
+        for percent in fr.download():
+            progress.update(fr.last_chunk)
+
+    output_path = f'{fr.fileid}.download'
+    print(f"Writing '{output_path}'...")
+    with open(output_path, 'wb') as fd:
         fd.write(fr.decompressed())

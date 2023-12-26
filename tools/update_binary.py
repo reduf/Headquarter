@@ -25,7 +25,6 @@ def main(args):
     if os.path.isfile(exe_path):
         scanner = FileScanner(exe_path)
         file_id = print_gw_exe_file_id.get_file_id(scanner)
-        del scanner
     else:
         file_id = 0
     
@@ -38,9 +37,10 @@ def main(args):
             for percent in fr.download():
                 progress.update(fr.last_chunk)
 
+        # The scanner holds reference to `exe_path` preventing it from being overwritten.
+        del scanner
         with open(exe_path, 'wb') as fd:
             fd.write(fr.decompressed())
-
         scanner = FileScanner(exe_path)
 
     pr, pm, pk = dump_key.get_keys_from_scanner(scanner)

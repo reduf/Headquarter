@@ -70,6 +70,9 @@ BACKTRACK_TABLE = [
 def u32(v):
     return v & 0xFFFFFFFF
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 class BitStream:
     def __init__(self, input):
         assert(2 <= len(input))
@@ -78,7 +81,6 @@ class BitStream:
         self.buf2, = struct.unpack_from('<I', input, 4)
         self.idx = 8
         self.avail = 32
-        self.is_empty = False
 
     def peek(self, count):
         assert(count <= 32)
@@ -93,7 +95,6 @@ class BitStream:
         self.buf1 = (self.buf2 >> (32 - count)) | u32(self.buf1 << count)
         if self.avail < count:
             if self.idx == len(self.input):
-                self.is_empty = True
                 self.avail = 0
                 self.buf2 = 0
             else:
@@ -222,20 +223,22 @@ def build_huffman_table(stream):
     return huffman
 
 
-def inflate(input):
+def inflate(input, decompressed_size):
     stream = BitStream(input)
     stream.consume(4)
     first_4_bits = stream.read(4)
 
     output = []
-    while not stream.is_empty:
+    while len(output) < decompressed_size:
         lit_huffman = build_huffman_table(stream)
         dist_huffman = build_huffman_table(stream)
 
         block_size = (stream.read(4) + 1) * 4096
         for _ in range(block_size):
             # It's perfectly possible that the steam is over before the block size.
-            if stream.is_empty:
+            if decompressed_size <= len(output):
+                if decompressed_size != len(output):
+                    eprint(f'Length of output {len(output)} is larger than expected size {decompressed_size}')
                 break
 
             code = lit_huffman.get_next_code(stream)
@@ -269,6 +272,8 @@ if __name__ == '__main__':
         help="Path of the output file")
     parser.add_argument('--input', '-i', type=str, required=False,
         help="Path of the input file")
+    parser.add_argument('--output-size', '-s', type=int, required=True,
+        help="Size of the decompressed file")
     args = parser.parse_args()
 
     if args.input:
@@ -276,7 +281,7 @@ if __name__ == '__main__':
     else:
         input = sys.stdin.read()
 
-    result = inflate(input)
+    result = inflate(input, parser.output_size)
 
     if args.output:
         open(args.output, 'wb').write(result)
