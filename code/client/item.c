@@ -30,8 +30,10 @@ Item *alloc_item()
 
 void free_item(Item *item)
 {
-    array_reset(&item->mod_struct);
-    free(item);
+    if (item != NULL) {
+        array_reset(&item->mod_struct);
+        free(item);
+    }
 }
 
 void remove_item_from_bag(Item *item)
