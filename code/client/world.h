@@ -8,7 +8,7 @@ typedef struct World {
 
     BagArray            bags;
     ArrayItem           items;
-    array(uint32_t)     item_mod_structs;
+    array_uint32_t      item_mod_structs;
     ArrayParty          parties;
     ArrayGuild          guilds;
     ArrayQuest          quests;
