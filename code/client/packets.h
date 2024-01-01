@@ -20,12 +20,6 @@ typedef enum Type {
     TYPE_NESTED_STRUCT  = 14,
 } Type;
 
-typedef struct TypeInfo {
-    size_t      pack_size;
-    size_t      unpack_size;
-    size_t      max_count;
-} TypeInfo;
-
 typedef struct MsgField {
     Type        type;
     uint32_t    param;
