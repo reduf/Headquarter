@@ -75,48 +75,51 @@ void init_connection(Connection *conn, void *data)
 }
 
 #pragma pack(push, 1)
-typedef struct {
+typedef struct _MSG_CLIENT_SEED {
     uint8_t source;     // 0
     uint8_t length;     // 66
     uint8_t seed[64];
 } MSG_CLIENT_SEED;
 
-typedef struct {
+typedef struct _MSG_SERVER_SEED {
     uint8_t source;     // 1
     uint8_t length;     // 22
     uint8_t seed[20];
 } MSG_SERVER_SEED;
 
-typedef struct {
+typedef struct _AUTH_CMSG_VERSION {
     uint8_t  source;    // 0
     uint8_t  length;    // 4
     uint16_t size;      // 12
     uint32_t version;
-    uint32_t unk0;      // 1
-    uint32_t unk1;      // 4
+    uint32_t h0008;     // 1
+    uint32_t h000C;     // 4
 } AUTH_CMSG_VERSION;
 
-typedef struct {
+typedef struct _FILE_CMSG_VERSION {
+    uint8_t  h0000; // 1
+    uint32_t h0001; // 0
+    uint16_t h0005; // 0xF1
+    uint16_t h0007; // 0x10
+    uint32_t h0009; // game
+    uint32_t h000D; // 0
+    uint32_t h0011; // 0
+} FILE_CMSG_VERSION; // size 21 (0x15)
+
+typedef struct _GAME_CMSG_VERSION {
     uint8_t  source;    // 0
     uint8_t  length;    // 5
-    uint16_t unk0;      // 12
+    uint16_t h0002;     // 12
     uint32_t version;
-    uint32_t unk1;      // 1
+    uint32_t h0008;     // 1
     uint32_t world_hash;
     uint32_t map_id;
     uint32_t player_hash;
     uint8_t account_uuid[16];
     uint8_t character_uuid[16];
-    uint32_t unk2;      // 0
-    uint32_t unk3;      // 0
+    uint32_t h0038;     // 0
+    uint32_t h003C;     // 0
 } GAME_CMSG_VERSION;
-
-typedef struct {
-    uint8_t  source;    // 0
-    uint8_t  length;
-    uint16_t size;
-    uint32_t version;
-} OBSV_CMSG_VERSION;
 #pragma pack(pop)
 
 typedef union PacketBuffer {
@@ -451,8 +454,8 @@ bool AuthSrv_Connect(Connection *conn)
     version.length = 4;
     version.size = 12;
     version.version = options.game_version;
-    version.unk0 = 1;
-    version.unk1 = 4;
+    version.h0008 = 1;
+    version.h000C = 4;
 
     result = send(conn->fd.handle, cast(char *)&version, sizeof(version), 0);
     if (result == SOCKET_ERROR) {
@@ -510,10 +513,10 @@ bool GameSrv_Connect(Connection *conn,
     version.world_hash = world_hash;
     version.map_id = map;
     version.player_hash = player_hash;
-    version.unk0 = 12;
-    version.unk1 = 1;
-    version.unk2 = 0;
-    version.unk3 = 0;
+    version.h0002 = 12;
+    version.h0008 = 1;
+    version.h0038 = 0;
+    version.h003C = 0;
 
     uuid_enc_le(version.account_uuid, account);
     uuid_enc_le(version.character_uuid, character);
