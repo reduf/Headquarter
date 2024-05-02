@@ -428,9 +428,8 @@ MsgField AUTH_SERVER_0000[2] = {
 };
 
 // Handler Rva: 0008CB20
-MsgField AUTH_SERVER_0001[5] = {
+MsgField AUTH_SERVER_0001[4] = {
     {TYPE_MSG_HEADER, 1},
-    {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
     {TYPE_DWORD, 0},
@@ -5689,7 +5688,7 @@ MsgFormat AUTH_CLIENT_FORMATS[57] = {
 MsgFormat AUTH_SERVER_FORMATS[39] = {
 // header | field_count | fields | max_size | name
     {0  , 2  , AUTH_SERVER_0000, 6  , 0},
-    {1  , 5  , AUTH_SERVER_0001, 18 , 0},
+    {1  , 4  , AUTH_SERVER_0001, 14 , 0},
     {2  , 3  , AUTH_SERVER_0002, 10 , 0},
     {3  , 3  , AUTH_SERVER_0003, 10 , 0},
     {4  , 3  , AUTH_SERVER_0004, 4102, 0},

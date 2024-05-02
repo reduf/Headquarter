@@ -107,7 +107,6 @@ void HandleSessionInfo(Connection *conn, size_t psize, Packet *packet)
         uint32_t server_salt;
         uint32_t unk0;
         uint32_t unk1;
-        uint32_t unk2;
     } SessionInfo;
 #pragma pack(pop)
 
