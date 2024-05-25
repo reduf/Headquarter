@@ -10,22 +10,25 @@
 #define GAME_CMSG_COUNT (192)
 #define GAME_SMSG_COUNT (485)
 
-#define AUTH_CMSG_HEARTBEAT                         (0x8000) // 0
-#define AUTH_CMSG_SEND_COMPUTER_INFO                (0x8001) // 1
-#define AUTH_CMSG_SEND_COMPUTER_HASH                (0x8002) // 2
-#define AUTH_CMSG_ACCOUNT_CREATE                    (0x8003) // 3
-#define AUTH_CMSG_ACCOUNT_LOGIN                     (0x8004) // 4
-#define AUTH_CMSG_CHANGE_PLAY_CHARACTER             (0x800A) // 10
-#define AUTH_CMSG_DISCONNECT                        (0x800D) // 13
-#define AUTH_CMSG_SET_PLAYER_STATUS                 (0x800E) // 14
-#define AUTH_CMSG_SEND_HARDWARE_INFO                (0x800F) // 15
-#define AUTH_CMSG_FRIEND_ADD                        (0x801A) // 26
-#define AUTH_CMSG_REQUEST_GUILD_HALL                (0x8025) // 37
-#define AUTH_CMSG_SETTING_UPDATE_CONTENT            (0x8020) // 32
-#define AUTH_CMSG_SETTING_UPDATE_SIZE               (0x8021) // 33
-#define AUTH_CMSG_REQUEST_INSTANCE                  (0x8029) // 41
-#define AUTH_CMSG_ASK_SERVER_RESPONSE               (0x8035) // 53
-#define AUTH_CMSG_PORTAL_ACCOUNT_LOGIN              (0x8038) // 56
+#define AUTH_CMSG_MASK 0x8000
+#define GAME_CMSG_MASK 0x8000
+
+#define AUTH_CMSG_HEARTBEAT                         (AUTH_CMSG_MASK | 0x0000) // 0
+#define AUTH_CMSG_SEND_COMPUTER_INFO                (AUTH_CMSG_MASK | 0x0001) // 1
+#define AUTH_CMSG_SEND_COMPUTER_HASH                (AUTH_CMSG_MASK | 0x0002) // 2
+#define AUTH_CMSG_ACCOUNT_CREATE                    (AUTH_CMSG_MASK | 0x0003) // 3
+#define AUTH_CMSG_ACCOUNT_LOGIN                     (AUTH_CMSG_MASK | 0x0004) // 4
+#define AUTH_CMSG_CHANGE_PLAY_CHARACTER             (AUTH_CMSG_MASK | 0x000A) // 10
+#define AUTH_CMSG_DISCONNECT                        (AUTH_CMSG_MASK | 0x000D) // 13
+#define AUTH_CMSG_SET_PLAYER_STATUS                 (AUTH_CMSG_MASK | 0x000E) // 14
+#define AUTH_CMSG_SEND_HARDWARE_INFO                (AUTH_CMSG_MASK | 0x000F) // 15
+#define AUTH_CMSG_FRIEND_ADD                        (AUTH_CMSG_MASK | 0x001A) // 26
+#define AUTH_CMSG_REQUEST_GUILD_HALL                (AUTH_CMSG_MASK | 0x0025) // 37
+#define AUTH_CMSG_SETTING_UPDATE_CONTENT            (AUTH_CMSG_MASK | 0x0020) // 32
+#define AUTH_CMSG_SETTING_UPDATE_SIZE               (AUTH_CMSG_MASK | 0x0021) // 33
+#define AUTH_CMSG_REQUEST_INSTANCE                  (AUTH_CMSG_MASK | 0x0029) // 41
+#define AUTH_CMSG_ASK_SERVER_RESPONSE               (AUTH_CMSG_MASK | 0x0035) // 53
+#define AUTH_CMSG_PORTAL_ACCOUNT_LOGIN              (AUTH_CMSG_MASK | 0x0038) // 56
 
 #define AUTH_SMSG_HEARTBEAT                         (0x0000) // 0
 #define AUTH_SMSG_SESSION_INFO                      (0x0001) // 1
@@ -43,101 +46,101 @@
 
 #pragma once
 
-#define GAME_CMSG_TRADE_ACKNOWLEDGE                 (0x0000) // 0
-#define GAME_CMSG_TRADE_CANCEL                      (0x0001) // 1
-#define GAME_CMSG_TRADE_ADD_ITEM                    (0x0002) // 2
-#define GAME_CMSG_TRADE_SEND_OFFER                  (0x0003) // 3
-#define GAME_CMSG_TRADE_REMOVE_ITEM                 (0x0005) // 5
-#define GAME_CMSG_TRADE_CANCEL_OFFER                (0x0006) // 6
-#define GAME_CMSG_TRADE_ACCEPT                      (0x0007) // 7
-#define GAME_CMSG_DISCONNECT                        (0x0008) // 8
-#define GAME_CMSG_PING_REPLY                        (0x0009) // 9
-#define GAME_CMSG_HEARTBEAT                         (0x000A) // 10
-#define GAME_CMSG_PING_REQUEST                      (0x000B) // 11
-#define GAME_CMSG_ATTRIBUTE_DECREASE                (0x000C) // 12
-#define GAME_CMSG_ATTRIBUTE_INCREASE                (0x000D) // 13
-#define GAME_CMSG_ATTRIBUTE_LOAD                    (0x000E) // 14
-#define GAME_CMSG_QUEST_ABANDON                     (0x000F) // 15
-#define GAME_CMSG_QUEST_REQUEST_INFOS               (0x0010) // 16
-#define GAME_CMSG_HERO_BEHAVIOR                     (0x0013) // 19
-#define GAME_CMSG_HERO_LOCK_TARGET                  (0x0014) // 20
-#define GAME_CMSG_HERO_SKILL_TOGGLE                 (0x0017) // 23
-#define GAME_CMSG_HERO_FLAG_SINGLE                  (0x0018) // 24
-#define GAME_CMSG_HERO_FLAG_ALL                     (0x0019) // 25
-#define GAME_CMSG_HERO_USE_SKILL                    (0x001A) // 26
-#define GAME_CMSG_HERO_ADD                          (0x001C) // 28
-#define GAME_CMSG_HERO_KICK                         (0x001D) // 29
-#define GAME_CMSG_TARGET_CALL                       (0x0021) // 33
-#define GAME_CMSG_PING_WEAPON_SET                   (0x0023) // 35
-#define GAME_CMSG_ATTACK_AGENT                      (0x0024) // 36
-#define GAME_CMSG_CANCEL_MOVEMENT                   (0x0026) // 38
-#define GAME_CMSG_DROP_BUFF                         (0x0027) // 39
-#define GAME_CMSG_DRAW_MAP                          (0x0029) // 41
-#define GAME_CMSG_DROP_ITEM                         (0x002A) // 42
-#define GAME_CMSG_DROP_GOLD                         (0x002D) // 45
-#define GAME_CMSG_EQUIP_ITEM                        (0x002E) // 46
-#define GAME_CMSG_INTERACT_PLAYER                   (0x0031) // 49
-#define GAME_CMSG_DEPOSIT_FACTION                   (0x0033) // 51
-#define GAME_CMSG_INTERACT_LIVING                   (0x0037) // 55
-#define GAME_CMSG_SEND_DIALOG                       (0x0039) // 57
-#define GAME_CMSG_MOVE_TO_COORD                     (0x003C) // 60
-#define GAME_CMSG_INTERACT_ITEM                     (0x003D) // 61
-#define GAME_CMSG_ROTATE_PLAYER                     (0x003E) // 62
-#define GAME_CMSG_CHANGE_SECOND_PROFESSION          (0x003F) // 63
-#define GAME_CMSG_USE_SKILL                         (0x0044) // 68
-#define GAME_CMSG_TRADE_INITIATE                    (0x0047) // 71
-#define GAME_CMSG_BUY_MATERIALS                     (0x0048) // 72
-#define GAME_CMSG_REQUEST_QUOTE                     (0x004A) // 74
-#define GAME_CMSG_TRANSACT_ITEMS                    (0x004B) // 75
-#define GAME_CMSG_UNEQUIP_ITEM                      (0x004D) // 77
-#define GAME_CMSG_INTERACT_GADGET                   (0x004F) // 79
-#define GAME_CMSG_OPEN_CHEST                        (0x0051) // 81
-#define GAME_CMSG_EQUIP_VISIBILITY                  (0x0055) // 85
-#define GAME_CMSG_TITLE_DISPLAY                     (0x0056) // 86
-#define GAME_CMSG_TITLE_HIDE                        (0x0057) // 87
-#define GAME_CMSG_SKILLBAR_SKILL_SET                (0x005A) // 90
-#define GAME_CMSG_SKILLBAR_LOAD                     (0x005B) // 91
-#define GAME_CMSG_SKILLBAR_SKILL_REPLACE            (0x005C) // 92
-#define GAME_CMSG_SKIP_CINEMATIC                    (0x0061) // 97
-#define GAME_CMSG_SEND_CHAT_MESSAGE                 (0x0062) // 98
-#define GAME_CMSG_ITEM_DESTROY                      (0x0067) // 103
-#define GAME_CMSG_ITEM_IDENTIFY                     (0x006A) // 106
-#define GAME_CMSG_TOME_UNLOCK_SKILL                 (0x006B) // 107
-#define GAME_CMSG_ITEM_MOVE                         (0x0070) // 112
-#define GAME_CMSG_ITEM_ACCEPT_ALL                   (0x0071) // 113
-#define GAME_CMSG_ITEM_SPLIT_STACK                  (0x0073) // 115
-#define GAME_CMSG_ITEM_SALVAGE_SESSION_OPEN         (0x0075) // 117
-#define GAME_CMSG_ITEM_SALVAGE_SESSION_CANCEL       (0x0076) // 118
-#define GAME_CMSG_ITEM_SALVAGE_SESSION_DONE         (0x0077) // 119
-#define GAME_CMSG_ITEM_SALVAGE_MATERIALS            (0x0078) // 120
-#define GAME_CMSG_ITEM_SALVAGE_UPGRADE              (0x0079) // 121
-#define GAME_CMSG_ITEM_CHANGE_GOLD                  (0x007A) // 122
-#define GAME_CMSG_ITEM_USE                          (0x007C) // 124
-#define GAME_CMSG_INSTANCE_LOAD_REQUEST_SPAWN       (0x0086) // 134
-#define GAME_CMSG_INSTANCE_LOAD_REQUEST_PLAYERS     (0x008E) // 142
-#define GAME_CMSG_INSTANCE_LOAD_REQUEST_ITEMS       (0x008F) // 143
-#define GAME_CMSG_PARTY_SET_DIFFICULTY              (0x0099) // 153
-#define GAME_CMSG_PARTY_ACCEPT_INVITE               (0x009A) // 154
-#define GAME_CMSG_PARTY_ACCEPT_CANCEL               (0x009B) // 155
-#define GAME_CMSG_PARTY_ACCEPT_REFUSE               (0x009C) // 156
-#define GAME_CMSG_PARTY_INVITE_NPC                  (0x009D) // 157
-#define GAME_CMSG_PARTY_INVITE_PLAYER               (0x009E) // 158
-#define GAME_CMSG_PARTY_INVITE_PLAYER_NAME          (0x009F) // 159
-#define GAME_CMSG_PARTY_LEAVE_GROUP                 (0x00A0) // 160
-#define GAME_CMSG_PARTY_CANCEL_ENTER_CHALLENGE      (0x00A1) // 161
-#define GAME_CMSG_PARTY_ENTER_CHALLENGE             (0x00A3) // 163
-#define GAME_CMSG_PARTY_RETURN_TO_OUTPOST           (0x00A5) // 165
-#define GAME_CMSG_PARTY_KICK_NPC                    (0x00A6) // 166
-#define GAME_CMSG_PARTY_KICK_PLAYER                 (0x00A7) // 167
-#define GAME_CMSG_PARTY_SEARCH_SEEK                 (0x00A8) // 168
-#define GAME_CMSG_PARTY_SEARCH_CANCEL               (0x00A9) // 169
-#define GAME_CMSG_PARTY_SEARCH_REQUEST_JOIN         (0x00AA) // 170
-#define GAME_CMSG_PARTY_SEARCH_REQUEST_REPLY        (0x00AB) // 171
-#define GAME_CMSG_PARTY_SEARCH_TYPE                 (0x00AC) // 172
-#define GAME_CMSG_PARTY_READY_STATUS                (0x00AD) // 173
-#define GAME_CMSG_PARTY_ENTER_GUILD_HALL            (0x00AE) // 174
-#define GAME_CMSG_PARTY_TRAVEL                      (0x00AF) // 175
-#define GAME_CMSG_PARTY_LEAVE_GUILD_HALL            (0x00B0) // 176
+#define GAME_CMSG_TRADE_ACKNOWLEDGE                 (GAME_CMSG_MASK | 0x0000) // 0
+#define GAME_CMSG_TRADE_CANCEL                      (GAME_CMSG_MASK | 0x0001) // 1
+#define GAME_CMSG_TRADE_ADD_ITEM                    (GAME_CMSG_MASK | 0x0002) // 2
+#define GAME_CMSG_TRADE_SEND_OFFER                  (GAME_CMSG_MASK | 0x0003) // 3
+#define GAME_CMSG_TRADE_REMOVE_ITEM                 (GAME_CMSG_MASK | 0x0005) // 5
+#define GAME_CMSG_TRADE_CANCEL_OFFER                (GAME_CMSG_MASK | 0x0006) // 6
+#define GAME_CMSG_TRADE_ACCEPT                      (GAME_CMSG_MASK | 0x0007) // 7
+#define GAME_CMSG_DISCONNECT                        (GAME_CMSG_MASK | 0x0008) // 8
+#define GAME_CMSG_PING_REPLY                        (GAME_CMSG_MASK | 0x0009) // 9
+#define GAME_CMSG_HEARTBEAT                         (GAME_CMSG_MASK | 0x000A) // 10
+#define GAME_CMSG_PING_REQUEST                      (GAME_CMSG_MASK | 0x000B) // 11
+#define GAME_CMSG_ATTRIBUTE_DECREASE                (GAME_CMSG_MASK | 0x000C) // 12
+#define GAME_CMSG_ATTRIBUTE_INCREASE                (GAME_CMSG_MASK | 0x000D) // 13
+#define GAME_CMSG_ATTRIBUTE_LOAD                    (GAME_CMSG_MASK | 0x000E) // 14
+#define GAME_CMSG_QUEST_ABANDON                     (GAME_CMSG_MASK | 0x000F) // 15
+#define GAME_CMSG_QUEST_REQUEST_INFOS               (GAME_CMSG_MASK | 0x0010) // 16
+#define GAME_CMSG_HERO_BEHAVIOR                     (GAME_CMSG_MASK | 0x0013) // 19
+#define GAME_CMSG_HERO_LOCK_TARGET                  (GAME_CMSG_MASK | 0x0014) // 20
+#define GAME_CMSG_HERO_SKILL_TOGGLE                 (GAME_CMSG_MASK | 0x0017) // 23
+#define GAME_CMSG_HERO_FLAG_SINGLE                  (GAME_CMSG_MASK | 0x0018) // 24
+#define GAME_CMSG_HERO_FLAG_ALL                     (GAME_CMSG_MASK | 0x0019) // 25
+#define GAME_CMSG_HERO_USE_SKILL                    (GAME_CMSG_MASK | 0x001A) // 26
+#define GAME_CMSG_HERO_ADD                          (GAME_CMSG_MASK | 0x001C) // 28
+#define GAME_CMSG_HERO_KICK                         (GAME_CMSG_MASK | 0x001D) // 29
+#define GAME_CMSG_TARGET_CALL                       (GAME_CMSG_MASK | 0x0021) // 33
+#define GAME_CMSG_PING_WEAPON_SET                   (GAME_CMSG_MASK | 0x0023) // 35
+#define GAME_CMSG_ATTACK_AGENT                      (GAME_CMSG_MASK | 0x0024) // 36
+#define GAME_CMSG_CANCEL_MOVEMENT                   (GAME_CMSG_MASK | 0x0026) // 38
+#define GAME_CMSG_DROP_BUFF                         (GAME_CMSG_MASK | 0x0027) // 39
+#define GAME_CMSG_DRAW_MAP                          (GAME_CMSG_MASK | 0x0029) // 41
+#define GAME_CMSG_DROP_ITEM                         (GAME_CMSG_MASK | 0x002A) // 42
+#define GAME_CMSG_DROP_GOLD                         (GAME_CMSG_MASK | 0x002D) // 45
+#define GAME_CMSG_EQUIP_ITEM                        (GAME_CMSG_MASK | 0x002E) // 46
+#define GAME_CMSG_INTERACT_PLAYER                   (GAME_CMSG_MASK | 0x0031) // 49
+#define GAME_CMSG_DEPOSIT_FACTION                   (GAME_CMSG_MASK | 0x0033) // 51
+#define GAME_CMSG_INTERACT_LIVING                   (GAME_CMSG_MASK | 0x0037) // 55
+#define GAME_CMSG_SEND_DIALOG                       (GAME_CMSG_MASK | 0x0039) // 57
+#define GAME_CMSG_MOVE_TO_COORD                     (GAME_CMSG_MASK | 0x003C) // 60
+#define GAME_CMSG_INTERACT_ITEM                     (GAME_CMSG_MASK | 0x003D) // 61
+#define GAME_CMSG_ROTATE_PLAYER                     (GAME_CMSG_MASK | 0x003E) // 62
+#define GAME_CMSG_CHANGE_SECOND_PROFESSION          (GAME_CMSG_MASK | 0x003F) // 63
+#define GAME_CMSG_USE_SKILL                         (GAME_CMSG_MASK | 0x0044) // 68
+#define GAME_CMSG_TRADE_INITIATE                    (GAME_CMSG_MASK | 0x0047) // 71
+#define GAME_CMSG_BUY_MATERIALS                     (GAME_CMSG_MASK | 0x0048) // 72
+#define GAME_CMSG_REQUEST_QUOTE                     (GAME_CMSG_MASK | 0x004A) // 74
+#define GAME_CMSG_TRANSACT_ITEMS                    (GAME_CMSG_MASK | 0x004B) // 75
+#define GAME_CMSG_UNEQUIP_ITEM                      (GAME_CMSG_MASK | 0x004D) // 77
+#define GAME_CMSG_INTERACT_GADGET                   (GAME_CMSG_MASK | 0x004F) // 79
+#define GAME_CMSG_OPEN_CHEST                        (GAME_CMSG_MASK | 0x0051) // 81
+#define GAME_CMSG_EQUIP_VISIBILITY                  (GAME_CMSG_MASK | 0x0055) // 85
+#define GAME_CMSG_TITLE_DISPLAY                     (GAME_CMSG_MASK | 0x0056) // 86
+#define GAME_CMSG_TITLE_HIDE                        (GAME_CMSG_MASK | 0x0057) // 87
+#define GAME_CMSG_SKILLBAR_SKILL_SET                (GAME_CMSG_MASK | 0x005A) // 90
+#define GAME_CMSG_SKILLBAR_LOAD                     (GAME_CMSG_MASK | 0x005B) // 91
+#define GAME_CMSG_SKILLBAR_SKILL_REPLACE            (GAME_CMSG_MASK | 0x005C) // 92
+#define GAME_CMSG_SKIP_CINEMATIC                    (GAME_CMSG_MASK | 0x0061) // 97
+#define GAME_CMSG_SEND_CHAT_MESSAGE                 (GAME_CMSG_MASK | 0x0062) // 98
+#define GAME_CMSG_ITEM_DESTROY                      (GAME_CMSG_MASK | 0x0067) // 103
+#define GAME_CMSG_ITEM_IDENTIFY                     (GAME_CMSG_MASK | 0x006A) // 106
+#define GAME_CMSG_TOME_UNLOCK_SKILL                 (GAME_CMSG_MASK | 0x006B) // 107
+#define GAME_CMSG_ITEM_MOVE                         (GAME_CMSG_MASK | 0x0070) // 112
+#define GAME_CMSG_ITEM_ACCEPT_ALL                   (GAME_CMSG_MASK | 0x0071) // 113
+#define GAME_CMSG_ITEM_SPLIT_STACK                  (GAME_CMSG_MASK | 0x0073) // 115
+#define GAME_CMSG_ITEM_SALVAGE_SESSION_OPEN         (GAME_CMSG_MASK | 0x0075) // 117
+#define GAME_CMSG_ITEM_SALVAGE_SESSION_CANCEL       (GAME_CMSG_MASK | 0x0076) // 118
+#define GAME_CMSG_ITEM_SALVAGE_SESSION_DONE         (GAME_CMSG_MASK | 0x0077) // 119
+#define GAME_CMSG_ITEM_SALVAGE_MATERIALS            (GAME_CMSG_MASK | 0x0078) // 120
+#define GAME_CMSG_ITEM_SALVAGE_UPGRADE              (GAME_CMSG_MASK | 0x0079) // 121
+#define GAME_CMSG_ITEM_CHANGE_GOLD                  (GAME_CMSG_MASK | 0x007A) // 122
+#define GAME_CMSG_ITEM_USE                          (GAME_CMSG_MASK | 0x007C) // 124
+#define GAME_CMSG_INSTANCE_LOAD_REQUEST_SPAWN       (GAME_CMSG_MASK | 0x0086) // 134
+#define GAME_CMSG_INSTANCE_LOAD_REQUEST_PLAYERS     (GAME_CMSG_MASK | 0x008E) // 142
+#define GAME_CMSG_INSTANCE_LOAD_REQUEST_ITEMS       (GAME_CMSG_MASK | 0x008F) // 143
+#define GAME_CMSG_PARTY_SET_DIFFICULTY              (GAME_CMSG_MASK | 0x0099) // 153
+#define GAME_CMSG_PARTY_ACCEPT_INVITE               (GAME_CMSG_MASK | 0x009A) // 154
+#define GAME_CMSG_PARTY_ACCEPT_CANCEL               (GAME_CMSG_MASK | 0x009B) // 155
+#define GAME_CMSG_PARTY_ACCEPT_REFUSE               (GAME_CMSG_MASK | 0x009C) // 156
+#define GAME_CMSG_PARTY_INVITE_NPC                  (GAME_CMSG_MASK | 0x009D) // 157
+#define GAME_CMSG_PARTY_INVITE_PLAYER               (GAME_CMSG_MASK | 0x009E) // 158
+#define GAME_CMSG_PARTY_INVITE_PLAYER_NAME          (GAME_CMSG_MASK | 0x009F) // 159
+#define GAME_CMSG_PARTY_LEAVE_GROUP                 (GAME_CMSG_MASK | 0x00A0) // 160
+#define GAME_CMSG_PARTY_CANCEL_ENTER_CHALLENGE      (GAME_CMSG_MASK | 0x00A1) // 161
+#define GAME_CMSG_PARTY_ENTER_CHALLENGE             (GAME_CMSG_MASK | 0x00A3) // 163
+#define GAME_CMSG_PARTY_RETURN_TO_OUTPOST           (GAME_CMSG_MASK | 0x00A5) // 165
+#define GAME_CMSG_PARTY_KICK_NPC                    (GAME_CMSG_MASK | 0x00A6) // 166
+#define GAME_CMSG_PARTY_KICK_PLAYER                 (GAME_CMSG_MASK | 0x00A7) // 167
+#define GAME_CMSG_PARTY_SEARCH_SEEK                 (GAME_CMSG_MASK | 0x00A8) // 168
+#define GAME_CMSG_PARTY_SEARCH_CANCEL               (GAME_CMSG_MASK | 0x00A9) // 169
+#define GAME_CMSG_PARTY_SEARCH_REQUEST_JOIN         (GAME_CMSG_MASK | 0x00AA) // 170
+#define GAME_CMSG_PARTY_SEARCH_REQUEST_REPLY        (GAME_CMSG_MASK | 0x00AB) // 171
+#define GAME_CMSG_PARTY_SEARCH_TYPE                 (GAME_CMSG_MASK | 0x00AC) // 172
+#define GAME_CMSG_PARTY_READY_STATUS                (GAME_CMSG_MASK | 0x00AD) // 173
+#define GAME_CMSG_PARTY_ENTER_GUILD_HALL            (GAME_CMSG_MASK | 0x00AE) // 174
+#define GAME_CMSG_PARTY_TRAVEL                      (GAME_CMSG_MASK | 0x00AF) // 175
+#define GAME_CMSG_PARTY_LEAVE_GUILD_HALL            (GAME_CMSG_MASK | 0x00B0) // 176
 
 #define GAME_SMSG_TRADE_REQUEST                     (0x0000) // 0
 #define GAME_SMSG_TRADE_TERMINATE                   (0x0001) // 1
