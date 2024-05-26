@@ -341,7 +341,7 @@ class FileBuilder:
             count = desc.count_field()
             header_str = f'{desc.header},'
             count_str = f'{count},'
-            lines.append(f'    {{{header_str:<4} {count_str:<2} {prefix}_{header:04}, {desc.size}}},')
+            lines.append(f'    {{{header_str:<4} {count_str:<3} {prefix}_{header:04}, {desc.size}}},')
         lines.append('};\n')
         return '\n'.join(lines)
 
@@ -378,8 +378,13 @@ def main(argv):
             os.unlink(file_packets_bak)
         os.rename(file_packets, file_packets_bak)
 
+    file_packets_info = utils.get_path('code', 'client', 'packets.info')
+    if os.path.exists(file_packets_info):
+        os.unlink(file_packets_info)
+
     builder = FileBuilder(proc)
-    print(builder.build(include_rva=False), file=open(file_packets, 'w'))
+    open(file_packets, 'wb').write(builder.build(include_rva=False).encode('ascii'))
+    open(file_packets_info, 'wb').write(builder.build(include_rva=True).encode('ascii'))
 
 if __name__ == '__main__':
     main(sys.argv[1::])
