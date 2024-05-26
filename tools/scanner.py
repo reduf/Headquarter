@@ -25,6 +25,13 @@ class FileScanner:
             raise RuntimeError("Couldn't find the pattern")
         return section.VirtualAddress + pos + offset
 
+    def find_file_pos(self, pattern, offset = 0):
+        section, buffer = self.sections[self.text_idx]
+        pos = buffer.find(pattern)
+        if pos == -1:
+            raise RuntimeError("Couldn't find the pattern")
+        return pos + offset
+
     def get_section_by_rva(self, rva):
         for section, buffer in self.sections:
             if section.contains_rva(rva):
