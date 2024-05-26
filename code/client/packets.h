@@ -32,7 +32,6 @@ typedef struct MsgFormat {
     uint32_t    count;
     MsgField   *fields;
     uint32_t    unpack_size;
-    char       *name;
 } MsgFormat;
 
 extern MsgFormat AUTH_CLIENT_FORMATS[AUTH_CMSG_COUNT];
