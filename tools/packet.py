@@ -1,5 +1,8 @@
 from process import *
+
+import os
 import sys
+import utils
 
 TYPE_MSG_HEADER     = 1
 TYPE_AGENT_ID       = 2
@@ -19,6 +22,12 @@ TYPE_NESTED_STRUCT  = 14
 TYPE_MAX = 14
 
 SIZE_T_SIZE = 4
+
+INCLUDE_GUARD = """#ifdef CORE_PACKETS_C
+#error "packets.c included more than once"
+#endif
+#define CORE_PACKETS_C
+"""
 
 def die(*args, **kw):
     print('[ERROR]', *args, **kw)
@@ -158,7 +167,9 @@ class Descriptor(object):
         self.fields.append(field)
         self.size += field.size
 
-    def print(self, image_base, prefix):
+    def build(self, image_base, prefix, include_rva):
+        lines = []
+
         str_fields = []
         for f in self.fields:
             str_fields.append(str(f))
@@ -171,20 +182,22 @@ class Descriptor(object):
                 handler = self.handler - image_base
             else:
                 handler = 0
-            print('// Handler Rva: %08X' % handler)
-        print('MsgField %s_%04d[%d] = {' % (prefix, self.header, field_count))
+            if include_rva:
+                lines.append(f'// Handler Rva: {handler:08X}')
+        lines.append(f'MsgField {prefix}_{self.header:04}[{field_count}] = {{')
 
         s = '    ' + seperator.join(str_fields) + ','
-        print(s)
+        lines.append(s)
 
         str_fields = []
         if self.has_nested_struct:
             for f in self.nested_struct_fields:
                 str_fields.append(str(f))
             s = '    ' + seperator.join(str_fields) + ','
-            print(s)
+            lines.append(s)
 
-        print('};\n')
+        lines.append('};\n')
+        return '\n'.join(lines)
 
     def count_field(self):
         count = 0
@@ -236,112 +249,137 @@ def decode_msg_description(msg_id, gw_fields, handler = None):
 
     return desc
 
-def main(argv):
-    proc = Process.from_name('Gw.exe')
-    scanner = ProcessScanner(proc)
-    addr = scanner.find(b'\x75\x04\x33\xC0\x5D\xC3\x8B\x41\x08\xA8\x01\x75', -0x6)
-    addr = proc.read(addr)[0]      # Address
-    addr = proc.read(addr)[0]      # gs = *(GameServer **)Address
-    addr = proc.read(addr + 8)[0]  # gs->consts
+class FileBuilder:
+    def __init__(self, proc):
+        self.proc = proc
+        scanner = ProcessScanner(proc)
+        addr = scanner.find(b'\x75\x04\x33\xC0\x5D\xC3\x8B\x41\x08\xA8\x01\x75', -0x6)
+        addr = self.proc.read(addr)[0]      # Address
+        addr = self.proc.read(addr)[0]      # gs = *(GameServer **)Address
+        addr = self.proc.read(addr + 8)[0]  # gs->consts
 
-    gs_codecs = addr
-    ls_codecs = proc.read(addr + 12)[0] # gs->consts->ls
+        gs_codecs = addr
+        ls_codecs = self.proc.read(addr + 12)[0] # gs->consts->ls
 
-    gs_clt_codecs, _, gs_clt_codecs_count = proc.read(gs_codecs + 28, 'III')
-    gs_srv_codecs, _, gs_srv_codecs_count = proc.read(gs_codecs + 44, 'III')
+        gs_clt_codecs, _, gs_clt_codecs_count = self.proc.read(gs_codecs + 28, 'III')
+        gs_srv_codecs, _, gs_srv_codecs_count = self.proc.read(gs_codecs + 44, 'III')
 
-    ls_clt_codecs, _, ls_clt_codecs_count = proc.read(ls_codecs + 28, 'III')
-    ls_srv_codecs, _, ls_srv_codecs_count = proc.read(ls_codecs + 44, 'III')
+        ls_clt_codecs, _, ls_clt_codecs_count = self.proc.read(ls_codecs + 28, 'III')
+        ls_srv_codecs, _, ls_srv_codecs_count = self.proc.read(ls_codecs + 44, 'III')
 
-    addr_ls_clt = range(ls_clt_codecs, ls_clt_codecs + (8  * ls_clt_codecs_count), 8)  # AUTH_CLIENT
-    addr_ls_srv = range(ls_srv_codecs, ls_srv_codecs + (12 * ls_srv_codecs_count), 12) # AUTH_SERVER
-    addr_gs_clt = range(gs_clt_codecs, gs_clt_codecs + (8  * gs_clt_codecs_count), 8)  # GAME_CLIENT
-    addr_gs_srv = range(gs_srv_codecs, gs_srv_codecs + (12 * gs_srv_codecs_count), 12) # GAME_SERVER
+        addr_ls_clt = range(ls_clt_codecs, ls_clt_codecs + (8  * ls_clt_codecs_count), 8)  # AUTH_CLIENT
+        addr_ls_srv = range(ls_srv_codecs, ls_srv_codecs + (12 * ls_srv_codecs_count), 12) # AUTH_SERVER
+        addr_gs_clt = range(gs_clt_codecs, gs_clt_codecs + (8  * gs_clt_codecs_count), 8)  # GAME_CLIENT
+        addr_gs_srv = range(gs_srv_codecs, gs_srv_codecs + (12 * gs_srv_codecs_count), 12) # GAME_SERVER
 
-    desc_ls_clt = []
-    desc_ls_srv = []
-    desc_gs_clt = []
-    desc_gs_srv = []
+        self.desc_ls_clt = []
+        self.desc_ls_srv = []
+        self.desc_gs_clt = []
+        self.desc_gs_srv = []
 
-    for id, addr in enumerate(addr_ls_clt):
-        fields_addr, count, handler = proc.read(addr, 'III')
+        for id, addr in enumerate(addr_ls_clt):
+            fields_addr, count, handler = self.proc.read(addr, 'III')
 
-        if count > 1:
-            fields = proc.read(fields_addr, 'I' * count)
-            desc = decode_msg_description(id, fields)
-        else:
-            assert count >= 0
-            desc = Descriptor(id)
-            desc.compute_size()
+            if count > 1:
+                fields = self.proc.read(fields_addr, 'I' * count)
+                desc = decode_msg_description(id, fields)
+            else:
+                assert count >= 0
+                desc = Descriptor(id)
+                desc.compute_size()
 
-        desc_ls_clt.append(desc)
+            self.desc_ls_clt.append(desc)
 
-    for id, addr in enumerate(addr_ls_srv):
-        fields_addr, count, handler = proc.read(addr, 'III')
+        for id, addr in enumerate(addr_ls_srv):
+            fields_addr, count, handler = self.proc.read(addr, 'III')
 
-        if count > 1:
-            fields = proc.read(fields_addr, 'I' * count)
-            desc = decode_msg_description(id, fields, handler)
-        else:
-            assert count >= 0
-            desc = Descriptor(id, handler)
-            desc.compute_size()
+            if count > 1:
+                fields = self.proc.read(fields_addr, 'I' * count)
+                desc = decode_msg_description(id, fields, handler)
+            else:
+                assert count >= 0
+                desc = Descriptor(id, handler)
+                desc.compute_size()
 
-        desc_ls_srv.append(desc)
+            self.desc_ls_srv.append(desc)
 
-    for id, addr in enumerate(addr_gs_clt):
-        fields_addr, count, handler = proc.read(addr, 'III')
+        for id, addr in enumerate(addr_gs_clt):
+            fields_addr, count, handler = self.proc.read(addr, 'III')
 
-        if count > 1:
-            fields = proc.read(fields_addr, 'I' * count)
-            desc = decode_msg_description(id, fields)
-        else:
-            assert count >= 0
-            desc = Descriptor(id)
-            desc.compute_size()
+            if count > 1:
+                fields = self.proc.read(fields_addr, 'I' * count)
+                desc = decode_msg_description(id, fields)
+            else:
+                assert count >= 0
+                desc = Descriptor(id)
+                desc.compute_size()
 
-        desc_gs_clt.append(desc)
+            self.desc_gs_clt.append(desc)
 
-    for id, addr in enumerate(addr_gs_srv):
-        fields_addr, count, handler = proc.read(addr, 'III')
+        for id, addr in enumerate(addr_gs_srv):
+            fields_addr, count, handler = self.proc.read(addr, 'III')
 
-        if count > 1:
-            fields = proc.read(fields_addr, 'I' * count)
-            desc = decode_msg_description(id, fields, handler)
-        else:
-            assert count >= 0
-            desc = Descriptor(id, handler)
-            desc.compute_size()
+            if count > 1:
+                fields = self.proc.read(fields_addr, 'I' * count)
+                desc = decode_msg_description(id, fields, handler)
+            else:
+                assert count >= 0
+                desc = Descriptor(id, handler)
+                desc.compute_size()
 
-        desc_gs_srv.append(desc)
+            self.desc_gs_srv.append(desc)
 
+
+    @staticmethod
     def create_desc_array(descriptions, prefix):
-        print('MsgFormat %s_FORMATS[%d] = {' % (prefix, len(descriptions)))
-        print('// header | field_count | fields | max_size | name')
+        lines = []
+
+        lines.append(f'MsgFormat {prefix}_FORMATS[{len(descriptions)}] = {{')
+        lines.append('// header | field_count | fields | max_size')
         for desc in descriptions:
             header = desc.header
-            d = header // 10
             count = desc.count_field()
-            print('    {%-3d, %-3d, %s_%04d, %-3d, 0},' % (header, count, prefix, header, desc.size))
-        print('};\n')
-    
-    image_base = proc.module().base
-    for desc in desc_ls_clt:
-        desc.print(image_base, 'AUTH_CLIENT')
+            header_str = f'{desc.header},'
+            count_str = f'{count},'
+            lines.append(f'    {{{header_str:<4} {count_str:<2} {prefix}_{header:04}, {desc.size}}},')
+        lines.append('};\n')
+        return '\n'.join(lines)
 
-    for desc in desc_ls_srv:
-        desc.print(image_base, 'AUTH_SERVER')
+    def build(self, include_rva):
+        builder = []
+        builder.append(INCLUDE_GUARD)
 
-    for desc in desc_gs_clt:
-        desc.print(image_base, 'GAME_CLIENT')
+        image_base = self.proc.module().base
+        for desc in self.desc_ls_clt:
+            builder.append(desc.build(image_base, 'AUTH_CLIENT', include_rva))
 
-    for desc in desc_gs_srv:
-        desc.print(image_base, 'GAME_SERVER')
+        for desc in self.desc_ls_srv:
+            builder.append(desc.build(image_base, 'AUTH_SERVER', include_rva))
 
-    create_desc_array(desc_ls_clt, 'AUTH_CLIENT')
-    create_desc_array(desc_ls_srv, 'AUTH_SERVER')
-    create_desc_array(desc_gs_clt, 'GAME_CLIENT')
-    create_desc_array(desc_gs_srv, 'GAME_SERVER')
+        for desc in self.desc_gs_clt:
+            builder.append(desc.build(image_base, 'GAME_CLIENT', include_rva))
+
+        for desc in self.desc_gs_srv:
+            builder.append(desc.build(image_base, 'GAME_SERVER', include_rva))
+
+        builder.append(self.create_desc_array(self.desc_ls_clt, 'AUTH_CLIENT'))
+        builder.append(self.create_desc_array(self.desc_ls_srv, 'AUTH_SERVER'))
+        builder.append(self.create_desc_array(self.desc_gs_clt, 'GAME_CLIENT'))
+        builder.append(self.create_desc_array(self.desc_gs_srv, 'GAME_SERVER'))
+
+        return '\n'.join(builder)
+
+def main(argv):
+    proc = Process.from_name('Gw.exe')
+    file_packets = utils.get_path('code', 'client', 'packets.c')
+    if os.path.exists(file_packets):
+        file_packets_bak = utils.get_path('code', 'client', 'packets.c.bak')
+        if os.path.exists(file_packets_bak):
+            os.unlink(file_packets_bak)
+        os.rename(file_packets, file_packets_bak)
+
+    builder = FileBuilder(proc)
+    print(builder.build(include_rva=False), file=open(file_packets, 'w'))
 
 if __name__ == '__main__':
     main(sys.argv[1::])
