@@ -75,6 +75,10 @@ void init_connection(Connection *conn, void *data)
 }
 
 #pragma pack(push, 1)
+
+#define AUTH_CMSG_VERSION_HEADER (0xC0400)
+#define GAME_CMSG_VERSION_HEADER (0xC0500)
+
 typedef struct _MSG_CLIENT_SEED {
     uint8_t source;     // 0
     uint8_t length;     // 66
@@ -88,9 +92,7 @@ typedef struct _MSG_SERVER_SEED {
 } MSG_SERVER_SEED;
 
 typedef struct _AUTH_CMSG_VERSION {
-    uint8_t  source;    // 0
-    uint8_t  length;    // 4
-    uint16_t size;      // 12
+    uint32_t header;    // 0xC0400
     uint32_t version;
     uint32_t h0008;     // 1
     uint32_t h000C;     // 4
@@ -99,17 +101,14 @@ typedef struct _AUTH_CMSG_VERSION {
 typedef struct _FILE_CMSG_VERSION {
     uint8_t  h0000; // 1
     uint32_t h0001; // 0
-    uint16_t h0005; // 0xF1
-    uint16_t h0007; // 0x10
+    uint32_t h0005; // 0x1000F1
     uint32_t h0009; // game
     uint32_t h000D; // 0
     uint32_t h0011; // 0
 } FILE_CMSG_VERSION; // size 21 (0x15)
 
 typedef struct _GAME_CMSG_VERSION {
-    uint8_t  source;    // 0
-    uint8_t  length;    // 5
-    uint16_t h0002;     // 12
+    uint32_t header;    // 0xC0500
     uint32_t version;
     uint32_t h0008;     // 1
     uint32_t world_hash;
@@ -374,7 +373,11 @@ static bool key_exchange_helper(Connection *conn, DiffieHellmanCtx *dhm)
     // @Remark, We can fail here if 'GUILD_WARS_VERSION' isn't updated.
     result = recv(conn->fd.handle, cast(char *)&server_seed, sizeof(server_seed), 0);
     if (result != sizeof(server_seed)) {
-        LogError("MSG_SERVER_SEED size missmatch. Expected %u bytes, but received %u bytes.", sizeof(MSG_SERVER_SEED), result);
+        LogError(
+            "MSG_SERVER_SEED size missmatch. Expected %u bytes, but received %u bytes. (%d)",
+            sizeof(MSG_SERVER_SEED),
+            result,
+            os_errno);
         success = false;
         goto quick_exist;
     }
@@ -450,9 +453,7 @@ bool AuthSrv_Connect(Connection *conn)
     conn->client_msg_format.data = AUTH_CLIENT_FORMATS;
 
     AUTH_CMSG_VERSION version;
-    version.source = 0;
-    version.length = 4;
-    version.size = 12;
+    version.header = AUTH_CMSG_VERSION_HEADER;
     version.version = options.game_version;
     version.h0008 = 1;
     version.h000C = 4;
@@ -507,13 +508,11 @@ bool GameSrv_Connect(Connection *conn,
     conn->client_msg_format.data = GAME_CLIENT_FORMATS;
 
     GAME_CMSG_VERSION version;
-    version.source = 0;
-    version.length = 5;
+    version.header = GAME_CMSG_VERSION_HEADER;
     version.version = options.game_version;
     version.world_hash = world_hash;
     version.map_id = map;
     version.player_hash = player_hash;
-    version.h0002 = 12;
     version.h0008 = 1;
     version.h0038 = 0;
     version.h003C = 0;
