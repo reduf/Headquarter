@@ -9,3 +9,4 @@ struct portal_login_result {
 };
 
 int portal_login(struct portal_login_result *result, const char *username, const char *password);
+int portal_login_dummy(struct portal_login_result *result, const char *username, const char *password);
