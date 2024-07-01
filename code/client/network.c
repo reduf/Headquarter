@@ -177,7 +177,7 @@ void Network_Init(void)
     char dir_path[260];
     length = dlldir(dir_path, sizeof(dir_path));
     for (int i = 0; i < 6 && !file_read_ok; i++) {
-        snprintf(file_path, sizeof(file_path), "%s/data/gw_%d.pub", dir_path, options.game_version);
+        snprintf(file_path, sizeof(file_path), "%s/data/gw_%d.pub.txt", dir_path, options.game_version);
         dir_path[length++] = '/';
         dir_path[length++] = '.';
         dir_path[length++] = '.';
@@ -272,30 +272,76 @@ bool IPv4ToAddr(const char *host, const char *port, struct sockaddr *sockaddr)
     return true;
 }
 
-static bool read_dhm_key_file(DiffieHellmanCtx *dhm, FILE * file)
+static bool read_dhm_key_file(DiffieHellmanCtx *dhm, FILE *file)
 {
+    char line[256];
 
-    uint8_t prim_root[4];
-    uint8_t public_key[64];
-    uint8_t prime_mod[64];
+    while (fgets(line, sizeof(line), file) != NULL) {
+        size_t key_start_idx;
+        size_t key_end_idx;
+        size_t val_start_idx;
+        size_t val_end_idx;
 
-    if (fread(prim_root, sizeof(prim_root), 1, file) != 1) {
-        LogError("Couldn't read the primitive root from dhm key file");
+        for (key_start_idx = 0; key_start_idx < sizeof(line); ++key_start_idx) {
+            char ch = line[key_start_idx];
+            if (ch == 0 || (ch != ' ' && ch != '\t')) {
+                break;
+            }
+        }
+
+        for (key_end_idx = key_start_idx; key_end_idx < sizeof(line); ++key_end_idx) {
+            char ch = line[key_end_idx];
+            if (ch == 0 || ch == ' ' || ch == '\t' || ch == '=') {
+                break;
+            }
+        }
+
+        for (val_start_idx = key_end_idx; val_start_idx < sizeof(line); ++val_start_idx) {
+            char ch = line[val_start_idx];
+            if (ch == 0 || (ch != ' ' && ch != '\t' && ch != '=')) {
+                break;
+            }
+        }
+
+        for (val_end_idx = val_start_idx; val_end_idx < sizeof(line); ++val_end_idx) {
+            char ch = line[val_end_idx];
+            if (ch == 0 || ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n') {
+                break;
+            }
+        }
+
+        line[key_end_idx] = 0;
+        const char *key = &line[key_start_idx];
+        line[val_end_idx] = 0;
+        const char *val = &line[val_start_idx];
+
+        mbedtls_mpi *result;
+        if (strcmp(key, "root") == 0) {
+            result = &dhm->primitive_root;
+        } else if (strcmp(key, "server_public") == 0) {
+            result = &dhm->server_public;
+        } else if (strcmp(key, "prime") == 0) {
+            result = &dhm->prime_modulus;
+        } else {
+            LogError("Unsupported key '%s'", key);
+            continue;
+        }
+
+        int err;
+        if ((err = mbedtls_mpi_read_string(result, 10, val)) != 0) {
+            LogError("Couldn't read '%s' with value '%s' from dhm key file, err: %d", key, val, err);
+            return false;
+        }
+    }
+
+    if (mbedtls_mpi_size(&dhm->prime_modulus) == 0 ||
+        mbedtls_mpi_size(&dhm->server_public) == 0 ||
+        mbedtls_mpi_size(&dhm->primitive_root) == 0)
+    {
+        LogError("DHM key file is missing some values");
         return false;
     }
 
-    if (fread(prime_mod, sizeof(prime_mod), 1, file) != 1) {
-        LogError("Couldn't read the prime modulus from dhm key file");
-        return false;
-    }
-
-    if (fread(public_key, sizeof(public_key), 1, file) != 1) {
-        LogError("Couldn't read the public key from dhm key file");
-        return false;
-    }
-    mbedtls_mpi_read_binary(&dhm->prime_modulus, prime_mod, 64);
-    mbedtls_mpi_read_binary(&dhm->server_public, public_key, 64);
-    mbedtls_mpi_read_binary(&dhm->primitive_root, prim_root, 4);
     return true;
 }
 

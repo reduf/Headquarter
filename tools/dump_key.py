@@ -59,25 +59,14 @@ def main(args):
         output = args.output
     else:
         build = get_build_number(scanner)
-        output = utils.get_path('data', f'gw_{build}.pub')
+        output = utils.get_path('data', f'gw_{build}.pub.txt')
 
-    if args.text:
-        content = '\n'.join([f'pr: {pr}', f'prime: {pm}', f'pkey: {pk}'])
-    else:
-        content = pr.to_bytes(4, byteorder='big')
-        content += pm.to_bytes(64, byteorder='big')
-        content += pk.to_bytes(64, byteorder='big')
-
+    content = f'root = {pr}\nserver_public = {pk}\nprime = {pm}'
     if output == '-':
         print(content)
     else:
         print(f'Writting to "{output}"')
-        if args.text:
-            fd = open(output, 'w')
-        else:
-            fd = open(output, 'wb')
-        fd.write(content)
-
+        open(output, 'w').write(content)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -89,8 +78,6 @@ if __name__ == '__main__':
         help="Path to the file on disk.")
     parser.add_argument("--output", "-o", type=str, required=False,
         help="Path where to write the output keys.")
-    parser.add_argument("--text", action='store_true', required=False,
-        default=False, help="Will output the document as text")
     args = parser.parse_args()
 
     main(args)
