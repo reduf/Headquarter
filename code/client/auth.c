@@ -174,9 +174,7 @@ void HandleCharacterInfo(Connection *conn, size_t psize, Packet *packet)
         uint32_t unk0;
         uint16_t name[20];
         uint32_t n_extended;
-        uint16_t unk1;
-        uint16_t last_map_id;
-        uint16_t extended[30];
+        uint8_t  extended[64];
     } CharacterInfo;
 #pragma pack(pop)
 
@@ -194,7 +192,7 @@ void HandleCharacterInfo(Connection *conn, size_t psize, Packet *packet)
         return;
     }
     init_character(character);
-    character->map = pack->last_map_id;
+    character->map = le16dec(&pack->extended[2]);
     kstr_hdr_read(&character->name, pack->name, ARRAY_SIZE(pack->name));
     uuid_dec_le(pack->uuid, &character->uuid);
 }
