@@ -120,7 +120,6 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
         /* +h009D */ uint32_t n_modifier;
         /* +h00A1 */ uint32_t modifier[64];
     } ItemInfo;
-
 #pragma pack(pop)
 
     assert(packet->header == GAME_SMSG_ITEM_GENERAL_INFO);
@@ -502,7 +501,7 @@ void HandleItemChangeLocation(Connection *conn, size_t psize, Packet *packet)
 #pragma pack(push, 1)
     typedef struct {
         Header  header;
-        int16_t unk1;
+        int16_t stream_id;
         int32_t item_id;
         int16_t bag_id;
         int8_t  slot;
