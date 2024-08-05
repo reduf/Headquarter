@@ -23,7 +23,7 @@ void HandleAccountSettings(Connection *conn, size_t psize, Packet *packet)
     (void)pack;
 }
 
-void HandleErrorMessage(Connection *conn, size_t psize, Packet *packet)
+void HandleRequestResponse(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -33,7 +33,7 @@ void HandleErrorMessage(Connection *conn, size_t psize, Packet *packet)
     } ErrorMessage;
 #pragma pack(pop)
 
-    assert(packet->header == AUTH_SMSG_ERROR_MESSAGE);
+    assert(packet->header == AUTH_SMSG_REQUEST_RESPONSE);
     assert(sizeof(ErrorMessage) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
@@ -50,7 +50,7 @@ void HandleErrorMessage(Connection *conn, size_t psize, Packet *packet)
         }
     }
 
-    LogDebug("HandleErrorMessage: {async_type: %d, trans_id: %lu, code: %lu}", type, pack->trans_id, pack->code);
+    LogDebug("HandleRequestResponse: {async_type: %d, trans_id: %lu, code: %lu}", type, pack->trans_id, pack->code);
     const char *error_s = get_error_s(pack->code);
     if (pack->code != 0) {
         LogDebug("(Code=%03d) %s", pack->code, error_s);
@@ -309,7 +309,7 @@ void AuthSrv_RequestInstance(Connection *conn, uint32_t trans_id,
     } CharacterPlayInfo;
 #pragma pack(pop)
 
-    CharacterPlayInfo packet = NewPacket(AUTH_CMSG_REQUEST_INSTANCE);
+    CharacterPlayInfo packet = NewPacket(AUTH_CMSG_REQUEST_GAME_INSTANCE);
     packet.trans_id = trans_id;
     packet.map_type = type;
     packet.map_id = map_id;
@@ -387,7 +387,7 @@ void AuthSrv_RegisterCallbacks(Connection *conn)
 
     MsgHandler *handlers = conn->handlers.data;
 
-    handlers[AUTH_SMSG_ERROR_MESSAGE]           = HandleErrorMessage;
+    handlers[AUTH_SMSG_REQUEST_RESPONSE]        = HandleRequestResponse;
     handlers[AUTH_SMSG_SERVER_RESPONSE]         = HandleServerReponse;
 
     handlers[AUTH_SMSG_SESSION_INFO]            = HandleSessionInfo;

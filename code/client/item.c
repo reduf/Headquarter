@@ -211,7 +211,7 @@ void HandleInventoryItemQuantity(Connection *conn, size_t psize, Packet *packet)
     } ItemQuantity;
 #pragma pack(pop)
 
-    assert(packet->header == GAME_SMSG_INVENTORY_ITEM_QUANTITY);
+    assert(packet->header == GAME_SMSG_ITEM_UPDATE_QUANTITY);
     assert(sizeof(ItemQuantity) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
@@ -239,7 +239,7 @@ void HandleInventoryItemLocation(Connection *conn, size_t psize, Packet *packet)
     } ItemLocation;
 #pragma pack(pop)
 
-    assert(packet->header == GAME_SMSG_INVENTORY_ITEM_LOCATION);
+    assert(packet->header == GAME_SMSG_ITEM_MOVED_TO_LOCATION);
     assert(sizeof(ItemLocation) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;

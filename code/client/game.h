@@ -179,7 +179,7 @@ void HandleHeroSkillStatus(Connection *conn, size_t psize, Packet *packet);
 void HandleHeroSkillStatusBitmap(Connection *conn, size_t psize, Packet *packet);
 void HandleAgentUpdateAttribute(Connection *conn, size_t psize, Packet *packet);
 void HandleQuestDescription(Connection *conn, size_t psize, Packet *packet);
-void HandleQuestAdd(Connection *conn, size_t psize, Packet *packet);
+void HandleQuestGeneralInfo(Connection *conn, size_t psize, Packet *packet);
 void HandleQuestUpdateMarker(Connection *conn, size_t psize, Packet *packet);
 void HandleQuestRemove(Connection *conn, size_t psize, Packet *packet);
 void HandleTitleRankData(Connection *conn, size_t psize, Packet *packet);

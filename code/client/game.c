@@ -47,7 +47,7 @@ static void HandleAccountCurrency(Connection *conn, size_t psize, Packet *packet
     } AccountCurrency;
 #pragma pack(pop)
 
-    assert(packet->header == GAME_SMSG_ACCOUNT_CURRENCY);
+    assert(packet->header == GAME_SMSG_ACCOUNT_FEATURE);
     assert(sizeof(AccountCurrency) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
@@ -511,8 +511,8 @@ void GameSrv_RegisterCallbacks(Connection *conn)
     handlers[GAME_SMSG_GOLD_STORAGE_REMOVE]             = HandleGoldStorageRemove;
 
     // items
-    handlers[GAME_SMSG_INVENTORY_ITEM_QUANTITY]         = HandleInventoryItemQuantity;
-    handlers[GAME_SMSG_INVENTORY_ITEM_LOCATION]         = HandleInventoryItemLocation;
+    handlers[GAME_SMSG_ITEM_UPDATE_QUANTITY]            = HandleInventoryItemQuantity;
+    handlers[GAME_SMSG_ITEM_MOVED_TO_LOCATION]          = HandleInventoryItemLocation;
     handlers[GAME_SMSG_INVENTORY_CREATE_BAG]            = HandleInventoryCreateBag;
     handlers[GAME_SMSG_ITEM_STREAM_CREATE]              = HandleItemStreamCreate;
     handlers[GAME_SMSG_ITEM_STREAM_DESTROY]             = HandleItemStreamDestroy;
@@ -616,7 +616,7 @@ void GameSrv_RegisterCallbacks(Connection *conn)
 
     // quests
     handlers[GAME_SMSG_QUEST_DESCRIPTION]               = HandleQuestDescription;
-    handlers[GAME_SMSG_QUEST_ADD]                       = HandleQuestAdd;
+    handlers[GAME_SMSG_QUEST_GENERAL_INFO]              = HandleQuestGeneralInfo;
     handlers[GAME_SMSG_QUEST_UPDATE_MARKER]             = HandleQuestUpdateMarker;
     handlers[GAME_SMSG_QUEST_REMOVE]                    = HandleQuestRemove;
 

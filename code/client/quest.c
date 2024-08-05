@@ -40,7 +40,7 @@ void HandleQuestDescription(Connection *conn, size_t psize, Packet *packet)
     memcpy(quest->objective, pack->objective, sizeof(pack->objective));
 }
 
-void HandleQuestAdd(Connection *conn, size_t psize, Packet *packet)
+void HandleQuestGeneralInfo(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -54,7 +54,7 @@ void HandleQuestAdd(Connection *conn, size_t psize, Packet *packet)
     } QuestAdd;
 #pragma pack(pop)
 
-    assert(packet->header == GAME_SMSG_QUEST_ADD);
+    assert(packet->header == GAME_SMSG_QUEST_GENERAL_INFO);
     assert(sizeof(QuestAdd) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
