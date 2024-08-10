@@ -253,7 +253,7 @@ safe_strcpy(char *dest, size_t size, const char *src)
             dest[0] = 0;
         return 0;
     } else {
-        memcpy(dest, src, size);
+        memcpy(dest, src, length);
         dest[length] = 0;
         return 1;
     }
