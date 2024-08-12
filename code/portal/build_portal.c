@@ -53,6 +53,7 @@
 #include <common/endian.h>
 #include <common/macro.h>
 #include <common/process.h>
+#include <common/time.h>
 #include <common/uuid.h>
 
 #ifdef _WIN32
@@ -66,7 +67,9 @@
 #include "prf.h"
 #include "ssl.h"
 #include "sts.h"
+#include "totp.h"
 
+#include "totp.c"
 #include "login.c"
 #include "prf.c"
 #include "socket.c"

@@ -8,5 +8,5 @@ struct portal_login_result {
     struct uuid token;
 };
 
-int portal_login(struct portal_login_result *result, const char *username, const char *password);
-int portal_login_dummy(struct portal_login_result *result, const char *username, const char *password);
+int portal_login(struct portal_login_result *result, const char *username, const char *password, const char *secret);
+int portal_login_dummy(struct portal_login_result *result, const char *username, const char *password, const char *secret);

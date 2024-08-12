@@ -82,3 +82,9 @@ bool time_localtime(const time_t* timep, struct tm* result)
         return false;
     return true;
 }
+
+uint64_t time_get_epoch_sec(void)
+{
+    STATIC_ASSERT(sizeof(__time64_t) == sizeof(uint64_t));
+    return _time64(NULL);
+}

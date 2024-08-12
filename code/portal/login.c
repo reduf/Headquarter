@@ -520,7 +520,7 @@ static int sts_ping(struct sts_connection *sts, struct ssl_sts_connection *ssl)
 }
 #endif
 
-int portal_login(struct portal_login_result *result, const char *username, const char *password)
+int portal_login(struct portal_login_result *result, const char *username, const char *password, const char *secrets)
 {
     int ret;
 
@@ -582,8 +582,24 @@ int portal_login(struct portal_login_result *result, const char *username, const
 
         char otp[32];
         size_t otp_len;
-        if ((ret = read_user_code(otp, sizeof(otp), &otp_len)) != 0) {
-            goto cleanup;
+
+        if (secrets != NULL && ret == PORTAL_ERR_2FA_REQUIRE_TOTP) {
+            uint32_t code;
+            if (!totp(secrets, 6, &code)) {
+                fprintf(stderr, "Failed to generate the 2fa code\n");
+                goto cleanup;
+            }
+
+            if ((ret = snprintf(otp, sizeof(otp), "%06d", code)) <= 0) {
+                fprintf(stderr, "Failed to stringnify the 2fa code\n");
+                goto cleanup;
+            }
+
+            otp_len = (size_t)ret;
+        } else {
+            if ((ret = read_user_code(otp, sizeof(otp), &otp_len)) != 0) {
+                goto cleanup;
+            }
         }
 
         const int remember_me = 1;
@@ -614,7 +630,7 @@ cleanup:
     return ret;
 }
 
-int portal_login_dummy(struct portal_login_result *result, const char *username, const char *password)
+int portal_login_dummy(struct portal_login_result *result, const char *username, const char *password, const char *secret)
 {
     struct str token = s_from_c_str("d8b9bf5d-90b1-4cbd-9b76-88da7be763b6");
     struct str user_id = s_from_c_str("fa520ee2-4419-4eb4-ae49-6e9abe6ef24f");

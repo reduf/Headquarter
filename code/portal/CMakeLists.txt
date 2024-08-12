@@ -13,6 +13,8 @@ set(
   stream.h
   sts.c
   sts.h
+  totp.c
+  totp.h
 )
 
 set_source_files_properties(
