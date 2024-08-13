@@ -65,7 +65,7 @@ bool b32decode(const char *input, size_t len, array_uint8_t *result)
         if ('A' <= ch && ch <= 'Z') {
             tmp += (uint32_t)(ch - 'A');
         } else if ('a' <= ch && ch <= 'z') {
-            tmp += (uint32_t)(ch - 'b');
+            tmp += (uint32_t)(ch - 'a');
         } else if ('2' <= ch && ch <= '7') {
             tmp += (uint32_t)((ch - '2') + 26);
         } else {
