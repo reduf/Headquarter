@@ -152,6 +152,10 @@ typedef struct GwClient {
 extern GwClient *client;
 
 void init_client(GwClient *client);
+
+World* get_world(GwClient *client);
+World* get_world_or_abort(GwClient *client);
+
 uint32_t issue_next_transaction(GwClient *client, AsyncType type);
 
 void client_frame_update(GwClient *client, msec_t diff);

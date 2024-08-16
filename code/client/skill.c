@@ -3,11 +3,16 @@
 #endif
 #define CORE_SKILL_C
 
-static Agent      *get_agent_safe(GwClient *client, AgentId id);
-static inline void agent_set_casting(Agent *agent, Skill *casting);
+Agent* get_agent_safe(GwClient *client, AgentId id);
+void   agent_set_casting(Agent *agent, Skill *casting);
 
-static Skillbar *get_skillbar_safe(GwClient *client, AgentId agent_id)
+Skillbar *get_skillbar_safe(GwClient *client, AgentId agent_id)
 {
+    World *world;
+    if ((world = get_world(client)) == NULL) {
+        return NULL;
+    }
+
     if (!(client && client->world.hash))
         return NULL;
     Skillbar *sb;
@@ -18,7 +23,7 @@ static Skillbar *get_skillbar_safe(GwClient *client, AgentId agent_id)
     return NULL;
 }
 
-static int get_skill_position(GwClient *client, AgentId agent_id, uint32_t skill_id)
+int get_skill_position(GwClient *client, AgentId agent_id, uint32_t skill_id)
 {
     Skillbar *sb = get_skillbar_safe(client, agent_id);
     if (!sb) return -1;
@@ -527,7 +532,7 @@ void HandleAgentUpdateAttribute(Connection *conn, size_t psize, Packet *packet)
     }
 }
 
-static const char _Base64ToValue[128] = {
+const char _Base64ToValue[128] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // [0,   16)
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // [16,  32)
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, // [32,  48)
@@ -538,7 +543,7 @@ static const char _Base64ToValue[128] = {
     41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1, // [112, 128)
 };
 
-static void _WriteBits(int val, char* buff) {
+void _WriteBits(int val, char* buff) {
     buff[0] = ((val >> 0) & 1);
     buff[1] = ((val >> 1) & 1);
     buff[2] = ((val >> 2) & 1);
@@ -547,7 +552,7 @@ static void _WriteBits(int val, char* buff) {
     buff[5] = ((val >> 5) & 1);
 }
 
-static int _ReadBits(char** str, int n) {
+int _ReadBits(char** str, int n) {
     int val = 0;
     char* s = *str;
     for (int i = 0; i < n; i++)
@@ -556,7 +561,7 @@ static int _ReadBits(char** str, int n) {
     return val;
 }
 
-static SkillTemplate* template_decode(const char* temp) {
+SkillTemplate* template_decode(const char* temp) {
     const int SKILLS_MAX = 3431;
     const int ATTRIBUTE_MAX = 44;
 

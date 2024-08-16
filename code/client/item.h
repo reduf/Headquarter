@@ -22,7 +22,7 @@ typedef struct Item {
     uint32_t    quote_price;
 } Item;
 
-static void api_make_item(ApiItem *dest, Item *src)
+void api_make_item(ApiItem *dest, Item *src)
 {
     dest->item_id   = src->item_id;
     dest->model_id  = src->model_id;

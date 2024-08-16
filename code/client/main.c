@@ -3,17 +3,17 @@
 #endif
 #define CORE_MAIN_C
 
-static bool quit;
-static uint32_t fps;
+bool quit;
+uint32_t fps;
 GwClient *client;
 
-static void sighandler(int signum)
+void sighandler(int signum)
 {
     (void)signum;
     quit = true;
 }
 
-static void main_loop(void)
+void main_loop(void)
 {
     uint32_t frame_count = 0;
     struct timespec t0, t1;

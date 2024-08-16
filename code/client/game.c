@@ -3,14 +3,14 @@
 #endif
 #define CORE_GAME_C
 
-static void HandlePingRequest(Connection *conn, size_t psize, Packet *packet)
+void HandlePingRequest(Connection *conn, size_t psize, Packet *packet)
 {
     assert(packet->header == GAME_SMSG_PING_REQUEST);
     assert(sizeof(Header) == psize);
     GameSrv_PingReply(conn);
 }
 
-static void HandlePingReply(Connection *conn, size_t psize, Packet *packet)
+void HandlePingReply(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -36,7 +36,7 @@ static void HandlePingReply(Connection *conn, size_t psize, Packet *packet)
     // printf("latency %lu, pack {ping: %d}\n", conn->latency, pack->ping);
 }
 
-static void HandleAccountCurrency(Connection *conn, size_t psize, Packet *packet)
+void HandleAccountCurrency(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -56,7 +56,7 @@ static void HandleAccountCurrency(Connection *conn, size_t psize, Packet *packet
     (void)pack;
 }
 
-static void HandleUpdateActiveWeaponSet(Connection *conn, size_t psize, Packet *packet)
+void HandleUpdateActiveWeaponSet(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -76,7 +76,7 @@ static void HandleUpdateActiveWeaponSet(Connection *conn, size_t psize, Packet *
     // LogInfo("UpdateActiveWeapon {slot: %d}", pack->slot);
 }
 
-static void HandleGoldCharacterAdd(Connection *conn, size_t psize, Packet *packet)
+void HandleGoldCharacterAdd(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -96,7 +96,7 @@ static void HandleGoldCharacterAdd(Connection *conn, size_t psize, Packet *packe
     client->world.inventory.gold_character += pack->gold;
 }
 
-static void HandleGoldStorageAdd(Connection *conn, size_t psize, Packet *packet)
+void HandleGoldStorageAdd(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -148,7 +148,7 @@ void HandleGoldCharacterRemove(Connection *conn, size_t psize, Packet *packet)
     client->world.inventory.gold_character -= pack->gold;
 }
 
-static void HandleGoldStorageRemove(Connection *conn, size_t psize, Packet *packet)
+void HandleGoldStorageRemove(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -168,7 +168,7 @@ static void HandleGoldStorageRemove(Connection *conn, size_t psize, Packet *pack
     client->world.inventory.gold_storage -= pack->gold;
 }
 
-static void InstanceLoad_RequestData(Connection *conn)
+void InstanceLoad_RequestData(Connection *conn)
 {
 #pragma pack(push, 1)
     typedef struct {

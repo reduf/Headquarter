@@ -4,7 +4,7 @@
 #define ERROR_H_INC
 
 #if defined(_WIN32)
-static void win32_perror(const char *str);
+void win32_perror(const char *str);
 # define os_errno (int)GetLastError()
 # define os_perror(s) win32_perror(s)
 #else
@@ -13,5 +13,5 @@ static void win32_perror(const char *str);
 # define os_perror perror
 #endif
 
-static const char *get_error_s(int error_code);
-static void win32_perror(const char *str);
+const char *get_error_s(int error_code);
+void win32_perror(const char *str);

@@ -45,14 +45,14 @@ void init_guildmember_update(GuildMemberUpdate *gmu);
 void reset_guildmember_update(GuildMemberUpdate *gmu);
 GuildMember *complete_guildmember_update(GwClient *client, struct kstr account_name);
 
-static void api_make_guild(ApiGuild* dest, Guild* src)
+void api_make_guild(ApiGuild* dest, Guild* src)
 {
     dest->guild_id = src->guild_id;
     kstr_hdr_write(&src->name, dest->name, ARRAY_SIZE(dest->name));
     kstr_hdr_write(&src->tag, dest->tag, ARRAY_SIZE(dest->tag));
 }
 
-static void api_make_guild_member(ApiGuildMember* dest, GuildMember* src)
+void api_make_guild_member(ApiGuildMember* dest, GuildMember* src)
 {
     dest->status = src->status;
     dest->type = src->member_type;

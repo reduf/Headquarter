@@ -34,6 +34,24 @@ void init_client(GwClient *client)
     init_connection(&client->game_srv, client);
 }
 
+World* get_world(GwClient *client)
+{
+    if (client->world.hash == 0) {
+        return NULL;
+    } else {
+        return &client->world;
+    }
+}
+
+World* get_world_or_abort(GwClient *client)
+{
+    if (client->world.hash == 0) {
+        abort();
+    } else {
+        return &client->world;
+    }
+}
+
 uint32_t issue_next_transaction(GwClient *client, AsyncType type)
 {
     AsyncRequest *request = array_push(&client->requests, 1);
@@ -66,7 +84,7 @@ struct region_type_to_map_type {
     RegionType region_type;
 };
 
-static uint32_t find_map_type_from_map_id(uint32_t map_id)
+uint32_t find_map_type_from_map_id(uint32_t map_id)
 {
     static const struct area_info area_info_table[] = {
         #include "data/area_info.data"

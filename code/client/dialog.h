@@ -16,7 +16,7 @@ typedef struct DialogInfo {
     ArrayDialogButton buttons;
 } DialogInfo;
 
-static inline void dialog_info_clear(DialogInfo *info)
+void dialog_info_clear(DialogInfo *info)
 {
     info->opened = false;
     info->interact_with = 0;

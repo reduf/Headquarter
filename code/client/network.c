@@ -3,7 +3,7 @@
 #endif
 #define CORE_NETWORK_C
 
-static bool NetIsInitialized;
+bool NetIsInitialized;
 
 typedef struct DiffieHellmanCtx {
     mbedtls_mpi prime_modulus;
@@ -17,8 +17,8 @@ typedef struct DiffieHellmanCtx {
  *
  * We provide the function to compute len here.
  */
-static size_t unicode16_len(const uint16_t *s, size_t n);
-static size_t unicode16_cpy(uint16_t *d, const uint16_t *s, size_t n);
+size_t unicode16_len(const uint16_t *s, size_t n);
+size_t unicode16_cpy(uint16_t *d, const uint16_t *s, size_t n);
 
 void NetConn_Reset(Connection *conn)
 {
@@ -126,30 +126,30 @@ typedef union PacketBuffer {
     Packet  packet;
 } PacketBuffer;
 
-static bool socket_would_block(int err);
-static bool key_exchange_helper(Connection *conn, DiffieHellmanCtx *dhm);
-static void arc4_hash(const uint8_t *key, uint8_t *digest);
-static bool read_dhm_key_file(DiffieHellmanCtx *dhm, FILE* file);
+bool socket_would_block(int err);
+bool key_exchange_helper(Connection *conn, DiffieHellmanCtx *dhm);
+void arc4_hash(const uint8_t *key, uint8_t *digest);
+bool read_dhm_key_file(DiffieHellmanCtx *dhm, FILE* file);
 
-static size_t get_static_size(MsgField *field);
-static size_t get_element_size(MsgField *field);
+size_t get_static_size(MsgField *field);
+size_t get_element_size(MsgField *field);
 
-static size_t get_prefix_size(Type type);
-static int unpack(const uint8_t *data, size_t data_size,
+size_t get_prefix_size(Type type);
+int unpack(const uint8_t *data, size_t data_size,
     uint8_t *buffer, size_t buff_size, MsgField *fields, size_t fields_count);
-static int pack(const uint8_t *data, size_t data_size,
+int pack(const uint8_t *data, size_t data_size,
     uint8_t *buffer, size_t buff_size, MsgField *fields, size_t fields_count);
 
-static mbedtls_entropy_context entropy;
-static mbedtls_ctr_drbg_context ctr_drbg;
-static DiffieHellmanCtx official_server_keys;
-static DiffieHellmanCtx custom_server_keys;
+mbedtls_entropy_context entropy;
+mbedtls_ctr_drbg_context ctr_drbg;
+DiffieHellmanCtx official_server_keys;
+DiffieHellmanCtx custom_server_keys;
 
-static SockAddressArray AuthSrv_IPs;
+SockAddressArray AuthSrv_IPs;
 
 bool Net_Initialized = false;
 
-static void DiffieHellmanCtx_Reset(DiffieHellmanCtx *dhm)
+void DiffieHellmanCtx_Reset(DiffieHellmanCtx *dhm)
 {
     mbedtls_mpi_free(&dhm->prime_modulus);
     mbedtls_mpi_free(&dhm->server_public);
@@ -272,7 +272,7 @@ bool IPv4ToAddr(const char *host, const char *port, struct sockaddr *sockaddr)
     return true;
 }
 
-static bool read_dhm_key_file(DiffieHellmanCtx *dhm, FILE *file)
+bool read_dhm_key_file(DiffieHellmanCtx *dhm, FILE *file)
 {
     char line[256];
 
@@ -345,7 +345,7 @@ static bool read_dhm_key_file(DiffieHellmanCtx *dhm, FILE *file)
     return true;
 }
 
-static bool socket_would_block(int err)
+bool socket_would_block(int err)
 {
 #ifdef _WIN32
     return err == WSAEWOULDBLOCK;
@@ -358,7 +358,7 @@ static bool socket_would_block(int err)
 #endif
 }
 
-static bool socket_set_nonblock(struct socket *sock)
+bool socket_set_nonblock(struct socket *sock)
 {
 #if _WIN32
     u_long nonblock = 1;
@@ -377,7 +377,7 @@ static bool socket_set_nonblock(struct socket *sock)
 #endif
 }
 
-static bool key_exchange_helper(Connection *conn, DiffieHellmanCtx *dhm)
+bool key_exchange_helper(Connection *conn, DiffieHellmanCtx *dhm)
 {
     // Compute g^x (mod p)
     // Send:
@@ -445,7 +445,7 @@ quick_exist:
     return success;
 }
 
-static struct socket create_socket(void)
+struct socket create_socket(void)
 {
     struct socket sock;
     sock.handle = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -583,7 +583,7 @@ bool GameSrv_Connect(Connection *conn,
     return true;
 }
 
-static void arc4_hash(const uint8_t *key, uint8_t *digest)
+void arc4_hash(const uint8_t *key, uint8_t *digest)
 {
     typedef union U20 {
         uint8_t  u8[20];
@@ -820,7 +820,7 @@ void NetConn_Update(Connection *conn)
 
 // @Cleanup:
 // This is currently unused and the size for string isn't sync with the packets format dump.
-static size_t get_static_size(MsgField *field)
+size_t get_static_size(MsgField *field)
 {
     int param = field->param;
     switch (field->type) {
@@ -845,7 +845,7 @@ static size_t get_static_size(MsgField *field)
     return 0;
 }
 
-static size_t get_element_size(MsgField *field)
+size_t get_element_size(MsgField *field)
 {
     switch (field->type) {
         case TYPE_MSG_HEADER:   return sizeof(Header);
@@ -869,7 +869,7 @@ static size_t get_element_size(MsgField *field)
     return 0;
 }
 
-static size_t get_prefix_size(Type type)
+size_t get_prefix_size(Type type)
 {
     switch (type) {
         case TYPE_MSG_HEADER:
@@ -896,7 +896,7 @@ static size_t get_prefix_size(Type type)
     return 0;
 }
 
-static int pack(const uint8_t *data, size_t data_size,
+int pack(const uint8_t *data, size_t data_size,
     uint8_t *buffer, size_t buff_size, MsgField *fields, size_t fields_count)
 {
 #pragma pack(push, 1)
@@ -999,7 +999,7 @@ static int pack(const uint8_t *data, size_t data_size,
     return written;
 }
 
-static int unpack(const uint8_t *data, size_t data_size, uint8_t *buffer,
+int unpack(const uint8_t *data, size_t data_size, uint8_t *buffer,
     size_t buff_size, MsgField *fields, size_t fields_count)
 {
 #pragma pack(push, 1)
@@ -1117,7 +1117,7 @@ void Sha1(const void *data, size_t size, char digest[20])
     W[4] = bswap32(W[4]);
 }
 
-static size_t unicode16_len(const uint16_t *s, size_t n)
+size_t unicode16_len(const uint16_t *s, size_t n)
 {
     size_t i;
     for (i = 0; i < n; i++) {
@@ -1127,7 +1127,7 @@ static size_t unicode16_len(const uint16_t *s, size_t n)
     return i;
 }
 
-static size_t unicode16_cpy(uint16_t *d, const uint16_t *s, size_t n)
+size_t unicode16_cpy(uint16_t *d, const uint16_t *s, size_t n)
 {
     size_t i;
     for (i = 0; i < n; i++) {

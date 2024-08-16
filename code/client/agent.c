@@ -17,31 +17,29 @@
 #define AG_ATTR_SET_HEALTH_PS   (44)
 #define AG_ATTR_ARMOR_IGNORING  (55)
 
-static void agent_set_distination(Agent *agent, Vec2f dest);
+void agent_set_distination(Agent *agent, Vec2f dest);
 
-static void ensure_agent_exist(GwClient *client, AgentId id);
-static void remove_agent(GwClient *client, AgentId id);
+void ensure_agent_exist(GwClient *client, AgentId id);
+void remove_agent(GwClient *client, AgentId id);
 
-static inline bool v2_equals(Vec2f v1, Vec2f v2)
+bool v2_equals(Vec2f v1, Vec2f v2)
 {
     return (v1.x == v2.x) && (v1.y == v2.y);
 }
 
-static inline float
-lerpf(float p1, float p2, float t)
+float lerpf(float p1, float p2, float t)
 {
     return t * p1 + (1 - t) * p2;
 }
 
-static inline float
-clampf(float val, float min, float max)
+float clampf(float val, float min, float max)
 {
     if (val < min) return min;
     if (val > max) return max;
     return val;
 }
 
-static void agent_set_distination(Agent *agent, Vec2f dest)
+void agent_set_distination(Agent *agent, Vec2f dest)
 {
     Vec2f pos = agent->position;
 
@@ -58,7 +56,7 @@ static void agent_set_distination(Agent *agent, Vec2f dest)
     agent->rotation = atan2f(agent->direction.y, agent->direction.x);
 }
 
-static Agent *get_agent_safe(GwClient *client, AgentId id)
+Agent *get_agent_safe(GwClient *client, AgentId id)
 {
     if (!(client->ingame && client->world.hash))
         return NULL;
@@ -68,7 +66,7 @@ static Agent *get_agent_safe(GwClient *client, AgentId id)
     return array_at(&agents, id);
 }
 
-static void ensure_agent_exist(GwClient *client, AgentId id)
+void ensure_agent_exist(GwClient *client, AgentId id)
 {
     ArrayAgent *agents = &client->world.agents;
     if (array_inside(agents, id) && array_at(agents, id))
@@ -85,7 +83,7 @@ static void ensure_agent_exist(GwClient *client, AgentId id)
     array_set(agents, id, agent);
 }
 
-static void remove_agent(GwClient *client, AgentId id)
+void remove_agent(GwClient *client, AgentId id)
 {
     ArrayAgent *agents = &client->world.agents;
     if (!array_inside(agents, id))
@@ -95,7 +93,7 @@ static void remove_agent(GwClient *client, AgentId id)
     agents->data[id] = NULL;
 }
 
-static void update_agents_position(ArrayAgent *agents, msec_t diff)
+void update_agents_position(ArrayAgent *agents, msec_t diff)
 {
     float delta = diff / 1000.f;
 

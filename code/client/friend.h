@@ -26,7 +26,7 @@ void init_friend(Friend* friend)
     friend->zone = 0;
 }
 
-static void api_make_friend(ApiFriend* dest, Friend* src)
+void api_make_friend(ApiFriend* dest, Friend* src)
 {
     dest->type = src->type;
     dest->status = src->status;

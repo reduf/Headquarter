@@ -15,7 +15,7 @@ typedef struct Character {
 } Character;
 typedef array(Character) CharacterArray;
 
-static void init_character(Character *character)
+void init_character(Character *character)
 {
     kstr_hdr_init(&character->name, character->name_buffer, ARRAY_SIZE(character->name_buffer));
 

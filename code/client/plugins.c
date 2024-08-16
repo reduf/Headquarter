@@ -5,10 +5,10 @@
 
 #define PLUGIN_MAX_PATH (256)
 
-struct list   plugins = LIST_INITIALIZER(plugins);
-static size_t plugins_count = 0;
-static Plugin plugins_table[PLUGINS_MAX * 2];
-static size_t array_find_plugin(Plugin *table, size_t size, void *handle);
+struct list plugins = LIST_INITIALIZER(plugins);
+size_t plugins_count = 0;
+Plugin plugins_table[PLUGINS_MAX * 2];
+size_t array_find_plugin(Plugin *table, size_t size, void *handle);
 
 bool plugin_load(const char *path)
 {
@@ -98,7 +98,7 @@ void plugin_unload(Plugin *plugin)
     plugins_count--;
 }
 
-static size_t array_find_plugin(Plugin *table, size_t size, void *handle)
+size_t array_find_plugin(Plugin *table, size_t size, void *handle)
 {
     size_t try_count = 0;
     uint32_t hash  = hash_ptr(handle) & 0xFFFFFFFF;

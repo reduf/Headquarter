@@ -30,14 +30,14 @@ typedef struct Player {
 } Player;
 typedef array(Player *) ArrayPlayer;
 
-static void api_make_player(ApiPlayer *dest, Player *src)
+void api_make_player(ApiPlayer *dest, Player *src)
 {
     dest->player_id = src->player_id;
     dest->agent_id  = src->agent_id;
     dest->guild_id  = src->guild_id;
 }
 
-static void init_player(Player *player)
+void init_player(Player *player)
 {
     kstr_hdr_init(&player->name, player->name_buffer, ARRAY_SIZE(player->name_buffer));
 }

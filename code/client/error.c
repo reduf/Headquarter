@@ -3,7 +3,7 @@
 #endif
 #define ERROR_C_INC
 
-static const char *get_error_s(int error_code)
+const char *get_error_s(int error_code)
 {
     switch (error_code)
     {
@@ -49,7 +49,7 @@ static const char *get_error_s(int error_code)
 }
 
 #if defined(OS_WINDOWS)
-static void win32_perror(const char *str)
+void win32_perror(const char *str)
 {
     char *buffer = NULL;
     int error = os_errno;

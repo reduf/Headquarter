@@ -14,7 +14,7 @@ typedef struct Quest {
 } Quest;
 typedef array(Quest) ArrayQuest;
 
-static void api_make_quest(ApiQuest *dest, Quest *src)
+void api_make_quest(ApiQuest *dest, Quest *src)
 {
     dest->quest_id = src->quest_id;
     dest->status   = src->status;

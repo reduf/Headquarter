@@ -3,7 +3,7 @@
 #endif
 #define CORE_CHAT_C
 
-static char get_channel_character(Channel channel)
+char get_channel_character(Channel channel)
 {
     switch (channel) {
         case Channel_Alliance:  return '%';
@@ -33,8 +33,7 @@ void init_chat(Chat *chat)
     array_init(&chat->str_builder);
 }
 
-static inline char *
-GetChannelName(Channel chan)
+const char* GetChannelName(Channel chan)
 {
     switch(chan) {
         case Channel_Alliance:  return "Alliance";

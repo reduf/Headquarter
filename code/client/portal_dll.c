@@ -16,23 +16,23 @@ typedef void     (*PortalListGameAccounts_t)(const wchar_t *game);
 typedef void     (*PortalRequestGameToken_t)(const wchar_t *game1, const wchar_t *game2);
 typedef uint8_t *(*PortalGetUserId_t)(void);
 
-static PortalInitialize_t           PortalInitialize;
-static PortalDestroy_t              PortalDestroy;
-static PortalStartCleanup_t         PortalStartCleanup;
-static PortalRegisterNotify_t       PortalRegisterNotify;
-static PortalLogin_t                PortalLogin;
-static PortalListGameAccounts_t     PortalListGameAccounts;
-static PortalRequestGameToken_t     PortalRequestGameToken;
-static PortalLoginSecondaryAuth_t   PortalLoginSecondaryAuth;
-static PortalGetUserId_t            PortalGetUserId;
+PortalInitialize_t           PortalInitialize;
+PortalDestroy_t              PortalDestroy;
+PortalStartCleanup_t         PortalStartCleanup;
+PortalRegisterNotify_t       PortalRegisterNotify;
+PortalLogin_t                PortalLogin;
+PortalListGameAccounts_t     PortalListGameAccounts;
+PortalRequestGameToken_t     PortalRequestGameToken;
+PortalLoginSecondaryAuth_t   PortalLoginSecondaryAuth;
+PortalGetUserId_t            PortalGetUserId;
 
-static HMODULE hPortal;
+HMODULE hPortal;
 
 bool    portal_received_key;
 uint8_t portal_user_id[16];
 uint8_t portal_session_id[16];
 
-static void OnPortalNotify(uint32_t msgid, uint32_t unk1, void *data, void *param)
+void OnPortalNotify(uint32_t msgid, uint32_t unk1, void *data, void *param)
 {
     (void)unk1;
     (void)param;

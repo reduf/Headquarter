@@ -1315,7 +1315,7 @@ leave:
 }
 
 // to deposit put negative number, to withdraw put positive
-static bool compute_gold_character(GwClient *client, int diff, int *gold_character, int *gold_storage)
+bool compute_gold_character(GwClient *client, int diff, int *gold_character, int *gold_storage)
 {
     int gold_stor_after = client->world.inventory.gold_storage - diff;
     int gold_char_after = client->world.inventory.gold_character + diff;

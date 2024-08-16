@@ -3,8 +3,7 @@
 #endif
 #define CORE_EFFECT_C
 
-
-static size_t array_find_effect_index(ArrayEffect *effects, uint32_t effect_id)
+size_t array_find_effect_index(ArrayEffect *effects, uint32_t effect_id)
 {
     for (size_t i = 0; i < effects->size; i++) {
         if (effects->data[i].effect_id == effect_id)
@@ -13,7 +12,7 @@ static size_t array_find_effect_index(ArrayEffect *effects, uint32_t effect_id)
     return array_npos;
 }
 
-static Effect *array_find_effect(ArrayEffect *effects, uint32_t effect_id)
+Effect *array_find_effect(ArrayEffect *effects, uint32_t effect_id)
 {
     size_t index = array_find_effect_index(effects, effect_id);
     if (index == array_npos)

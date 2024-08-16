@@ -51,22 +51,19 @@ typedef array(Skillbar) ArraySkillbar;
 
 #define skill_is_casting(s) ((s)->casting || (s)->casting_confirmed)
 
-static inline void
-skillbar_set_skill_id(Skillbar *sb, int pos, int skill_id)
+void skillbar_set_skill_id(Skillbar *sb, int pos, int skill_id)
 {
     assert(0 <= pos && pos <= 7);
     memzero(&sb->skills[pos], sizeof(sb->skills[0]));
     sb->skills[pos].skill_id = skill_id;
 }
 
-static inline void
-skillbar_set_skill(Skillbar *sb, int pos, Skill *skill)
+void skillbar_set_skill(Skillbar *sb, int pos, Skill *skill)
 {
     skillbar_set_skill_id(sb, pos, skill->skill_id);
 }
 
-static inline Skill *
-skillbar_get_skill_by_id(Skillbar *sb, uint32_t skill_id)
+Skill* skillbar_get_skill_by_id(Skillbar *sb, uint32_t skill_id)
 {
     assert(sb);
     for (int i = 0; i < ARRAY_SIZE(sb->skills); i++)
@@ -75,16 +72,15 @@ skillbar_get_skill_by_id(Skillbar *sb, uint32_t skill_id)
     return NULL;
 }
 
-static inline bool
-skillbar_skill_is_casting(Skillbar *sb, int pos)
+bool skillbar_skill_is_casting(Skillbar *sb, int pos)
 {
     assert(sb && (1 <= pos) && (pos <= 8));
     Skill *skill = &sb->skills[pos];
     return (skill->casting || skill->casting_confirmed);
 }
 
-static inline void agent_set_casting(struct Agent *agent, Skill *casting);
-static void skillbar_start_cast(Skillbar *sb, uint32_t skill_id, struct Agent *caster, struct Agent *target)
+void agent_set_casting(struct Agent *agent, Skill *casting);
+void skillbar_start_cast(Skillbar *sb, uint32_t skill_id, struct Agent *caster, struct Agent *target)
 {
     assert(sb && sb->owner_agent_id);
     Skill *skill = skillbar_get_skill_by_id(sb, skill_id);
@@ -101,7 +97,7 @@ static void skillbar_start_cast(Skillbar *sb, uint32_t skill_id, struct Agent *c
     agent_set_casting(skill->caster, skill);
 }
 
-static void skillbar_done_cast(Skillbar *sb, uint32_t skill_id)
+void skillbar_done_cast(Skillbar *sb, uint32_t skill_id)
 {
     assert(sb && sb->owner_agent_id);
     Skill *skill = skillbar_get_skill_by_id(sb, skill_id);
@@ -120,10 +116,10 @@ static void skillbar_done_cast(Skillbar *sb, uint32_t skill_id)
     skill->target = NULL;
 }
 
-static Skillbar *get_skillbar_safe(GwClient *client, AgentId agent_id);
+Skillbar *get_skillbar_safe(GwClient *client, AgentId agent_id);
 
-static void skillbar_done_cast(Skillbar *sb,  uint32_t skill_id);
-static void skillbar_start_cast(Skillbar *sb, uint32_t skill_id,
+void skillbar_done_cast(Skillbar *sb,  uint32_t skill_id);
+void skillbar_start_cast(Skillbar *sb, uint32_t skill_id,
     struct Agent *caster, struct Agent *target);
 
 typedef struct SkillTemplate {
@@ -133,4 +129,4 @@ typedef struct SkillTemplate {
     ArrayAttribute attributes;
 } SkillTemplate;
 
-static SkillTemplate* template_decode(const char* template);
+SkillTemplate* template_decode(const char* template);
