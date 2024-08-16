@@ -3,6 +3,49 @@
 #endif
 #define CORE_API_C
 
+Player* GetPlayerPtr(GwClient *client)
+{
+    if (!client->ingame) {
+        return NULL;
+    }
+
+    if (client->world.players.size <= client->world.player_id)
+        return NULL;
+    Player *player = client->world.players.data[client->world.player_id];
+    if (player->player_id == 0) {
+        return NULL;
+    }
+    return player;
+}
+
+Party* GetPlayerPartyPtr(GwClient *client)
+{
+    Player *player;
+    if ((player = GetPlayerPtr(client)) == NULL)
+        return NULL;
+    if (!player->party_id)
+        return NULL;
+    Party *party;
+    if ((party = get_party_safe(client, player->party_id)) == NULL) {
+        return NULL;
+    }
+    return party;
+}
+
+Guild* GetPlayerGuildPtr(GwClient *client)
+{
+    Player *player;
+    if ((player = GetPlayerPtr(client)) == NULL)
+        return NULL;
+    if (!player->guild_id)
+        return NULL;
+    Guild *guild;
+    if ((guild = get_guild_safe(client, player->guild_id)) == NULL) {
+        return NULL;
+    }
+    return guild;
+}
+
 HQAPI void LogError(const char *fmt, ...)
 {
     va_list args;
@@ -351,9 +394,9 @@ HQAPI size_t GetCharacterName(char *buffer, size_t length)
 
     size_t written = 0;
     thread_mutex_lock(&client->mutex);
-    if (!client->current_character)
+    if (!client->current_character_idx || client->characters.size <= client->current_character_idx)
         goto leave;
-    Character *cc = client->current_character;
+    Character *cc = &client->characters.data[client->current_character_idx];
     if (!cc) goto leave;
     if (kstr_hdr_write_ascii(&cc->name, buffer, length)) {
         written = cc->name.length;
@@ -420,10 +463,11 @@ HQAPI bool GetPlayerIsPartyLeader(uint32_t player_id)
     assert(client != NULL);
     bool is_leader = false;
     thread_mutex_lock(&client->mutex);
-    Player *player = get_player_safe(client, player_id);
-    if (!(player && player->party))
+    Party *party;
+    if ((party = GetPlayerPartyPtr(client)) == NULL) {
         goto leave;
-    ArrayPartyPlayer players = player->party->players;
+    }
+    ArrayPartyPlayer players = party->players;
     if (!players.size)
         goto leave;
     is_leader = (players.data[0].player_id == player_id);
@@ -456,7 +500,7 @@ HQAPI AgentId GetMyAgentId(void)
     assert(client != NULL);
     if (!client->ingame)
         return 0;
-    return client->player_agent_id;
+    return client->world.player_agent_id;
 }
 
 HQAPI uint32_t GetMyGuildId(void)
@@ -464,9 +508,10 @@ HQAPI uint32_t GetMyGuildId(void)
     assert(client != NULL);
     uint32_t guild_id = 0;
     thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->player && client->player->guild))
+    Player *player;
+    if ((player = GetPlayerPtr(client)) == NULL)
         goto leave;
-    guild_id = client->player->guild->guild_id;
+    guild_id = player->guild_id;
 leave:
     thread_mutex_unlock(&client->mutex);
     return guild_id;
@@ -477,9 +522,10 @@ HQAPI uint32_t GetMyPlayerId(void)
     assert(client != NULL);
     uint32_t player_id = 0;
     thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->player))
+    Player *player;
+    if ((player = GetPlayerPtr(client)) == NULL)
         goto leave;
-    player_id = client->player->player_id;
+    player_id = client->world.player_id;
 leave:
     thread_mutex_unlock(&client->mutex);
     return player_id;
@@ -504,11 +550,10 @@ HQAPI size_t GetGuildMembers(ApiGuildMember *buffer, size_t length)
     assert(client != NULL);
     size_t count = 0;
     thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->player))
+    Guild *guild;
+    if ((guild = GetPlayerGuildPtr(client)) == NULL)
         goto leave;
-    if (!client->player->guild)
-        goto leave;
-    ArrayGuildMember members = client->player->guild->members;
+    ArrayGuildMember members = guild->members;
     if (buffer == NULL) {
         count = members.size;
         goto leave;
@@ -530,9 +575,13 @@ HQAPI uint32_t GetGuildOfAgent(uint32_t agent_id)
     Agent *agent = get_agent_safe(client, agent_id);
     if (!agent) goto leave;
     Player *player = get_player_safe(client, agent->player_id);
-    if (!(player && player->guild))
+    if (!(player && player->guild_id))
         goto leave;
-    guild_id = player->guild->guild_id;
+    Guild *guild;
+    if ((guild = get_guild_safe(client, player->guild_id)) == NULL) {
+        goto leave;
+    }
+    guild_id = guild->guild_id;
 leave:
     thread_mutex_unlock(&client->mutex);
     return guild_id;
@@ -605,7 +654,7 @@ HQAPI bool GetAgentOfPlayer(ApiAgent *api_agent, uint32_t player_id)
     bool success = false;
     thread_mutex_lock(&client->mutex);
     if (!player_id) {
-        player_id = client->player_agent_id;
+        player_id = client->world.player_agent_id;
     }
     Player *player = get_player_safe(client, player_id);
     if (!player) goto leave;
@@ -795,7 +844,7 @@ HQAPI size_t GetBagCapacity(BagEnum bag)
     thread_mutex_lock(&client->mutex);
     if (!client->ingame)
         goto leave;
-    Bag *bag_ptr = client->inventory.bags[bag];
+    Bag *bag_ptr = client->world.inventory.bags[bag];
     if (!bag_ptr) goto leave;
     capacity = bag_ptr->items.size;
 leave:
@@ -812,7 +861,7 @@ HQAPI size_t GetBagItems(BagEnum bag, ApiItem *buffer, size_t length)
     thread_mutex_lock(&client->mutex);
     if (!client->ingame)
         goto leave;
-    Bag *bag_ptr = client->inventory.bags[bag];
+    Bag *bag_ptr = client->world.inventory.bags[bag];
     if (!bag_ptr) goto leave;
     ArrayItem items = bag_ptr->items;
     if (buffer == NULL) {
@@ -841,7 +890,7 @@ HQAPI bool RequestItemQuote(uint32_t item_id)
         goto leave;
     if (!client->merchant_agent_id)
         goto leave;
-    Agent* agent = get_agent_safe(client, client->player_agent_id);
+    Agent* agent = get_agent_safe(client, client->world.player_agent_id);
     if (!agent) goto leave;
     Vec2f player_pos = GetAgentPos(GetMyAgentId());
     agent = get_agent_safe(client, client->merchant_agent_id);
@@ -1067,11 +1116,12 @@ HQAPI void DonateFaction(FactionType faction)
     thread_mutex_lock(&client->mutex);
     if (!client->ingame)
         goto leave;
-    if (client->player && client->player->guild) {
-        Guild *guild = client->player->guild;
-        if (guild->faction_pts + 5000 > max_guild_faction)
-            goto leave;
+    Guild *guild;
+    if ((guild = GetPlayerGuildPtr(client)) == NULL) {
+        goto leave;
     }
+    if (max_guild_faction < guild->faction_pts + 5000)
+        goto leave;
     GameSrv_DonateFaction(client, faction, 5000);
 leave:
     thread_mutex_unlock(&client->mutex);
@@ -1122,11 +1172,10 @@ HQAPI Difficulty GetDifficulty(void)
     assert(client != NULL);
     Difficulty mode = Difficulty_Normal;
     thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->player))
+    Party *party;
+    if ((party = GetPlayerPartyPtr(client)) == NULL)
         goto leave;
-    if (!client->player->party)
-        goto leave;
-    mode = client->player->party->difficulty;
+    mode = party->difficulty;
 leave:
     thread_mutex_unlock(&client->mutex);
     return mode;
@@ -1268,8 +1317,8 @@ leave:
 // to deposit put negative number, to withdraw put positive
 static bool compute_gold_character(GwClient *client, int diff, int *gold_character, int *gold_storage)
 {
-    int gold_stor_after = client->inventory.gold_storage - diff;
-    int gold_char_after = client->inventory.gold_character + diff;
+    int gold_stor_after = client->world.inventory.gold_storage - diff;
+    int gold_char_after = client->world.inventory.gold_character + diff;
 
     if (gold_stor_after < 0 || (1000*1000) < gold_stor_after) return false;
     if (gold_char_after < 0 || (100*1000)  < gold_char_after) return false;
@@ -1311,7 +1360,7 @@ HQAPI int GetGoldStorage(void)
     thread_mutex_lock(&client->mutex);
     if (!client->ingame)
         goto leave;
-    gold = client->inventory.gold_storage;
+    gold = client->world.inventory.gold_storage;
 leave:
     thread_mutex_unlock(&client->mutex);
     return gold;
@@ -1324,7 +1373,7 @@ HQAPI int GetGoldCharacter(void)
     thread_mutex_lock(&client->mutex);
     if (!client->ingame)
         goto leave;
-    gold = client->inventory.gold_character;
+    gold = client->world.inventory.gold_character;
 leave:
     thread_mutex_unlock(&client->mutex);
     return gold;
@@ -1344,7 +1393,7 @@ HQAPI void GetSkillbar(uint32_t *skills, AgentId agent_id)
     if (!(client->ingame && client->world.hash))
         goto leave;
     if (agent_id == 0)
-        agent_id = client->player_agent_id;
+        agent_id = client->world.player_agent_id;
     Skillbar *sb = get_skillbar_safe(client, agent_id);
     if (!sb) goto leave;
     for (size_t i = 0; i < 8; i++)
@@ -1361,7 +1410,7 @@ HQAPI bool GetSkillCasting(size_t pos, AgentId *target_id)
     thread_mutex_lock(&client->mutex);
     if (!(client->ingame && client->world.hash))
         goto leave;
-    Skillbar *skillbar = get_skillbar_safe(client, client->player_agent_id);
+    Skillbar *skillbar = get_skillbar_safe(client, client->world.player_agent_id);
     if (!skillbar)
         goto leave;
     Skill *skill = &skillbar->skills[pos - 1];
@@ -1380,7 +1429,7 @@ HQAPI msec_t GetSkillRecharge(int pos)
     assert(1 <= pos && pos <= 8);
     msec_t remaining = 0;
     thread_mutex_lock(&client->mutex);
-    Skillbar *skillbar = get_skillbar_safe(client, client->player_agent_id);
+    Skillbar *skillbar = get_skillbar_safe(client, client->world.player_agent_id);
     if (!skillbar)
         goto leave;
     Skill *skill = &skillbar->skills[pos - 1];
@@ -1449,10 +1498,10 @@ HQAPI void LoadHeroSkillTemplate(const char* temp, uint32_t hero_index)
 {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
-    if (!client->ingame)
+    Party *party;
+    if ((party = GetPlayerPartyPtr(client)) == NULL)
         goto leave;
-
-    ArrayPartyHero heroes = client->player->party->heroes;
+    ArrayPartyHero heroes = party->heroes;
     if (!array_inside(&heroes, hero_index)) {
         goto leave;
     }
@@ -1527,11 +1576,10 @@ HQAPI void HeroFlag(Vec2f pos, uint32_t hero_index)
 {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
-    if (!client->ingame)
+    Party *party;
+    if ((party = GetPlayerPartyPtr(client)) == NULL)
         goto leave;
-    if (!(client->player && client->player->party))
-        goto leave;
-    ArrayPartyHero heroes = client->player->party->heroes;
+    ArrayPartyHero heroes = party->heroes;
     if (!array_inside(&heroes, hero_index))
         goto leave;
     AgentId hero_id = heroes.data[hero_index].agent_id;
@@ -1560,9 +1608,10 @@ HQAPI void HeroUseSkill(uint32_t hero_index, uint32_t skill_id, AgentId target_i
 {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->player && client->player->party))
+    Party *party;
+    if ((party = GetPlayerPartyPtr(client)) == NULL)
         goto leave;
-    ArrayPartyHero heroes = client->player->party->heroes;
+    ArrayPartyHero heroes = party->heroes;
     if (!array_inside(&heroes, hero_index))
         goto leave;
     AgentId hero_id = heroes.data[hero_index].agent_id;
@@ -1575,9 +1624,10 @@ HQAPI void HeroEnableSkill(uint32_t hero_index, uint32_t skill_id)
 {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->player && client->player->party))
+    Party *party;
+    if ((party = GetPlayerPartyPtr(client)) == NULL)
         goto leave;
-    ArrayPartyHero heroes = client->player->party->heroes;
+    ArrayPartyHero heroes = party->heroes;
     if (!array_inside(&heroes, hero_index))
         goto leave;
     AgentId hero_id = heroes.data[hero_index].agent_id;
@@ -1596,9 +1646,11 @@ HQAPI void HeroDisableSkill(uint32_t hero_index, uint32_t skill_id)
 {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->player && client->player->party))
+    Party *party;
+    if ((party = get_player_party_safe(client, client->world.player_id)) == NULL) {
         goto leave;
-    ArrayPartyHero heroes = client->player->party->heroes;
+    }
+    ArrayPartyHero heroes = party->heroes;
     if (!array_inside(&heroes, hero_index))
         goto leave;
     AgentId hero_id = heroes.data[hero_index].agent_id;
@@ -1617,9 +1669,11 @@ HQAPI void HeroSetBehavior(AgentId hero_index, HeroBehavior behavior)
 {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->player && client->player->party))
+    Party *party;
+    if ((party = get_player_party_safe(client, client->world.player_id)) == NULL) {
         goto leave;
-    ArrayPartyHero heroes = client->player->party->heroes;
+    }
+    ArrayPartyHero heroes = party->heroes;
     if (!array_inside(&heroes, hero_index))
         goto leave;
     AgentId hero_id = heroes.data[hero_index].agent_id;
@@ -1651,8 +1705,8 @@ HQAPI uint32_t GetPartyLeader(uint32_t party_id)
     Party *party = NULL;
     if (party_id) {
         party = get_party_safe(client, party_id);
-    } else if (client->player && client->player->party) {
-        party = client->player->party;
+    } else {
+        party = GetPlayerPartyPtr(client);
     }
     if (!party) goto leave;
     ArrayPartyPlayer players = party->players;
@@ -1669,9 +1723,11 @@ uint32_t GetPartyOfPlayer(uint32_t player_id)
     assert(client != NULL);
     uint32_t party_id = 0;
     thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->player && client->player->party))
+    Party *party;
+    if ((party = GetPlayerPartyPtr(client)) == NULL) {
         goto leave;
-    party_id = client->player->party->party_id;
+    }
+    party_id = party->party_id;
 leave:
     thread_mutex_unlock(&client->mutex);
     return party_id;
@@ -1682,9 +1738,11 @@ HQAPI bool GetPartyIsDefeated(void)
     assert(client != NULL);
     bool defeated = false;
     thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->player && client->player->party))
+    Party *party;
+    if ((party = GetPlayerPartyPtr(client)) == NULL) {
         goto leave;
-    defeated = client->player->party->defeated;
+    }
+    defeated = party->defeated;
 leave:
     thread_mutex_unlock(&client->mutex);
     return defeated;

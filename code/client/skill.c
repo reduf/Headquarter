@@ -263,14 +263,14 @@ void GameSrv_UseSkill(GwClient *client, int skill_id, uint32_t flags, AgentId ta
 
     assert(client && client->game_srv.secured);
 
-    Agent *caster = get_agent_safe(client, client->player_agent_id);
+    Agent *caster = get_agent_safe(client, client->world.player_agent_id);
     if (!caster) {
-        LogError("Can't get player agent '%d'", client->player_agent_id);
+        LogError("Can't get player agent '%d'", client->world.player_agent_id);
         return;
     }
 
     Agent *target = get_agent_safe(client, target_id);
-    Skillbar *sb = get_skillbar_safe(client, client->player_agent_id);
+    Skillbar *sb = get_skillbar_safe(client, client->world.player_agent_id);
     skillbar_start_cast(sb, skill_id, caster, target);
 
     UseSkill packet = NewPacket(GAME_CMSG_USE_SKILL);
@@ -292,9 +292,9 @@ void GameSrv_Attack(GwClient* client, AgentId target_id, bool call_target) {
 
     assert(client&& client->game_srv.secured);
 
-    Agent* player = get_agent_safe(client, client->player_agent_id);
+    Agent* player = get_agent_safe(client, client->world.player_agent_id);
     if (!player) {
-        LogError("Can't get player agent '%d'", client->player_agent_id);
+        LogError("Can't get player agent '%d'", client->world.player_agent_id);
         return;
     }
 

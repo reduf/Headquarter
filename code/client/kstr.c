@@ -20,6 +20,15 @@ void kstr_init(struct kstr *str, uint16_t *buffer, size_t length, size_t capacit
     str->buffer = buffer;
 }
 
+void kstr_init_from_null_terminated(struct kstr *str, uint16_t *buffer, size_t capacity)
+{
+    kstr_init(str, buffer, capacity, capacity);
+    size_t length = kstr_find_codepoint(str, 0);
+    if (length < capacity) {
+        str->length = length;
+    }
+}
+
 bool kstr_copy(struct kstr *dest, const struct kstr *src)
 {
     if (dest->capacity < src->length)

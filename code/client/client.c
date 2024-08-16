@@ -21,19 +21,14 @@ void init_client(GwClient *client)
     array_init(&client->merchant_items);
     array_init(&client->trade_session.trader_items);
     array_init(&client->trade_session.player_items);
-    array_init(&client->titles);
     array_init(&client->friends);
     array_init(&client->dialog.buttons);
-
-    array_resize(&client->titles, 64);
 
     init_chat(&client->chat);
 
     client->next_transaction_id = 1;
 
     init_event_manager(&client->event_mgr);
-
-    init_guildmember_update(client);
 
     init_connection(&client->auth_srv, client);
     init_connection(&client->game_srv, client);
@@ -94,6 +89,15 @@ static uint32_t find_map_type_from_map_id(uint32_t map_id)
 
     LogError("Failed to find the map type from the map id %hu", map_id);
     abort();
+}
+
+Character* GetCharacter(GwClient *client, uint32_t char_id)
+{
+    if (client->characters.size <= char_id) {
+        return NULL;
+    } else {
+        return &client->characters.data[char_id];
+    }
 }
 
 void ContinueAccountLogin(GwClient *client, uint32_t error_code)
@@ -220,7 +224,8 @@ void ContinuePlayCharacter(GwClient *client, uint32_t error_code)
     if (options.opt_map_id.set) {
         choosen_map_id = options.opt_map_id.map_id;
     } else {
-        choosen_map_id = client->current_character->map;
+        Character *ch = GetCharacter(client, client->current_character_idx);
+        choosen_map_id = ch ? ch->map : 0;
     }
 
     uint32_t map_type;
@@ -236,27 +241,28 @@ void ContinuePlayCharacter(GwClient *client, uint32_t error_code)
 
 void ContinueChangeCharacter(GwClient *client, uint32_t error_code)
 {
-    assert(client->state == AwaitChangeCharacter && client->pending_character);
+    assert(client->state == AwaitChangeCharacter && client->pending_character_idx != 0);
 
     if (error_code != 0) {
         LogInfo("ContinueChangeCharacter failed (Code=%03d)", error_code);
         return;
     }
-    client->current_character = client->pending_character;
-    client->pending_character = NULL;
+    client->current_character_idx = client->pending_character_idx;
+    client->pending_character_idx = 0;
     client->state = AwaitPlayCharacter;
     PlayCharacter(client, NULL, 0);
 }
 
 bool ChangeCharacter(GwClient* client, struct kstr* name)
 {
-    Character *cc = client->current_character;
-    if (!(name && kstr_hdr_compare_kstr(&cc->name, name) != 0))
+    Character *cc = GetCharacter(client, client->current_character_idx);
+    if (!(cc && name && kstr_hdr_compare_kstr(&cc->name, name) != 0))
         return false;
-    array_foreach(cc, &client->characters) {
-        if (kstr_hdr_compare_kstr(&cc->name, name) == 0) {
+    for (size_t idx = 0; idx < client->characters.size; ++idx) {
+        Character *ch = &client->characters.data[idx];
+        if (kstr_hdr_compare_kstr(&ch->name, name) == 0) {
             client->state = AwaitChangeCharacter;
-            client->pending_character = cc;
+            client->pending_character_idx = idx;
             uint32_t trans_id = issue_next_transaction(client, AsyncType_ChangeCharacter);
 
             LogDebug("AuthSrv_ChangeCharacter {trans_id: %lu}", trans_id);

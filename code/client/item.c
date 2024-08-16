@@ -64,7 +64,7 @@ Bag *get_bag_safe(GwClient *client, BagEnum bag_id)
 {
     if (!client->ingame)
         return NULL;
-    return client->inventory.bags[bag_id];
+    return client->world.inventory.bags[bag_id];
 }
 
 void HandleItemStreamCreate(Connection *conn, size_t psize, Packet *packet)
@@ -321,7 +321,7 @@ void HandleInventoryCreateBag(Connection *conn, size_t psize, Packet *packet)
     array_resize(&bag->items, pack->slot_count);
 
     assert(pack->bag_model_id < BagEnum_Count);
-    client->inventory.bags[pack->bag_model_id] = bag;
+    client->world.inventory.bags[pack->bag_model_id] = bag;
 }
 void HandleWindowItemStreamEnd(Connection* conn, size_t psize, Packet* packet) {
     #pragma pack(push, 1)

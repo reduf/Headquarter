@@ -35,22 +35,19 @@ void TransferGameServer(GwClient *client)
     assert(NetConn_IsShutdown(&client->game_srv));
     assert(client->state == AwaitGameServerTransfer);
 
-    Character *cc = client->current_character;
+    Character *cc = GetCharacter(client, client->current_character_idx);
     GameServerTransfer *transfer = &client->server_transfer;
 
-    // @Cleanup:
-    // We might need to reset all the world state here.
+    free_world(&client->world);
     init_world(&client->world, transfer->world_id);
-    client->inventory.gold_character = 0;
-    client->inventory.gold_storage = 0;
-    client->player = NULL;
+
     client->game_srv.host = transfer->host;
 
     if (!GameSrv_Connect(&client->game_srv, &client->uuid, &cc->uuid,
         transfer->world_id, transfer->player_id, transfer->map_id)) {
 
         LogError("Game handshake failed !");
-        reset_world(&client->world);
+        free_world(&client->world);
         NetConn_Reset(&client->game_srv);
         client->state = AwaitNothing;
         return;

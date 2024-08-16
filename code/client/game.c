@@ -93,7 +93,7 @@ static void HandleGoldCharacterAdd(Connection *conn, size_t psize, Packet *packe
     AddGold *pack = cast(AddGold *)packet;
     assert(client && client->game_srv.secured);
 
-    client->inventory.gold_character += pack->gold;
+    client->world.inventory.gold_character += pack->gold;
 }
 
 static void HandleGoldStorageAdd(Connection *conn, size_t psize, Packet *packet)
@@ -113,7 +113,7 @@ static void HandleGoldStorageAdd(Connection *conn, size_t psize, Packet *packet)
     UpdateGold *pack = cast(UpdateGold *)packet;
     assert(client && client->game_srv.secured);
 
-    client->inventory.gold_storage += pack->gold;
+    client->world.inventory.gold_storage += pack->gold;
 }
 
 void HandleReadyForMapSpawn(Connection *conn, size_t psize, Packet *packet)
@@ -145,7 +145,7 @@ void HandleGoldCharacterRemove(Connection *conn, size_t psize, Packet *packet)
     RemoveGold *pack = cast(RemoveGold *)packet;
     assert(client && client->game_srv.secured);
 
-    client->inventory.gold_character -= pack->gold;
+    client->world.inventory.gold_character -= pack->gold;
 }
 
 static void HandleGoldStorageRemove(Connection *conn, size_t psize, Packet *packet)
@@ -165,7 +165,7 @@ static void HandleGoldStorageRemove(Connection *conn, size_t psize, Packet *pack
     RemoveGold *pack = cast(RemoveGold *)packet;
     assert(client && client->game_srv.secured);
 
-    client->inventory.gold_storage -= pack->gold;
+    client->world.inventory.gold_storage -= pack->gold;
 }
 
 static void InstanceLoad_RequestData(Connection *conn)

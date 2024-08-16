@@ -40,7 +40,13 @@ void GameSrv_HeroUseSkill(GwClient *client, AgentId hero_id,
 void GameSrv_HeroLoadSkills(GwClient* client, uint32_t hero_index, uint32_t skill_ids[8]) {
     assert(client && client->game_srv.secured);
 
-    ArrayPartyHero heroes = client->player->party->heroes;
+    Party *party;
+    if ((party = get_player_party_safe(client, client->world.player_id)) == NULL) {
+        LogWarn("Can't load skill for player hero, because the player isn't in a party that exist");
+        return;
+    }
+
+    ArrayPartyHero heroes = party->heroes;
     if (!array_inside(&heroes, hero_index))
         return;
     AgentId agent_id = heroes.data[hero_index].agent_id;
@@ -51,7 +57,13 @@ void GameSrv_HeroLoadSkills(GwClient* client, uint32_t hero_index, uint32_t skil
 void GameSrv_HeroLoadAttributes(GwClient* client, uint32_t hero_index, ArrayAttribute attributes) {
     assert(client && client->game_srv.secured);
 
-    ArrayPartyHero heroes = client->player->party->heroes;
+    Party *party;
+    if ((party = get_player_party_safe(client, client->world.player_id)) == NULL) {
+        LogWarn("Can't load skill for player hero, because the player isn't in a party that exist");
+        return;
+    }
+
+    ArrayPartyHero heroes = party->heroes;
     if (!array_inside(&heroes, hero_index))
         return;
     AgentId agent_id = heroes.data[hero_index].agent_id;
@@ -62,7 +74,13 @@ void GameSrv_HeroLoadAttributes(GwClient* client, uint32_t hero_index, ArrayAttr
 void GameSrv_HeroChangeSecondary(GwClient* client, uint32_t hero_index, Profession profession) {
     assert(client && client->game_srv.secured);
 
-    ArrayPartyHero heroes = client->player->party->heroes;
+    Party *party;
+    if ((party = get_player_party_safe(client, client->world.player_id)) == NULL) {
+        LogWarn("Can't load skill for player hero, because the player isn't in a party that exist");
+        return;
+    }
+
+    ArrayPartyHero heroes = party->heroes;
     if (!array_inside(&heroes, hero_index))
         return;
     AgentId agent_id = heroes.data[hero_index].agent_id;

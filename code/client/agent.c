@@ -516,7 +516,7 @@ void HandleAgentMoveToPoint(Connection *conn, size_t psize, Packet *packet)
         return;
     }
 
-    if (agent->agent_id == client->player_agent_id) {
+    if (agent->agent_id == client->world.player_agent_id) {
         dialog_info_clear(&client->dialog);
         client->interact_with = 0;
     }
@@ -549,7 +549,7 @@ void HandleAgentUpdateDestination(Connection *conn, size_t psize, Packet *packet
         return;
     }
 
-    if (agent->agent_id == client->player_agent_id) {
+    if (agent->agent_id == client->world.player_agent_id) {
         dialog_info_clear(&client->dialog);
         client->interact_with = 0;
     }
@@ -934,9 +934,17 @@ void HandlePlayerUnlockedProfession(Connection *conn, size_t psize, Packet *pack
     UnlockedProf *pack = cast(UnlockedProf *)packet;
     assert(client && client->game_srv.secured);
 
-    Player *player = client->player;
-    if (!player || (player->agent_id != pack->agent_id))
+    // Not saving the value for other agents.
+    if (client->world.player_agent_id != pack->agent_id) {
         return;
+    }
+
+    Player *player;
+    if ((player = get_player_safe(client, client->player_id)) == NULL) {
+        LogWarn("Can't update unlocked profession, the player doesn't exist");
+        return;
+    }
+
     player->unlocked_profession = pack->unlocked;
 }
 
@@ -1018,7 +1026,7 @@ void GameSrv_MoveToCoord(GwClient *client, float x, float y)
 
     SendPacket(&client->game_srv, sizeof(move_pack), &move_pack);
 
-    Agent *player = array_at(&client->world.agents, client->player_agent_id);
+    Agent *player = array_at(&client->world.agents, client->world.player_agent_id);
     assert(player != NULL);
     player->maybe_moving = true;
 }

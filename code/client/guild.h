@@ -41,9 +41,9 @@ typedef struct GuildMemberUpdate {
 } GuildMemberUpdate;
 
 Guild *get_guild_safe(GwClient *client, uint32_t guild_id);
-void init_guildmember_update(GwClient* client);
-GuildMember* complete_guildmember_update(GwClient* client, uint16_t* account_name, size_t capacity);
-void reset_guildmember_update(GwClient * client);
+void init_guildmember_update(GuildMemberUpdate *gmu);
+void reset_guildmember_update(GuildMemberUpdate *gmu);
+GuildMember *complete_guildmember_update(GwClient *client, struct kstr account_name);
 
 static void api_make_guild(ApiGuild* dest, Guild* src)
 {

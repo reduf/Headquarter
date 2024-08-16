@@ -152,16 +152,14 @@ void HandleAccountInfo(Connection *conn, size_t psize, Packet *packet)
     uuid_dec_le(pack->account_uuid, &client->uuid);
     uuid_dec_le(pack->character_uuid, &char_uuid);
 
-    Character *character;
-    array_foreach(character, &client->characters) {
-        if (uuid_equals(&character->uuid, &char_uuid)) {
-            client->current_character = character;
+    for (size_t idx = 0; idx < client->characters.size; ++idx) {
+        Character *ch = &client->characters.data[idx];
+        if (uuid_equals(&ch->uuid, &char_uuid)) {
+            LogInfo("Current character: %.*ls", ch->name.length, ch->name_buffer);
+            client->current_character_idx = idx;
             break;
         }
     }
-
-    Character *cc = client->current_character;
-    LogInfo("Current character: %.*ls", cc->name.length, cc->name_buffer);
 }
 
 void HandleCharacterInfo(Connection *conn, size_t psize, Packet *packet)

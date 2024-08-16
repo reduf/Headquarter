@@ -118,22 +118,14 @@ typedef struct GwClient {
     ArrayAsyncRequest   requests;
 
     PlayerStatus        player_status;
-    AgentId             player_agent_id;
 
     FriendArray         friends;
     CharacterArray      characters;
-    Character          *current_character;
-    Character          *pending_character;
-
-    GuildMemberUpdate   guild_member_update;
+    size_t              current_character_idx;
+    size_t              pending_character_idx;
 
     Chat                chat;
     World               world;
-
-    ArrayTitle          titles;
-    ArrayQuest          quests;
-    Inventory           inventory;
-    Player             *player;
 
     EventManager        event_mgr;
 
@@ -165,6 +157,8 @@ uint32_t issue_next_transaction(GwClient *client, AsyncType type);
 void client_frame_update(GwClient *client, msec_t diff);
 
 void compute_pswd_hash(struct kstr *email, struct kstr *pswd, char digest[20]);
+
+Character* GetCharacter(GwClient *client, uint32_t char_id);
 
 // If `pswd` is NULL, it will use the hash in `client->password`
 void AccountLogin(GwClient *client);

@@ -28,7 +28,6 @@ typedef struct Attribute {
 typedef array(Attribute) ArrayAttribute;
 
 typedef struct Skillbar {
-    // Agent          *owner;
     AgentId         owner_agent_id;
     ArrayAttribute  attributes;
     Profession      prof1;
