@@ -5,7 +5,7 @@
 
 Player *get_player_safe(World *world, uint32_t player_id)
 {
-    ArrayPlayer *players = &client->world.players;
+    ArrayPlayer *players = &world->players;
     if (!array_inside(players, player_id))
         return NULL;
     return array_at(players, player_id);
@@ -13,7 +13,7 @@ Player *get_player_safe(World *world, uint32_t player_id)
 
 Party *get_party_safe(World *world, uint32_t party_id)
 {
-    ArrayParty *parties = &client->world.parties;
+    ArrayParty *parties = &world->parties;
     if (!array_inside(parties, party_id))
         return NULL;
     return &array_at(parties, party_id);
@@ -104,9 +104,10 @@ void HandlePartyHeroAdd(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     HeroAdd *pack = cast(HeroAdd *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    assert(array_inside(&client->world.parties, pack->party_id));
-    Party *party = &array_at(&client->world.parties, pack->party_id);
+    assert(array_inside(&world->parties, pack->party_id));
+    Party *party = &array_at(&world->parties, pack->party_id);
 
     PartyHero *p_hero = array_push(&party->heroes, 1);
     if (!p_hero) {
@@ -392,8 +393,9 @@ void HandlePartyCreate(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     PartyInfo *pack = cast(PartyInfo *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    ArrayParty *parties = &client->world.parties;
+    ArrayParty *parties = &world->parties;
     if (!array_inside(parties, pack->party_id)) {
         array_resize(parties, pack->party_id + 1);
         parties->size = parties->capacity;
@@ -434,7 +436,7 @@ void HandlePartyDefeated(Connection *conn, size_t psize, Packet *packet)
     World *world = get_world_or_abort(client);
 
     Party *party;
-    if ((party = get_player_party_safe(world, client->world.player_id)) == NULL) {
+    if ((party = get_player_party_safe(world, world->player_id)) == NULL) {
         LogError("Player party got defeated before it was created.");
         return;
     }

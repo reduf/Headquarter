@@ -67,6 +67,7 @@
 
 #ifdef _WIN32
 #pragma warning(disable: 4100 4189)
+#pragma warning(disable: 4214) // nonstandard extension used: bit field types other than int
 #endif
 
 #include "arc4.h"

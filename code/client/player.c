@@ -5,8 +5,8 @@
 
 void player_is_created(GwClient *client, AgentId agent_id)
 {
-    World *world = &client->world;
-    client->world.player_agent_id = agent_id;
+    World *world = get_world_or_abort(client);
+    world->player_agent_id = agent_id;
 
     assert(array_inside(&world->agents, agent_id));
     assert(array_at(&world->agents, agent_id));
@@ -18,7 +18,7 @@ void player_is_created(GwClient *client, AgentId agent_id)
     assert(array_inside(&world->players, me->player_id));
     Player *player = world->players.data[me->player_id];
     player->player_hero = client->player_hero; 
-    client->world.player_id = player->player_id;
+    world->player_id = player->player_id;
 }
 
 void HandlePlayerAttrSet(Connection *conn, size_t psize, Packet *packet)

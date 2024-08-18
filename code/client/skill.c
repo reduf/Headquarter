@@ -513,8 +513,9 @@ void HandleAgentUpdateAttribute(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     UpdateAttribute *pack = cast(UpdateAttribute *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    ArraySkillbar *skillbars = &client->world.skillbars;
+    ArraySkillbar *skillbars = &world->skillbars;
     Skillbar *sb;
     array_foreach(sb, skillbars) {
         if (sb->owner_agent_id == pack->agent_id)

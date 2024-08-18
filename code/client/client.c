@@ -240,7 +240,7 @@ void ContinuePlayCharacter(GwClient *client, uint32_t error_code)
         choosen_map_id = options.opt_map_id.map_id;
     } else {
         Character *ch = GetCharacter(client, client->current_character_idx);
-        choosen_map_id = ch ? ch->map : 0;
+        choosen_map_id = ch ? ch->settings.last_outpost : 0;
     }
 
     uint32_t map_type;

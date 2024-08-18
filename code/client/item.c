@@ -60,7 +60,7 @@ Item *get_item_safe(World *world, int32_t id)
 
 Bag *get_bag_safe(World *world, BagEnum bag_id)
 {
-    return client->world.inventory.bags[bag_id];
+    return world->inventory.bags[bag_id];
 }
 
 void HandleItemStreamCreate(Connection *conn, size_t psize, Packet *packet)
@@ -124,9 +124,10 @@ void HandleItemGeneralInfo(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     ItemInfo *pack = cast(ItemInfo *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
     // LogInfo("ItemGeneralInfo {id: %d, modele: %d}", pack->item_id, pack->model);
 
-    ArrayItem *items = &client->world.items;
+    ArrayItem *items = &world->items;
     if (!array_inside(items, pack->item_id)) {
         array_resize(items, pack->item_id + 1);
         items->size = items->capacity;
@@ -243,20 +244,19 @@ void HandleInventoryItemLocation(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     ItemLocation *pack = cast(ItemLocation *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
 #if 0
     Item *item = get_item_safe(client, pack->item_id);
     if (!item) return;
 #else
-    if (!client->world.hash)
-        return;
-    ArrayItem items = client->world.items;
+    ArrayItem items = world->items;
     if (!(array_inside(&items, pack->item_id) && array_at(&items, pack->item_id)))
         return;
     Item *item = array_at(&items, pack->item_id);
 #endif
 
-    BagArray *bags = &client->world.bags;
+    BagArray *bags = &world->bags;
     uint32_t hash = hash_int32(pack->bag_id);
     uint32_t index = hash % bags->size;
     Bag *bag = &array_at(bags, index);
@@ -299,8 +299,10 @@ void HandleInventoryCreateBag(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     BagInfo *pack = cast(BagInfo *)packet;
+    assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    BagArray *bags = &client->world.bags;
+    BagArray *bags = &world->bags;
     uint32_t hash = hash_int32(pack->bag_id);
     uint32_t index = hash % bags->size;
     Bag *bag = &array_at(bags, index);
@@ -319,7 +321,7 @@ void HandleInventoryCreateBag(Connection *conn, size_t psize, Packet *packet)
     array_resize(&bag->items, pack->slot_count);
 
     assert(pack->bag_model_id < BagEnum_Count);
-    client->world.inventory.bags[pack->bag_model_id] = bag;
+    world->inventory.bags[pack->bag_model_id] = bag;
 }
 
 void HandleWindowItemStreamEnd(Connection* conn, size_t psize, Packet* packet) {
@@ -490,8 +492,9 @@ void HandleItemPriceQuote(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     PriceQuote *pack = cast(PriceQuote *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    ArrayItem *items = &client->world.items;
+    ArrayItem *items = &world->items;
     assert(array_inside(items, pack->item_id));
     assert(array_at(items, pack->item_id));
     Item *item = array_at(items, pack->item_id);

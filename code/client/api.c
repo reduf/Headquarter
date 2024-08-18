@@ -175,9 +175,9 @@ HQAPI msec_t GetPvPTimer(void)
     assert(client != NULL);
     msec_t pvp_timer = 0;
     thread_mutex_lock(&client->mutex);
-    if (!client->ingame)
+    World *world;
+    if ((world = get_world(client)) == NULL)
         goto leave;
-    World *world = &client->world;
     if (!world->pvp_timer_start)
         goto leave;
     msec_t diff = world->world_time - world->pvp_timer_start;
@@ -318,7 +318,7 @@ HQAPI void Travel(uint32_t map_id, District district, uint16_t district_number)
     // @Cleanup: Check if we want to use region & language internally
     // DistrictRegion region;
     // DistrictLanguage language;
-    // extract_district(client->world, district, &region, &language);
+    // extract_district(world, district, &region, &language);
     assert(map_id <= (uint32_t)UINT16_MAX);
     GameSrv_Travel(client, cast(uint16_t)map_id, district, district_number);
 leave:
@@ -361,7 +361,7 @@ HQAPI void RedirectMap(uint32_t map_id, uint32_t type, District district, int di
     // We shouldn't access those stuff here.
     DistrictRegion region;
     DistrictLanguage language;
-    extract_district(&client->world, district, &region, &language);
+    extract_district(client, district, &region, &language);
     uint32_t trans_id = issue_next_transaction(client, AsyncType_None);
     AuthSrv_RequestInstance(&client->auth_srv, trans_id, map_id,
         type, district_number, region, language);
@@ -792,11 +792,12 @@ HQAPI bool GetItem(ApiItem *api_item, uint32_t item_id)
     assert(client != NULL);
     bool success = false;
     thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->world.hash))
+    World *world;
+    if ((world = get_world(client)) == NULL)
         goto leave;
-    if (!array_inside(&client->world.items, item_id))
+    if (!array_inside(&world->items, item_id))
         goto leave;
-    Item *item = array_at(&client->world.items, item_id);
+    Item *item = array_at(&world->items, item_id);
     if (!item) goto leave;
     api_make_item(api_item, item);
     success = true;
@@ -902,9 +903,10 @@ HQAPI size_t GetBagCapacity(BagEnum bag)
     assert(client != NULL);
     size_t capacity = 0;
     thread_mutex_lock(&client->mutex);
-    if (!client->ingame)
+    World *world;
+    if ((world = get_world(client)) == NULL)
         goto leave;
-    Bag *bag_ptr = client->world.inventory.bags[bag];
+    Bag *bag_ptr = world->inventory.bags[bag];
     if (!bag_ptr) goto leave;
     capacity = bag_ptr->items.size;
 leave:
@@ -919,9 +921,10 @@ HQAPI size_t GetBagItems(BagEnum bag, ApiItem *buffer, size_t length)
     size_t count = 0;
 
     thread_mutex_lock(&client->mutex);
-    if (!client->ingame)
+    World *world;
+    if ((world = get_world(client)) == NULL)
         goto leave;
-    Bag *bag_ptr = client->world.inventory.bags[bag];
+    Bag *bag_ptr = world->inventory.bags[bag];
     if (!bag_ptr) goto leave;
     ArrayItem items = bag_ptr->items;
     if (buffer == NULL) {
@@ -1046,9 +1049,10 @@ HQAPI size_t GetQuests(ApiQuest *buffer, size_t length)
 
     size_t count = 0;
     thread_mutex_lock(&client->mutex);
-    if (!(client->ingame && client->world.hash))
+    World *world;
+    if ((world = get_world(client)) == NULL)
         goto leave;
-    ArrayQuest quests = client->world.quests;
+    ArrayQuest quests = world->quests;
     if (buffer == NULL) {
         count = quests.size;
         goto leave;
@@ -1397,10 +1401,10 @@ leave:
 }
 
 // to deposit put negative number, to withdraw put positive
-bool compute_gold_character(GwClient *client, int diff, int *gold_character, int *gold_storage)
+bool compute_gold_character(World *world, int diff, int *gold_character, int *gold_storage)
 {
-    int gold_stor_after = client->world.inventory.gold_storage - diff;
-    int gold_char_after = client->world.inventory.gold_character + diff;
+    int gold_stor_after = world->inventory.gold_storage - diff;
+    int gold_char_after = world->inventory.gold_character + diff;
 
     if (gold_stor_after < 0 || (1000*1000) < gold_stor_after) return false;
     if (gold_char_after < 0 || (100*1000)  < gold_char_after) return false;
@@ -1415,8 +1419,11 @@ HQAPI void DepositGold(int quant)
 {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
+    World *world;
+    if ((world = get_world(client)) == NULL)
+        goto leave;
     int gold_character, gold_storage;
-    if (!compute_gold_character(client, -quant, &gold_character, &gold_storage))
+    if (!compute_gold_character(world, -quant, &gold_character, &gold_storage))
         goto leave;
     GameSrv_ChangeGold(client, gold_character, gold_storage);
 leave:
@@ -1427,8 +1434,11 @@ HQAPI void WithdrawGold(int quant)
 {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
+    World *world;
+    if ((world = get_world(client)) == NULL)
+        goto leave;
     int gold_character, gold_storage;
-    if (!compute_gold_character(client, quant, &gold_character, &gold_storage))
+    if (!compute_gold_character(world, quant, &gold_character, &gold_storage))
         goto leave;
     GameSrv_ChangeGold(client, gold_character, gold_storage);
 leave:

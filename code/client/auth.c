@@ -189,10 +189,22 @@ void HandleCharacterInfo(Connection *conn, size_t psize, Packet *packet)
         LogError("Couldn't create a new character");
         return;
     }
+
     init_character(character);
-    character->map = le16dec(&pack->extended[2]);
     kstr_hdr_read(&character->name, pack->name, ARRAY_SIZE(pack->name));
     uuid_dec_le(pack->uuid, &character->uuid);
+
+    size_t min_size = offsetof(CharacterSettings, h0021);
+    if (pack->n_extended < min_size) {
+        LogWarn(
+            "Extended info in `CharacterInfo` is smaller (%zu bytes) than minimum expected (%zu bytes)",
+            pack->n_extended,
+            min_size
+        );
+        return;
+    }
+
+    memcpy(&character->settings, pack->extended, pack->n_extended);
 }
 
 void AuthSrv_HeartBeat(Connection *conn, msec_t tick)

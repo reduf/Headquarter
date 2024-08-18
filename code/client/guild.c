@@ -161,11 +161,13 @@ void HandleGuildChangePlayerStatus(Connection* conn, size_t psize, Packet* packe
 
     GwClient *client = cast(GwClient*)conn->data;
     GuildPlayerStatusChange* pack = cast(GuildPlayerStatusChange*)packet;
-    assert(client&& client->game_srv.secured);
+    assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
+
     //reset_guildmember_update(&client);
-    client->world.guild_member_update.minutes_since_login = pack->minutes_since_login;
-    client->world.guild_member_update.status = pack->status;
-    client->world.guild_member_update.pending = true;
+    world->guild_member_update.minutes_since_login = pack->minutes_since_login;
+    world->guild_member_update.status = pack->status;
+    world->guild_member_update.pending = true;
 }
 
 void HandleGuildChangePlayerType(Connection* conn, size_t psize, Packet* packet) {
@@ -182,10 +184,12 @@ void HandleGuildChangePlayerType(Connection* conn, size_t psize, Packet* packet)
 
     GwClient *client = cast(GwClient*)conn->data;
     GuildPlayerTypeChange* pack = cast(GuildPlayerTypeChange*)packet;
-    assert(client&& client->game_srv.secured);
+    assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
+
     //reset_guildmember_update(&client);
-    client->world.guild_member_update.member_type = pack->member_type;
-    client->world.guild_member_update.pending = true;
+    world->guild_member_update.member_type = pack->member_type;
+    world->guild_member_update.pending = true;
 }
 
 void HandleGuildChangePlayerContext(Connection* conn, size_t psize, Packet* packet)
@@ -337,8 +341,9 @@ void HandleGuildGeneralInfo(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     GuildInfo *pack = cast(GuildInfo *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    ArrayGuild *guilds = &client->world.guilds;
+    ArrayGuild *guilds = &world->guilds;
     if ((size_t)pack->guild_id >= guilds->size) {
         array_resize(guilds, pack->guild_id + 1);
         guilds->size = guilds->capacity;
@@ -380,14 +385,15 @@ void HandleGuildChangeFaction(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     Payload *pack = cast(Payload *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    ArrayGuild *guilds = &client->world.guilds;
+    ArrayGuild *guilds = &world->guilds;
     if (!array_inside(guilds, pack->guild_id)) {
         LogError("The guild (id: %d) is out of bound (size: %d)", pack->guild_id, guilds->size);
         return;
     }
 
-    Guild *guild = &array_at(&client->world.guilds, pack->guild_id);
+    Guild *guild = &array_at(&world->guilds, pack->guild_id);
     if (pack->allegiance < FactionType_Count) {
         guild->allegiance = (FactionType)pack->allegiance;
     } else {

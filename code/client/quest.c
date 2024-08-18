@@ -29,8 +29,9 @@ void HandleQuestDescription(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     QuestDescription *pack = cast(QuestDescription *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    Quest *quest = find_quest_by_id(&client->world.quests, pack->quest_id);
+    Quest *quest = find_quest_by_id(&world->quests, pack->quest_id);
     if (quest == NULL) {
         LogInfo("Couldn't add a description for quest %d, because the quest was not found.", pack->quest_id);
         return;
@@ -60,8 +61,9 @@ void HandleQuestGeneralInfo(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     QuestAdd *pack = cast(QuestAdd *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    ArrayQuest *quests = &client->world.quests;
+    ArrayQuest *quests = &world->quests;
     Quest quest = {0};
     quest.quest_id = pack->quest_id;
     quest.status = pack->status;
@@ -90,8 +92,9 @@ void HandleQuestUpdateMarker(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     QuestMarker *pack = cast(QuestMarker *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    ArrayQuest *quests = &client->world.quests;
+    ArrayQuest *quests = &world->quests;
     Quest *quest = find_quest_by_id(quests, pack->quest_id);
     quest->marker_coord = pack->marker_coord;
 }
@@ -111,8 +114,9 @@ void HandleQuestRemove(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     QuestRemove *pack = cast(QuestRemove *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    ArrayQuest *quests = &client->world.quests;
+    ArrayQuest *quests = &world->quests;
     Quest *quest = find_quest_by_id(quests, pack->quest_id);
     if (!quest) {
 #if 0 // this happens when e.g. entering fow - all the quests are getting removed first

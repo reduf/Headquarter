@@ -96,11 +96,12 @@ void HandleEffectApplied(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     EffectApplied *pack = cast(EffectApplied *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    ArrayEffect *effects = &client->world.effects;
+    ArrayEffect *effects = &world->effects;
     Effect *effect = array_push(effects, 1);
 
-    effect->timestamp = client->world.world_time;
+    effect->timestamp = world->world_time;
     effect->effect_id = pack->effect_id;
     effect->skill_id  = pack->skill_id;
     effect->type      = pack->effect_type;
@@ -128,9 +129,10 @@ void HandleEffectRenewed(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     EffectRenewed *pack = cast(EffectRenewed *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    Effect *effect = array_find_effect(&client->world.effects, pack->effect_id);
-    effect->timestamp = client->world.world_time;
+    Effect *effect = array_find_effect(&world->effects, pack->effect_id);
+    effect->timestamp = world->world_time;
     effect->agent_id  = pack->agent_id;
     effect->type      = pack->effect_type;
     memcpy(&effect->duration, &pack->duration, sizeof(effect->duration));
@@ -154,8 +156,9 @@ void HandleEffectRemoved(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     EffectRemoved *pack = cast(EffectRemoved *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    ArrayEffect *effects = &client->world.effects;
+    ArrayEffect *effects = &world->effects;
     size_t index = array_find_effect_index(effects, pack->effect_id);
     if (index == array_npos) {
         LogError("Didn't find effect_id: %u", pack->effect_id);

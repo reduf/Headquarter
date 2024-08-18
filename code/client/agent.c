@@ -146,12 +146,13 @@ void HandleAgentMovementTick(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     MovementTick *pack = cast(MovementTick *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    client->world.time_server += pack->delta;
+    world->time_server += pack->delta;
 
     // We can definitly call this function more often with a smaller delta.
     // For instance every frame of our application to get a more exact position.
-    // update_agents_position(&client->world.agents, (msec_t)pack->delta);
+    // update_agents_position(&world->agents, (msec_t)pack->delta);
 }
 
 void HandleAgentInstanceTimer(Connection *conn, size_t psize, Packet *packet)
@@ -169,9 +170,10 @@ void HandleAgentInstanceTimer(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     InstanceTimer *pack = cast(InstanceTimer *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    client->world.load_time = pack->time;
-    client->world.time_server = pack->time;
+    world->load_time = pack->time;
+    world->time_server = pack->time;
 }
 
 void HandleAgentSpawned(Connection *conn, size_t psize, Packet *packet)
@@ -578,13 +580,14 @@ void HandleAgentDestroyPlayer(Connection* conn, size_t psize, Packet* packet)
 
     GwClient* client = cast(GwClient*)conn->data;
     PlayerInfo* pack = cast(PlayerInfo*)packet;
-    assert(client&& client->game_srv.secured);
+    assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    assert(array_inside(&client->world.players, pack->player_id));
+    assert(array_inside(&world->players, pack->player_id));
     /*Player* player = array_at(players, pack->player_id);
     game_object_free(&client->object_mgr, &player->object);*/
 
-    client->world.player_count--;
+    world->player_count--;
 }
 
 void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
@@ -615,7 +618,7 @@ void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
     Agent *agent = array_at(agents, pack->agent_id);
     assert(agent);
 
-    ArrayPlayer *players = &client->world.players;
+    ArrayPlayer *players = &world->players;
     if (!array_inside(players, pack->player_id)) {
         array_resize(players, pack->player_id + 1);
         players->size = players->capacity;
@@ -631,7 +634,7 @@ void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
         array_set(players, pack->player_id, player);
     }
 
-    client->world.player_count++;
+    world->player_count++;
 
     init_player(player);
     player->player_id = pack->player_id;
@@ -773,6 +776,7 @@ void HandleAgentAttrUpdateFloat(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     AttrValue *pack = cast(AttrValue *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
     int attr_id = pack->attr_id;
     if (attr_id < 0 || 65 < attr_id) {
@@ -780,7 +784,7 @@ void HandleAgentAttrUpdateFloat(Connection *conn, size_t psize, Packet *packet)
         return;
     }
 
-    ArrayAgent *agents = &client->world.agents;
+    ArrayAgent *agents = &world->agents;
     Agent* agent = array_inside(agents, pack->agent_id) ? array_at(agents, pack->agent_id) : NULL;
     if (!agent) {
         LogError("HandleAgentAttrUpdateFloat: received for agent '%d' not spawned", pack->agent_id);
@@ -818,6 +822,7 @@ void HandleAgentAttrUpdateFloatTarget(Connection *conn, size_t psize, Packet *pa
     GwClient *client = cast(GwClient *)conn->data;
     AttrValue *pack = cast(AttrValue *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
     int attr_id = pack->attr_id;
     if (attr_id < 0 || 65 < attr_id) {
@@ -825,7 +830,7 @@ void HandleAgentAttrUpdateFloatTarget(Connection *conn, size_t psize, Packet *pa
         return;
     }
 
-    ArrayAgent *agents = &client->world.agents;
+    ArrayAgent *agents = &world->agents;
     if (!array_inside(agents, pack->target_id)) {
         LogError("HandleAgentAttrUpdateFloatTarget: received for target '%d' not spawned", pack->target_id);
         return;
@@ -978,10 +983,11 @@ void HandlePlayerUpdateProfession(Connection *conn, size_t psize, Packet *packet
     GwClient *client = cast(GwClient *)conn->data;
     UpdateProf *pack = cast(UpdateProf *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
     // @Remark: The agent structure profession are updated by GAME_SMSG_AGENT_UPDATE_PROFESSION
     Skillbar *sb;
-    array_foreach(sb, &client->world.skillbars) {
+    array_foreach(sb, &world->skillbars) {
         if (sb->owner_agent_id == pack->agent_id)
             break;
     }
@@ -1039,7 +1045,8 @@ void GameSrv_MoveToCoord(GwClient *client, float x, float y)
 
     SendPacket(&client->game_srv, sizeof(move_pack), &move_pack);
 
-    Agent *player = array_at(&client->world.agents, client->world.player_agent_id);
+    World *world = get_world_or_abort(client);
+    Agent *player = array_at(&world->agents, world->player_agent_id);
     assert(player != NULL);
     player->maybe_moving = true;
 }

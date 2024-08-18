@@ -26,12 +26,14 @@ void HandlePingReply(Connection *conn, size_t psize, Packet *packet)
     PingReply *pack = cast(PingReply *)packet;
     (void)pack;
 
+    World *world = get_world_or_abort(client);
+
     // @Remark:
     // In PingReply packet we send/receive the "reaction" of our code
     // (i.e. the time in ms that it take to start receiving new input)
     // So the actual ping (from send to recv) should be between
     // [latency/2 - srv->reaction - clt->reaction, latency/2 + srv->reaction + clt->reaction]
-    conn->pong = client->world.world_time;
+    conn->pong = world->world_time;
     conn->latency = conn->pong - conn->ping;
     // printf("latency %lu, pack {ping: %d}\n", conn->latency, pack->ping);
 }
@@ -93,7 +95,8 @@ void HandleGoldCharacterAdd(Connection *conn, size_t psize, Packet *packet)
     AddGold *pack = cast(AddGold *)packet;
     assert(client && client->game_srv.secured);
 
-    client->world.inventory.gold_character += pack->gold;
+    World *world = get_world_or_abort(client);
+    world->inventory.gold_character += pack->gold;
 }
 
 void HandleGoldStorageAdd(Connection *conn, size_t psize, Packet *packet)
@@ -113,7 +116,8 @@ void HandleGoldStorageAdd(Connection *conn, size_t psize, Packet *packet)
     UpdateGold *pack = cast(UpdateGold *)packet;
     assert(client && client->game_srv.secured);
 
-    client->world.inventory.gold_storage += pack->gold;
+    World *world = get_world_or_abort(client);
+    world->inventory.gold_storage += pack->gold;
 }
 
 void HandleReadyForMapSpawn(Connection *conn, size_t psize, Packet *packet)
@@ -145,7 +149,8 @@ void HandleGoldCharacterRemove(Connection *conn, size_t psize, Packet *packet)
     RemoveGold *pack = cast(RemoveGold *)packet;
     assert(client && client->game_srv.secured);
 
-    client->world.inventory.gold_character -= pack->gold;
+    World *world = get_world_or_abort(client);
+    world->inventory.gold_character -= pack->gold;
 }
 
 void HandleGoldStorageRemove(Connection *conn, size_t psize, Packet *packet)
@@ -165,7 +170,8 @@ void HandleGoldStorageRemove(Connection *conn, size_t psize, Packet *packet)
     RemoveGold *pack = cast(RemoveGold *)packet;
     assert(client && client->game_srv.secured);
 
-    client->world.inventory.gold_storage -= pack->gold;
+    World *world = get_world_or_abort(client);
+    world->inventory.gold_storage -= pack->gold;
 }
 
 void InstanceLoad_RequestData(Connection *conn)
@@ -241,7 +247,7 @@ void HandleInstanceLoadInfo(Connection *conn, size_t psize, Packet *packet)
     InstanceInfo *pack = cast(InstanceInfo *)packet;
     assert(client && client->game_srv.secured);
 
-    World *world = &client->world;
+    World *world = get_world_or_abort(client);
     world->map_id = pack->map_id;
     world->district = pack->district;
     world->language = (DistrictLanguage)pack->language;
@@ -295,7 +301,7 @@ void HandleCinematicSkipEveryone(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     assert(client && client->game_srv.secured);
 
-    World *world = &client->world;
+    World *world = get_world_or_abort(client);
     world->cinematic_skip_count = world->cinematic_member_count;
 }
 
@@ -315,9 +321,10 @@ void HandleCinematicSkipCount(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     SkipCount *pack = cast(SkipCount *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    client->world.cinematic_skip_count = pack->skip_count;
-    client->world.cinematic_member_count = pack->member_count;
+    world->cinematic_skip_count = pack->skip_count;
+    world->cinematic_member_count = pack->member_count;
 }
 
 void HandleCinematicStart(Connection *conn, size_t psize, Packet *packet)
@@ -335,8 +342,9 @@ void HandleCinematicStart(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     CinematicStart *pack = cast(CinematicStart *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    client->world.in_cinematic = true;
+    world->in_cinematic = true;
     if (pack->start) {
         Event event;
         Event_Init(&event, EventType_CinematicPlay);
@@ -378,7 +386,8 @@ void HandleCinematicEnd(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     assert(client && client->game_srv.secured);
 
-    client->world.in_cinematic = false;
+    World *world = get_world_or_abort(client);
+    world->in_cinematic = false;
 }
 
 void HandleInstanceShowWin(Connection *conn, size_t psize, Packet *packet)
@@ -405,8 +414,9 @@ void HandleMissionAddGoal(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    client->world.objective_count += 1;
+    world->objective_count += 1;
 }
 void HandleFriendListMessage(Connection* conn, size_t psize, Packet* packet)
 {
@@ -722,7 +732,8 @@ void GameSrv_PingReply(Connection *conn)
 void GameSrv_PingRequest(Connection *conn)
 {
     GwClient *client = cast(GwClient *)conn->data;
-    conn->ping = client->world.world_time;
+    World *world = get_world_or_abort(client);
+    conn->ping = world->world_time;
 
     Packet packet = NewPacket(GAME_CMSG_PING_REQUEST);
     SendPacket(conn, sizeof(packet), &packet);
