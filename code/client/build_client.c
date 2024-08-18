@@ -80,6 +80,7 @@
 
 // @Cleanup: Temporary
 typedef struct GwClient GwClient;
+typedef struct World World;
 
 typedef array(uint32_t) array_uint32_t;
 

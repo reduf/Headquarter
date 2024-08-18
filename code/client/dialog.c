@@ -21,8 +21,9 @@ void HandleDialogButton(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     Button *pack = cast(Button *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    DialogInfo *dialog = &client->dialog;
+    DialogInfo *dialog = &world->dialog;
     // LogInfo("DialogButton {icon: %d, dialog_id: %X}", pack->icon_id, pack->dialog_id);
 
     DialogButton button = {0};
@@ -60,7 +61,8 @@ void HandleDialogBody(Connection *conn, size_t psize, Packet *packet)
     DialogBody *pack = cast(DialogBody *)packet;
     assert(client && client->game_srv.secured);
 
-    DialogInfo *dialog = &client->dialog;
+    World *world = get_world_or_abort(client);
+    DialogInfo *dialog = &world->dialog;
     assert(sizeof(pack->body) == sizeof(dialog->body));
     memcpy(dialog->body, pack->body, sizeof(dialog->body));
 }
@@ -81,18 +83,19 @@ void HandleDialogSender(Connection *conn, size_t psize, Packet *packet)
     DialogSender *pack = cast(DialogSender *)packet;
     assert(client && client->game_srv.secured);
 
-    DialogInfo *dialog = &client->dialog;
+    World *world = get_world_or_abort(client);
+    DialogInfo *dialog = &world->dialog;
     dialog->opened = true;
     dialog->interact_with = pack->agent_id;
-    client->interact_with = pack->agent_id;
+    world->interact_with = pack->agent_id;
 
     // @Cleanup: Check if we alway get this packet before
     array_clear(&dialog->buttons);
 
     // Any new dialog invalidates merchant window; if we don't do this, merchant items will still be for a previous NPC
-    array_clear(&client->merchant_items);
-    array_clear(&client->tmp_merchant_items);
-    array_clear(&client->tmp_merchant_prices);
+    array_clear(&world->merchant_items);
+    array_clear(&world->tmp_merchant_items);
+    array_clear(&world->tmp_merchant_prices);
 
     Event event;
     Event_Init(&event, EventType_DialogOpen);
@@ -109,7 +112,9 @@ void GameSrv_SendDialog(GwClient *client, int dialog_id)
     } DialogPack;
 #pragma pack(pop)
 
-    DialogInfo *dialog = &client->dialog;
+    World *world = get_world_or_abort(client);
+
+    DialogInfo *dialog = &world->dialog;
     if (!dialog->opened) {
         LogInfo("We are sending dialog %d (0x%X), but the dialog box isn't openned.", dialog_id, dialog_id);
     }
@@ -131,6 +136,6 @@ void GameSrv_SendDialog(GwClient *client, int dialog_id)
     packet.dialog_id = dialog_id;
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 
-    dialog_info_clear(dialog);
-    client->interact_with = 0;
+    free_dialog_info(dialog);
+    world->interact_with = 0;
 }

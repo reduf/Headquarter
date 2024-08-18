@@ -53,8 +53,8 @@ typedef struct PartySearch {
 } PartySearch;
 typedef array(PartySearch) ArrayPartySearch;
 
-struct Player *get_player_safe(GwClient *client, uint32_t player_id);
-Party *get_party_safe(GwClient *client, uint32_t party_id);
+struct Player *get_player_safe(World *world, uint32_t player_id);
+Party *get_party_safe(World *world, uint32_t party_id);
 PartyPlayer *get_party_player(Party *party, uint32_t player_id);
 PartyHero *get_party_hero_agent(Party *party, AgentId agent_id);
-Party *get_player_party_safe(GwClient *client, uint32_t player_id);
+Party *get_player_party_safe(World *world, uint32_t player_id);

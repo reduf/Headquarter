@@ -33,5 +33,5 @@ void api_make_item(ApiItem *dest, Item *src)
 void free_item(Item* src);
 
 void remove_item_from_bag(Item *item);
-Item *get_item_safe(GwClient *client, int32_t id);
-Bag *get_bag_safe(GwClient *client, BagEnum bag_id);
+Item *get_item_safe(World *world, int32_t id);
+Bag *get_bag_safe(World *world, BagEnum bag_id);

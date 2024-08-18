@@ -116,7 +116,7 @@ void skillbar_done_cast(Skillbar *sb, uint32_t skill_id)
     skill->target = NULL;
 }
 
-Skillbar *get_skillbar_safe(GwClient *client, AgentId agent_id);
+Skillbar *get_skillbar_safe(World *world, AgentId agent_id);
 
 void skillbar_done_cast(Skillbar *sb,  uint32_t skill_id);
 void skillbar_start_cast(Skillbar *sb, uint32_t skill_id,

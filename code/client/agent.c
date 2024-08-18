@@ -19,8 +19,8 @@
 
 void agent_set_distination(Agent *agent, Vec2f dest);
 
-void ensure_agent_exist(GwClient *client, AgentId id);
-void remove_agent(GwClient *client, AgentId id);
+void ensure_agent_exist(World *world, AgentId id);
+void remove_agent(World *world, AgentId id);
 
 bool v2_equals(Vec2f v1, Vec2f v2)
 {
@@ -56,19 +56,17 @@ void agent_set_distination(Agent *agent, Vec2f dest)
     agent->rotation = atan2f(agent->direction.y, agent->direction.x);
 }
 
-Agent *get_agent_safe(GwClient *client, AgentId id)
+Agent *get_agent_safe(World *world, AgentId id)
 {
-    if (!(client->ingame && client->world.hash))
-        return NULL;
-    ArrayAgent agents = client->world.agents;
+    ArrayAgent agents = world->agents;
     if (!array_inside(&agents, id))
         return NULL;
     return array_at(&agents, id);
 }
 
-void ensure_agent_exist(GwClient *client, AgentId id)
+void ensure_agent_exist(World *world, AgentId id)
 {
-    ArrayAgent *agents = &client->world.agents;
+    ArrayAgent *agents = &world->agents;
     if (array_inside(agents, id) && array_at(agents, id))
         return;
 
@@ -83,9 +81,9 @@ void ensure_agent_exist(GwClient *client, AgentId id)
     array_set(agents, id, agent);
 }
 
-void remove_agent(GwClient *client, AgentId id)
+void remove_agent(World *world, AgentId id)
 {
-    ArrayAgent *agents = &client->world.agents;
+    ArrayAgent *agents = &world->agents;
     if (!array_inside(agents, id))
         return;
 
@@ -216,9 +214,10 @@ void HandleAgentSpawned(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     AgentSpawned *pack = cast(AgentSpawned *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    ArrayAgent *agents = &client->world.agents;
-    ensure_agent_exist(client, pack->agent_id);
+    ArrayAgent *agents = &world->agents;
+    ensure_agent_exist(world, pack->agent_id);
     Agent *agent = array_at(agents, pack->agent_id);
     assert(agent != NULL);
 
@@ -245,7 +244,7 @@ void HandleAgentSpawned(Connection *conn, size_t psize, Packet *packet)
         break;
     case 4: {
         agent->item_id = id;
-        Item *item = get_item_safe(client, agent->item_id);
+        Item *item = get_item_safe(world, agent->item_id);
         if (item) item->agent_id = agent->agent_id;
         break;
     }
@@ -278,16 +277,17 @@ void HandleAgentDespawned(Connection *conn, size_t psize, Packet *packet)
     AgentDespawned *pack = cast(AgentDespawned *)packet;
     assert(client && client->game_srv.secured);
 
-    Agent *agent = get_agent_safe(client, pack->agent_id);
+    World *world = get_world_or_abort(client);
+    Agent *agent = get_agent_safe(world, pack->agent_id);
     if (!agent) return;
     agent->spawned = false;
 
     if (agent->item_id) {
-        Item *item = get_item_safe(client, agent->item_id);
+        Item *item = get_item_safe(world, agent->item_id);
         if (item) item->agent_id = 0;
     }
 
-    remove_agent(client, pack->agent_id);
+    remove_agent(world, pack->agent_id);
 }
 
 void HandleAgentStopMoving(Connection *conn, size_t psize, Packet *packet)
@@ -306,7 +306,8 @@ void HandleAgentStopMoving(Connection *conn, size_t psize, Packet *packet)
     AgentDespawned *pack = cast(AgentDespawned *)packet;
     assert(client && client->game_srv.secured);
 
-    Agent *agent = get_agent_safe(client, pack->agent_id);
+    World *world = get_world_or_abort(client);
+    Agent *agent = get_agent_safe(world, pack->agent_id);
     if (!agent) {
         LogError("Received 'AgentStopMoving' before agent %d spawned", pack->agent_id);
         return;
@@ -334,7 +335,8 @@ void HandleAgentSetPlayer(Connection *conn, size_t psize, Packet *packet)
     SetPlayer *pack = cast(SetPlayer *)packet;
     assert(client && client->game_srv.secured);
 
-    Agent *me = get_agent_safe(client, pack->agent_id);
+    World *world = get_world_or_abort(client);
+    Agent *me = get_agent_safe(world, pack->agent_id);
     // @Cleanup:
     // When we enter a cinematic our player id is set, but no agent are spawned.
     // It make sense since agent can be created, but not spawned.
@@ -365,7 +367,8 @@ void HandleAgentUpdateDirection(Connection *conn, size_t psize, Packet *packet)
     UpdateDirection *pack = cast(UpdateDirection *)packet;
     assert(client && client->game_srv.secured);
 
-    Agent *agent = get_agent_safe(client, pack->agent_id);
+    World *world = get_world_or_abort(client);
+    Agent *agent = get_agent_safe(world, pack->agent_id);
     if (!agent) {
         LogError("AgentUpdateDirection received before the agent %d spawned.", pack->agent_id);
         return;
@@ -392,7 +395,8 @@ void HandleAgentUpdateSpeedBase(Connection *conn, size_t psize, Packet *packet)
     UpdateSpeedBase *pack = cast(UpdateSpeedBase *)packet;
     assert(client && client->game_srv.secured);
 
-    Agent *agent = get_agent_safe(client, pack->agent_id);
+    World *world = get_world_or_abort(client);
+    Agent *agent = get_agent_safe(world, pack->agent_id);
     if (!agent) {
         LogError("AgentUpdateSpeedBase received before the agent %d spawned.", pack->agent_id);
         return;
@@ -419,7 +423,8 @@ void HandleAgentUpdateSpeedModifier(Connection *conn, size_t psize, Packet *pack
     UpdateSpeedModifier *pack = cast(UpdateSpeedModifier *)packet;
     assert(client && client->game_srv.secured);
 
-    Agent *agent = get_agent_safe(client, pack->agent_id);
+    World *world = get_world_or_abort(client);
+    Agent *agent = get_agent_safe(world, pack->agent_id);
     if (!agent) {
         LogError("AgentUpdateSpeedModifier received before the agent %d spawned.", pack->agent_id);
         return;
@@ -446,7 +451,8 @@ void HandleAgentUpdatePosition(Connection *conn, size_t psize, Packet *packet)
     UpdatePosition *pack = cast(UpdatePosition *)packet;
     assert(client && client->game_srv.secured);
 
-    Agent *agent = get_agent_safe(client, pack->agent_id);
+    World *world = get_world_or_abort(client);
+    Agent *agent = get_agent_safe(world, pack->agent_id);
     if (!agent) {
         LogError("AgentUpdatePosition received before the agent %d spawn.", pack->agent_id);
         return;
@@ -473,7 +479,8 @@ void HandleAgentUpdateRotation(Connection *conn, size_t psize, Packet *packet)
     UpdateRotation *pack = cast(UpdateRotation *)packet;
     assert(client && client->game_srv.secured);
 
-    Agent *agent = get_agent_safe(client, pack->agent_id);
+    World *world = get_world_or_abort(client);
+    Agent *agent = get_agent_safe(world, pack->agent_id);
     if (!agent) {
         LogError("AgentUpdateRotation received before then agent %d spawn.", pack->agent_id);
         return;
@@ -504,19 +511,21 @@ void HandleAgentMoveToPoint(Connection *conn, size_t psize, Packet *packet)
     Destination *pack = cast(Destination *)packet;
     assert(client && client->game_srv.secured);
 
+    World *world = get_world_or_abort(client);
+
     // @Cleanup:
     // It happend to receive a `MoveToPoint` before spawning an agent.
     // In this case we just ignore the packet.
     // We should still process it, but the current system doesn't allow to do it effeciently.
-    Agent *agent = get_agent_safe(client, pack->agent_id);
+    Agent *agent = get_agent_safe(world, pack->agent_id);
     if (!agent) {
         LogInfo("We receive a AgentMoveToPoint for agent '%d' before spawning it.", pack->agent_id);
         return;
     }
 
-    if (agent->agent_id == client->world.player_agent_id) {
-        dialog_info_clear(&client->dialog);
-        client->interact_with = 0;
+    if (agent->agent_id == world->player_agent_id) {
+        free_dialog_info(&world->dialog);
+        world->interact_with = 0;
     }
     agent_set_distination(agent, pack->dest);
 }
@@ -540,16 +549,17 @@ void HandleAgentUpdateDestination(Connection *conn, size_t psize, Packet *packet
     GwClient *client = cast(GwClient *)conn->data;
     Destination *pack = cast(Destination *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    Agent *agent = get_agent_safe(client, pack->agent_id);
+    Agent *agent = get_agent_safe(world, pack->agent_id);
     if (!agent) {
         LogError("AgentUpdateDestination received before the agent %d spawned.", pack->agent_id);
         return;
     }
 
-    if (agent->agent_id == client->world.player_agent_id) {
-        dialog_info_clear(&client->dialog);
-        client->interact_with = 0;
+    if (agent->agent_id == world->player_agent_id) {
+        free_dialog_info(&world->dialog);
+        world->interact_with = 0;
     }
     agent_set_distination(agent, pack->dest);
 }
@@ -598,9 +608,10 @@ void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     PlayerInfo *pack = cast(PlayerInfo *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    ArrayAgent *agents = &client->world.agents;
-    ensure_agent_exist(client, pack->agent_id);
+    ArrayAgent *agents = &world->agents;
+    ensure_agent_exist(world, pack->agent_id);
     Agent *agent = array_at(agents, pack->agent_id);
     assert(agent);
 
@@ -647,9 +658,10 @@ void HandleAgentUpdateProfession(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     UpdateProfession *pack = cast(UpdateProfession *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    ArrayAgent *agents = &client->world.agents;
-    ensure_agent_exist(client, pack->agent_id);
+    ArrayAgent *agents = &world->agents;
+    ensure_agent_exist(world, pack->agent_id);
     Agent *agent = array_at(agents, pack->agent_id);
     assert(agent);
     
@@ -674,6 +686,7 @@ void HandleAgentAttrUpdateInt(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     AttrValue *pack = cast(AttrValue *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
     int attr_id = pack->attr_id;
     if (attr_id < 0 || 66 < attr_id) {
@@ -681,8 +694,8 @@ void HandleAgentAttrUpdateInt(Connection *conn, size_t psize, Packet *packet)
         return;
     }
 
-    ArrayAgent *agents = &client->world.agents;
-    ensure_agent_exist(client, pack->agent_id);
+    ArrayAgent *agents = &world->agents;
+    ensure_agent_exist(world, pack->agent_id);
     Agent *agent = array_at(agents, pack->agent_id);
     assert(agent);
 
@@ -931,14 +944,15 @@ void HandlePlayerUnlockedProfession(Connection *conn, size_t psize, Packet *pack
     GwClient *client = cast(GwClient *)conn->data;
     UnlockedProf *pack = cast(UnlockedProf *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
     // Not saving the value for other agents.
-    if (client->world.player_agent_id != pack->agent_id) {
+    if (world->player_agent_id != pack->agent_id) {
         return;
     }
 
     Player *player;
-    if ((player = get_player_safe(client, client->player_id)) == NULL) {
+    if ((player = get_player_safe(world, world->player_id)) == NULL) {
         LogWarn("Can't update unlocked profession, the player doesn't exist");
         return;
     }
@@ -997,8 +1011,9 @@ void HandleAgentUpdateEffects(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     UpdateEffects *pack = cast(UpdateEffects *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    Agent *agent = get_agent_safe(client, pack->agent_id);
+    Agent *agent = get_agent_safe(world, pack->agent_id);
     if (!agent) {
         LogError("Receive 'AgentUpdateEffects', but agent %d isn't spawned", pack->agent_id);
         return;

@@ -100,4 +100,4 @@ void api_make_agent(ApiAgent *dest, Agent *src)
     dest->energy_max = src->energy_max;
 }
 
-Agent *get_agent_safe(GwClient *client, AgentId id);
+Agent *get_agent_safe(World *world, AgentId id);

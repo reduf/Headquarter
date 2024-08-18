@@ -24,6 +24,11 @@ void start_loading_new_zone(GwClient *client, struct sockaddr *host,
         client->state = AwaitGameServerTransfer;
     }
 
+    World *world;
+    if ((world = get_world(client)) == NULL) {
+        reset_world(world);
+    }
+
     client->server_transfer.map_id = map_id;
     client->server_transfer.world_id = world_id;
     client->server_transfer.player_id = player_id;

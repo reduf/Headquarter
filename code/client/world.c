@@ -53,9 +53,17 @@ void free_world(World *world)
     array_reset(&world->parties);
     array_reset(&world->players);
     array_reset(&world->effects);
+    array_reset(&world->tmp_merchant_items);
+    array_reset(&world->tmp_merchant_prices);
+    array_reset(&world->merchant_items);
+    free_dialog_info(&world->dialog);
+    free_trade_session(&world->trade_session);
+}
 
-    world->player_count = 0;
-    world->hash = 0;
+void reset_world(World *world)
+{
+    free_world(world);
+    init_world(world, 0);
 }
 
 void world_update(World *world, msec_t diff)

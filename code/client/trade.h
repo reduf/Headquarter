@@ -15,3 +15,9 @@ typedef struct TradeSession {
     TradeItemArray trader_items;
     TradeItemArray player_items;
 } TradeSession;
+
+void free_trade_session(TradeSession *session)
+{
+    array_reset(&session->trader_items);
+    array_reset(&session->player_items);
+}

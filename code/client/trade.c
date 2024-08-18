@@ -42,7 +42,8 @@ void HandleTradeTerminate(Connection *conn, size_t psize, Packet *packet)
     assert(client && client->game_srv.secured);
     (void)pack;
 
-    client->trade_session.state = TradeState_Closed;
+    World *world = get_world_or_abort(client);
+    world->trade_session.state = TradeState_Closed;
     // LogInfo("Trade terminated");
 }
 
@@ -80,8 +81,9 @@ void HandleTradeReceiveOffer(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     TradeOffer *pack = cast(TradeOffer *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    TradeSession *session = &client->trade_session;
+    TradeSession *session = &world->trade_session;
     session->state |= TradeState_Received;
     session->trader_gold = pack->gold;
     // LogInfo("Receive offer");
@@ -103,8 +105,9 @@ void HandleTradeAddItem(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     TradeItemInfo*pack = cast(TradeItemInfo*)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    TradeSession *session = &client->trade_session;
+    TradeSession *session = &world->trade_session;
     assert(array_size(&session->trader_items) <= 6);
 
     TradeItem trade_item;
@@ -128,8 +131,9 @@ void HandleTradeAcknowledge(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     TradeAcknowledge *pack = cast(TradeAcknowledge *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    TradeSession *session = &client->trade_session;
+    TradeSession *session = &world->trade_session;
     assert(session->request_pending);
 
     // We cannot enqueue more than 1 request, so it is fine to assume there is no request pending.
@@ -148,8 +152,9 @@ void HandleTradeAccept(Connection *conn, size_t psize, Packet *packet)
 
     GwClient *client = cast(GwClient *)conn->data;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
 
-    TradeSession *session = &client->trade_session;
+    TradeSession *session = &world->trade_session;
     session->state |= TradeState_Accepted;
 }
 
@@ -169,9 +174,10 @@ void HandleTradeChangeOffer(Connection *conn, size_t psize, Packet *packet)
     GwClient *client = cast(GwClient *)conn->data;
     TradeChangeOffer *pack = cast(TradeChangeOffer *)packet;
     assert(client && client->game_srv.secured);
+    World *world = get_world_or_abort(client);
     (void)pack;
 
-    TradeSession *session = &client->trade_session;
+    TradeSession *session = &world->trade_session;
     session->state |= ~TradeState_Opened;
     // LogInfo("Change offer");
 }
@@ -191,7 +197,8 @@ void GameSrv_TradeAcknowledge(GwClient *client, int32_t player_id)
 
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 
-    TradeSession *session = &client->trade_session;
+    World *world = get_world_or_abort(client);
+    TradeSession *session = &world->trade_session;
     session->trader = player_id;
     session->state |= TradeState_Opened;
 
@@ -205,7 +212,8 @@ void GameSrv_TradeCancel(GwClient *client)
     Packet packet = NewPacket(GAME_CMSG_TRADE_CANCEL);
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 
-    TradeSession *session = &client->trade_session;
+    World *world = get_world_or_abort(client);
+    TradeSession *session = &world->trade_session;
     session->state = TradeState_Closed;
 }
 
@@ -228,7 +236,8 @@ void GameSrv_TradeAddItem(GwClient *client, uint32_t item_id, uint8_t quantity)
 
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 
-    TradeSession *session = &client->trade_session;
+    World *world = get_world_or_abort(client);
+    TradeSession *session = &world->trade_session;
     TradeItem trade_item;
     trade_item.item_id = item_id;
     trade_item.quantity = quantity;
@@ -298,6 +307,7 @@ void GameSrv_TradeInitiate(GwClient *client, AgentId partner)
 
     SendPacket(&client->game_srv, sizeof(packet), &packet);
 
-    TradeSession *session = &client->trade_session;
+    World *world = get_world_or_abort(client);
+    TradeSession *session = &world->trade_session;
     session->request_pending = true;
 }

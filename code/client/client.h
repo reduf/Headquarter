@@ -3,14 +3,6 @@
 #endif
 #define CORE_CLIENT_H
 
-typedef struct SalvageSession {
-    uint16_t    salvage_session_id;
-    bool        is_open;
-
-    uint32_t    n_upgrades;
-    Item       *upgrades[3];
-} SalvageSession;
-
 typedef enum AsyncType {
     AsyncType_None,
     AsyncType_AccountLogin,
@@ -126,18 +118,7 @@ typedef struct GwClient {
 
     Chat                chat;
     World               world;
-
     EventManager        event_mgr;
-
-    ArrayItem           tmp_merchant_items;
-    array_uint32_t      tmp_merchant_prices;
-    ArrayItem           merchant_items;
-    AgentId             merchant_agent_id;
-    AgentId             interact_with;
-
-    DialogInfo          dialog;
-    TradeSession        trade_session;
-    SalvageSession      salvage_session;
 
     // @Remark:
     // We receive those information before we know the player id, so we store

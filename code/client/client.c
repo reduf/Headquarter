@@ -18,11 +18,6 @@ void init_client(GwClient *client)
     client->connected = true;
 
     array_init(&client->characters);
-    array_init(&client->merchant_items);
-    array_init(&client->trade_session.trader_items);
-    array_init(&client->trade_session.player_items);
-    array_init(&client->friends);
-    array_init(&client->dialog.buttons);
 
     init_chat(&client->chat);
 
@@ -36,6 +31,7 @@ void init_client(GwClient *client)
 
 World* get_world(GwClient *client)
 {
+    assert(client != NULL);
     if (client->world.hash == 0) {
         return NULL;
     } else {
@@ -45,6 +41,7 @@ World* get_world(GwClient *client)
 
 World* get_world_or_abort(GwClient *client)
 {
+    assert(client != NULL);
     if (client->world.hash == 0) {
         abort();
     } else {
@@ -312,10 +309,10 @@ void GameSrv_Disconnect(GwClient *client)
     assert(client && client->game_srv.secured);
 
     client->state = AwaitGameServerDisconnect;
-    NetConn_Shutdown(&client->game_srv);
 
     Packet packet = NewPacket(GAME_CMSG_DISCONNECT);
     SendPacket(&client->game_srv, sizeof(packet), &packet);
+    NetConn_Shutdown(&client->game_srv);
 }
 
 void GameSrv_LogoutToCharselect(GwClient *client)

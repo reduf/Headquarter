@@ -40,10 +40,10 @@ typedef struct GuildMemberUpdate {
     uint16_t player_name_buffer[20];
 } GuildMemberUpdate;
 
-Guild *get_guild_safe(GwClient *client, uint32_t guild_id);
+Guild *get_guild_safe(World *world, uint32_t guild_id);
 void init_guildmember_update(GuildMemberUpdate *gmu);
 void reset_guildmember_update(GuildMemberUpdate *gmu);
-GuildMember *complete_guildmember_update(GwClient *client, struct kstr account_name);
+GuildMember *complete_guildmember_update(World *world, struct kstr account_name);
 
 void api_make_guild(ApiGuild* dest, Guild* src)
 {

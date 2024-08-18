@@ -211,9 +211,10 @@ void GameSrv_DonateFaction(GwClient *client, FactionType faction, int amount)
 void GameSrv_PlayerLoadSkills(GwClient* client, uint32_t* skill_ids) {
     assert(client && client->game_srv.secured);
 
-    Agent* agent = get_agent_safe(client, client->world.player_agent_id);
+    World *world = get_world_or_abort(client);
+    Agent* agent = get_agent_safe(world, world->player_agent_id);
     if (!agent) {
-        LogError("Can't get player agent '%d'", client->world.player_agent_id);
+        LogError("Can't get player agent '%d'", world->player_agent_id);
         return;
     }
 
@@ -224,9 +225,10 @@ void GameSrv_PlayerLoadAttributes(GwClient* client, ArrayAttribute attributes)
 {
     assert(client && client->game_srv.secured);
 
-    Agent* agent = get_agent_safe(client, client->world.player_agent_id);
+    World *world = get_world_or_abort(client);
+    Agent* agent = get_agent_safe(world, world->player_agent_id);
     if (!agent) {
-        LogError("Can't get player agent '%d'", client->world.player_agent_id);
+        LogError("Can't get player agent '%d'", world->player_agent_id);
         return;
     }
 
@@ -237,9 +239,10 @@ void GameSrv_PlayerChangeSecondary(GwClient* client, Profession profession)
 {
     assert(client && client->game_srv.secured);
 
-    Agent* agent = get_agent_safe(client, client->world.player_agent_id);
+    World *world = get_world_or_abort(client);
+    Agent* agent = get_agent_safe(world, world->player_agent_id);
     if (!agent) {
-        LogError("Can't get player agent '%d'", client->world.player_agent_id);
+        LogError("Can't get player agent '%d'", world->player_agent_id);
         return;
     }
 
