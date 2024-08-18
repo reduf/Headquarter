@@ -25,7 +25,7 @@ void start_loading_new_zone(GwClient *client, struct sockaddr *host,
     }
 
     World *world;
-    if ((world = get_world(client)) == NULL) {
+    if ((world = get_world(client)) != NULL) {
         reset_world(world);
     }
 
