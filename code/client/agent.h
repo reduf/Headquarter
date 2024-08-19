@@ -8,10 +8,8 @@ typedef struct Agent {
     AgentType       type;
     bool            spawned;
 
-    struct Agent   *attacking;
-    struct Player  *player;
-    struct Party   *party;
-
+    uint32_t        attacking_agent_id;
+    uint32_t        party_id;
     uint32_t        npc_id;
     uint32_t        item_id;
     uint32_t        gadget_id;
@@ -47,15 +45,14 @@ typedef struct Agent {
 
     int32_t         level;
     AgentMarker     marker;
-
-    struct Skill   *casting;
+    uint32_t        casting_skill_id;
 } Agent;
 typedef array(Agent *) ArrayAgent;
 
-void agent_set_casting(Agent *agent, struct Skill *casting)
+void agent_set_casting(Agent *agent, uint32_t casting_skill_id)
 {
     assert(agent);
-    agent->casting = casting;
+    agent->casting_skill_id = casting_skill_id;
 }
 
 AgentId agent_get_id(Agent *agent)

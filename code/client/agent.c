@@ -58,6 +58,9 @@ void agent_set_distination(Agent *agent, Vec2f dest)
 
 Agent *get_agent_safe(World *world, AgentId id)
 {
+    if (id == 0) {
+        return NULL;
+    }
     ArrayAgent agents = world->agents;
     if (!array_inside(&agents, id))
         return NULL;

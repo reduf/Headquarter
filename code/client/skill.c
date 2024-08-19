@@ -4,7 +4,7 @@
 #define CORE_SKILL_C
 
 Agent* get_agent_safe(World *world, AgentId id);
-void   agent_set_casting(Agent *agent, Skill *casting);
+void   agent_set_casting(Agent *agent, uint32_t skill_id);
 
 Skillbar *get_skillbar_safe(World *world, AgentId agent_id)
 {
@@ -147,7 +147,7 @@ void HandleSkillActivated(Connection *conn, size_t psize, Packet *packet)
         return;
     }
 
-    skillbar_done_cast(sb, pack->skill_id);
+    skillbar_done_cast(world, sb, pack->skill_id);
 }
 
 void HandleSkillActivate(Connection *conn, size_t psize, Packet *packet)
