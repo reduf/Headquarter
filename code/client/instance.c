@@ -26,6 +26,10 @@ void start_loading_new_zone(GwClient *client, struct sockaddr *host,
 
     World *world;
     if ((world = get_world(client)) != NULL) {
+        Event event;
+        Event_Init(&event, EventType_WorldMapLeave);
+        broadcast_event(&client->event_mgr, &event);
+
         reset_world(world);
     }
 
@@ -112,10 +116,6 @@ void HandleGameTransferInfo(Connection *conn, size_t psize, Packet *packet)
     struct sockaddr host;
     memcpy(&host, pack->host, sizeof(host));
     start_loading_new_zone(client, &host, pack->map_id, pack->world_id, pack->player_id);
-
-    Event event;
-    Event_Init(&event, EventType_WorldMapLeave);
-    broadcast_event(&client->event_mgr, &event);
 }
 
 void HandleInstanceCountdownStop(Connection *conn, size_t psize, Packet *packet)
