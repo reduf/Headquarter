@@ -21,11 +21,12 @@
 // #include "unixstd.h"
 
 #include "macro.h"
+#include "basics.h"
 
 #ifdef _WIN32
 # include "win32/win32.h"
 # include "win32/time.c"
-# include "win32/dlfunc.c"
+# include "win32/paths.c"
 # include "win32/thread.c"
 # include "win32/process.c"
 #else
@@ -38,7 +39,7 @@
 # include <pthread.h>
 # include <unistd.h>
 
-# include "linux/dlfunc.c"
+# include "linux/paths.c"
 # include "linux/thread.c"
 # include "linux/time.c"
 #endif
@@ -47,3 +48,8 @@
 #include "array.c"
 #include "timer.c"
 #include "rbtree.c"
+
+#ifdef BUILD_TESTS
+#include "tests/array.tests.c"
+#include "tests/paths.tests.c"
+#endif

@@ -19,10 +19,12 @@
 #  define __cdecl __attribute__((__cdecl__))
 # endif
 
+#include <stdint.h>
+
 #include "str.h"
 #include <common/array.h>
 #include <common/assert.h>
-#include <common/dlfunc.h>
+#include <common/paths.h>
 #include <common/noreturn.h>
 
 typedef uint32_t uint;

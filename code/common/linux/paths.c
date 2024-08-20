@@ -19,7 +19,7 @@ int dllclose(void *handle)
     return dlclose(handle);
 }
 
-int dlllocation(char* buffer, int length)
+int get_executable_path(char* buffer, int length)
 {
     int ret = readlink("/proc/self/exe", buffer, length);
     int bytes = MIN(ret, length - 1);
@@ -28,9 +28,9 @@ int dlllocation(char* buffer, int length)
     return bytes;
 }
 
-int dlldir(char* buffer, int length)
+int get_executable_dir(char* buffer, int length)
 {
-    int len = dlllocation(buffer, length);
+    int len = get_executable_path(buffer, length);
     if (len < 0)
         return len;
     char* p = strrchr(buffer, '/');

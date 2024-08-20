@@ -47,7 +47,7 @@
 #include <common/macro.h>
 #include <common/time.h>
 #include <common/assert.h>
-#include <common/dlfunc.h>
+#include <common/paths.h>
 #include <common/socket.h>
 #include <common/thread.h>
 #include <common/process.h>
@@ -82,8 +82,6 @@
 // @Cleanup: Temporary
 typedef struct GwClient GwClient;
 typedef struct World World;
-
-typedef array(uint32_t) array_uint32_t;
 
 #include "bag.h"
 #include "chat.h"

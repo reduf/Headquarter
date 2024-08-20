@@ -58,6 +58,9 @@ union {                         \
     };                          \
 }
 
+typedef array(char)     array_char_t;
+typedef array(uint32_t) array_uint32_t;
+
 #define array_init(a)           _array_init(&(a)->base)
 #define array_reset(a)          _array_reset(&(a)->base);
 

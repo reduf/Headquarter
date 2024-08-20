@@ -43,6 +43,7 @@ log_print_level_s(unsigned int level)
 
 void log_init(const char *log_file_name)
 {
+    int err;
     log_print_level = LOG_INFO;
 
     int error = thread_mutex_init(&log_mutex);
@@ -51,17 +52,20 @@ void log_init(const char *log_file_name)
         return;
     }
 
-    int length = 0;
-    char dir_path[1024];
-    if ((length = dlldir(dir_path, sizeof(dir_path))) <= 0) {
-        fprintf(stderr, "Failed to get the 'dlldir'\n");
-        return;
+    // client specify the file path
+    char file_path[1128];
+    if (log_file_name && *log_file_name != 0) {
+        snprintf(file_path, sizeof(file_path), "%s", log_file_name);
+    } else {
+        size_t length = 0;
+        char dir_path[1024];
+        if ((err = get_executable_dir(dir_path, sizeof(dir_path), &length)) != 0) {
+            fprintf(stderr, "Failed to get the 'dlldir'\n");
+            return;
+        }
+        snprintf(file_path, sizeof(file_path), "%s/logs/%s", dir_path, log_file_name);
     }
 
-    // @Cleanup: Ensure the directory exist.
-
-    char file_path[1128];
-    snprintf(file_path, sizeof(file_path), "%s/logs/%s", dir_path, log_file_name);
     if ((log_file = fopen(file_path, "a")) == NULL) {
         fprintf(stderr, "Failed to open the file '%s'\n", file_path);
         return;
@@ -80,7 +84,7 @@ static int log_time(char *buffer, size_t size)
     time_t t = time(NULL);
     struct tm ts;
     time_localtime(&t, &ts);
-    return strftime(buffer, size, "%Y-%m-%d %H:%M:%S", &ts);
+    return (int)strftime(buffer, size, "%Y-%m-%d %H:%M:%S", &ts);
 }
 
 int log_vmsg(unsigned int level, const char *format, va_list ap);

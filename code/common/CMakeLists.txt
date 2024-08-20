@@ -5,7 +5,8 @@ set(
   array.c
   array.h
   assert.h
-  dlfunc.h
+  basics.h
+  paths.h
   endian.h
   hash.h
   list.h
@@ -27,7 +28,7 @@ set(
 if (WIN32)
   list(
     APPEND COMMON_SOURCES
-    win32/dlfunc.c
+    win32/paths.c
     win32/process.c
     win32/thread.c
     win32/time.c
@@ -36,7 +37,7 @@ if (WIN32)
 else()
   list(
     APPEND COMMON_SOURCES
-    linux/dlfunc.c
+    linux/paths.c
     linux/thread.c
     linux/time.c
   )
@@ -56,11 +57,12 @@ add_library(
 
 if (MSVC)
   # We disable the following warnings:
-  # - C4057: nonstandard extension used: nameless struct/union
+  # - C4201: nonstandard extension used: nameless struct/union
   # - C4204: nonstandard extension used: non-constant aggregate initializer
   # - C4221: nonstandard extension used: '<var>': cannot be initialized using address of automatic variable
+  # - C4267: conversion from 'size_t' to 'int', possible loss of data
   # - C4459: declaration of '<var>' hides global declaration
-  target_compile_options(client PRIVATE /WX /W4 /wd4201 /wd4204 /wd4221 /wd4459)
+  target_compile_options(client PRIVATE /WX /W4 /wd4201 /wd4204 /wd4221 /wd4267 /wd4459)
 endif()
 
 if (UNIX)

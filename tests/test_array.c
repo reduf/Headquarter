@@ -1,5 +1,6 @@
 #include "utest.h"
 
+#include <stdint.h>
 #include <common/array.h>
 
 typedef array(int) array_int_t;
