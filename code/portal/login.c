@@ -257,15 +257,14 @@ static int read_user_code(char *buffer, size_t size, size_t *ret)
 {
     printf("Enter code: ");
 
-    if (fgets(buffer, size, stdin) == NULL)
+    if (fgets(buffer, (int)size, stdin) == NULL)
         return 1;
 
     // The complete line didn't fit in the buffer.
     const char *newline;
     if ((newline = strchr(buffer, '\n')) == NULL)
         return 1;
-
-    *ret = newline - buffer;
+    *ret = strlen(buffer);
     return 0;
 }
 

@@ -39,10 +39,11 @@ target_include_directories(
 
 if (MSVC)
   # We disable the following warnings:
-  # - C4057: nonstandard extension used: nameless struct/union
-  # - C4204: nonstandard extension used: non-constant aggregate initializer
   # - C4115: named type definition in parentheses
-  target_compile_options(portal PRIVATE /W4 /WX /wd4201 /wd4204 /wd4115)
+  # - C4201: nonstandard extension used : nameless struct/union
+  # - C4204: nonstandard extension used: non-constant aggregate initializer
+  # - C4267: conversion from 'size_t' to 'int', possible loss of data
+  target_compile_options(portal PRIVATE /W4 /WX /wd4115 /wd4201 /wd4204 /wd4267)
 else()
   target_compile_options(portal PRIVATE -Wall -Werror)
 endif()
