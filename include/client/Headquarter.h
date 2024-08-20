@@ -93,12 +93,15 @@ HQAPI int               GetDistrictNumber(void);
 HQAPI void              Travel(uint32_t map_id, District district, uint16_t district_number);
 HQAPI void              TravelHall(uint32_t guild_id);
 HQAPI void              LeaveHall(void);
-HQAPI void              RedirectMap(uint32_t map_id, uint32_t type, District district, int district_number);
+HQAPI void              RedirectMap(uint32_t map_id, District district, int district_number);
+HQAPI bool              IsMapUnlocked(uint32_t map_id);
+HQAPI size_t            GetMapsUnlocked(uint32_t* buffer, size_t length);
 
 HQAPI bool              GetInCinematic(void);
 HQAPI void              SkipCinematic(void);
 
 HQAPI size_t            GetCharacterName(char *buffer, size_t length);
+HQAPI int               GetAccountUuid(char* buffer, size_t length);
 
 HQAPI size_t            GetPlayers(ApiPlayer *buffer, size_t length);
 HQAPI size_t            GetPlayerName(uint32_t player_id, uint16_t *buffer, size_t length);
@@ -137,7 +140,7 @@ HQAPI bool              GetQuest(ApiQuest *quest, uint32_t quest_id);
 HQAPI size_t            GetQuests(ApiQuest *buffer, size_t length);
 
 HQAPI size_t            GetFriends(ApiFriend* buffer, size_t length);
-HQAPI bool              GetFriendByUuid(ApiFriend *friend, const uint8_t *uuid);
+HQAPI bool              GetFriendByUuid(ApiFriend *frnd, const uint8_t *uuid);
 
 HQAPI FactionPoint      GetLuxonPoints(void);
 HQAPI FactionPoint      GetKurzickPoints(void);

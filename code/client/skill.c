@@ -85,7 +85,7 @@ void HandleSkillbarUpdate(Connection *conn, size_t psize, Packet *packet)
     sb->owner_agent_id = pack->agent_id;
     
     for (size_t i = 0; i < pack->n_skills; i++)
-        skillbar_set_skill_id(sb, i, pack->skills[i]);
+        skillbar_set_skill_id(sb, (int)i, pack->skills[i]);
 }
 
 void HandleSkillAddToWindowsData(Connection *conn, size_t psize, Packet *packet)
@@ -371,8 +371,8 @@ void GameSrv_LoadAttributes(GwClient* client, AgentId agent_id, ArrayAttribute a
 
     assert(0 <= attributes.size && attributes.size <= 16);
 
-    packet.n_attribute_ids = attributes.size;
-    packet.n_attribute_values = attributes.size;
+    packet.n_attribute_ids = (uint32_t)attributes.size;
+    packet.n_attribute_values = (uint32_t)attributes.size;
     for (size_t i = 0; i < attributes.size; i++) {
         Attribute attribute = array_at(&attributes, i);
         packet.attribute_ids[i] = attribute.attribute_id;

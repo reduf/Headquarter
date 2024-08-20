@@ -19,6 +19,8 @@ void init_client(GwClient *client)
 
     array_init(&client->characters);
 
+    array_init(&client->player_hero.maps_unlocked);
+
     init_chat(&client->chat);
 
     client->next_transaction_id = 1;
@@ -74,6 +76,12 @@ struct area_info {
     Region region;
     RegionType region_type;
     uint32_t flags;
+    uint32_t x;
+    uint32_t y;
+    uint32_t start_x;
+    uint32_t start_y;
+    uint32_t end_x;
+    uint32_t end_y;
 };
 
 struct region_type_to_map_type {
@@ -233,7 +241,6 @@ void ContinuePlayCharacter(GwClient *client, uint32_t error_code)
     // Character *cc = client->current_character; // can use to find the map
     uint32_t trans_id = issue_next_transaction(client, AsyncType_PlayCharacter);
     LogDebug("AuthSrv_RequestInstance: {trans_id: %lu}", trans_id);
-    client->state = AwaitGameServerInfo;
 
     uint32_t choosen_map_id;
     if (options.opt_map_id.set) {

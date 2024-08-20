@@ -187,6 +187,35 @@ void HandlePlayerAttrUpdate(Connection *conn, size_t psize, Packet *packet)
     }
 }
 
+void HandlePlayerUnlockedAreas(Connection* conn, size_t psize, Packet* packet) {
+#pragma pack(push, 1)
+        typedef struct {
+        Header header;
+        uint32_t missions_completed_size;
+        uint32_t missions_completed_buffer[32];
+        uint32_t unlocked2_size;
+        uint32_t unlocked2[32];
+        uint32_t unlocked3_size;
+        uint32_t unlocked3[32];
+        uint32_t unlocked4_size;
+        uint32_t unlocked4[32];
+        uint32_t maps_unlocked_size;
+        uint32_t maps_unlocked_buf[32];
+    } MapsUnlocked;
+#pragma pack(pop)
+    assert(packet->header == GAME_SMSG_MAPS_UNLOCKED);
+    assert(sizeof(MapsUnlocked) == psize);
+
+    GwClient* client = cast(GwClient*)conn->data;
+    MapsUnlocked* pack = cast(MapsUnlocked*)packet;
+    assert(client && client->game_srv.secured);
+
+    array_resize(&client->player_hero.maps_unlocked, pack->maps_unlocked_size);
+    for (uint32_t i = 0; i < pack->maps_unlocked_size; i++) {
+        array_set(&client->player_hero.maps_unlocked, i, pack->maps_unlocked_buf[i]);
+    }
+}
+
 void GameSrv_DonateFaction(GwClient *client, FactionType faction, int amount)
 {
 #pragma pack(push, 1)

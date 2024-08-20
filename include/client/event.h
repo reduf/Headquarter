@@ -82,7 +82,11 @@ typedef struct Event {
             uint8_t             hero_count;
             uint8_t             search_type; // 0=hunting, 1=mission, 2=quest, 3=trade, 4=guild
             uint8_t             hardmode;
-            uint16_t            district;
+            uint16_t            district_number;
+            uint8_t             language;
+            uint8_t             primary;
+            uint8_t             secondary;
+            uint8_t             level;
             struct {
                 size_t          length;
                 const uint16_t* buffer;

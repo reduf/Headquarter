@@ -14,6 +14,7 @@ typedef struct PlayerHero {
     int skillpoint_current;
     int skillpoint_spent;
     int skillpoint_total;
+    array_uint32_t maps_unlocked;
 } PlayerHero;
 
 typedef struct Player {

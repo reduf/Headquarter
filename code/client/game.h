@@ -166,6 +166,7 @@ void HandlePlayerAttrMaxLuxon(Connection *conn, size_t psize, Packet *packet);
 void HandlePlayerAttrMaxBalthazar(Connection *conn, size_t psize, Packet *packet);
 void HandlePlayerAttrMaxImperial(Connection *conn, size_t psize, Packet *packet);
 void HandlePlayerAttrUpdate(Connection *conn, size_t psize, Packet *packet);
+void HandlePlayerUnlockedAreas(Connection* conn, size_t psize, Packet* packet);
 void HandleSkillbarUpdateSkill(Connection *conn, size_t psize, Packet *packet);
 void HandleSkillbarUpdate(Connection *conn, size_t psize, Packet *packet);
 void HandleSkillAddToWindowsData(Connection *conn, size_t psize, Packet *packet);

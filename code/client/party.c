@@ -629,7 +629,7 @@ void HandlePartySearchAdvertisement(Connection *conn, size_t psize, Packet *pack
     typedef struct {
         Header header;
         uint16_t ps_id;
-        uint16_t district;
+        uint16_t district_number;
         uint8_t  language;
         uint8_t  party_size;
         uint8_t  hero_count;
@@ -655,7 +655,7 @@ void HandlePartySearchAdvertisement(Connection *conn, size_t psize, Packet *pack
     Event_Init(&params, EventType_PartySearchAdvertisement);
 
     params.PartySearchAdvertisement.party_id = pack->ps_id;
-    params.PartySearchAdvertisement.district = pack->district;
+    params.PartySearchAdvertisement.district_number = pack->district_number;
     params.PartySearchAdvertisement.party_size = pack->party_size;
     params.PartySearchAdvertisement.hero_count = pack->hero_count;
     params.PartySearchAdvertisement.search_type = pack->search_type;
@@ -664,6 +664,10 @@ void HandlePartySearchAdvertisement(Connection *conn, size_t psize, Packet *pack
     params.PartySearchAdvertisement.message.buffer = pack->message;
     params.PartySearchAdvertisement.message.length = u16len(pack->message, ARRAY_SIZE(pack->message));
     params.PartySearchAdvertisement.hardmode = pack->hardmode;
+    params.PartySearchAdvertisement.primary = pack->primary;
+    params.PartySearchAdvertisement.secondary = pack->secondary;
+    params.PartySearchAdvertisement.language = pack->language;
+    params.PartySearchAdvertisement.level = pack->level;
     broadcast_event(&client->event_mgr, &params);
 }
 

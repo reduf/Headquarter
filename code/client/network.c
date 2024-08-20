@@ -481,18 +481,23 @@ bool AuthSrv_Connect(Connection *conn)
     }
 
     conn->fd = create_socket();
-    conn->t0 = time_get_ms();
-    conn->secured = false;
 
     if (conn->fd.handle == INVALID_SOCKET) {
-        LogError("'socket' failed. (%d)", os_errno);
+        LogError("AuthSrv_Connect: create_socket() failed. (%d)", os_errno);
         NetConn_Reset(conn);
         return false;
     }
 
-    result = connect(conn->fd.handle, cast(struct sockaddr *)&conn->host, sizeof(conn->host));
+    conn->t0 = time_get_ms();
+    conn->secured = false;
+
+    int retries = 5;
+    result = SOCKET_ERROR;
+    for (int i = 0; i < retries && result == SOCKET_ERROR; i++) {
+        result = connect(conn->fd.handle, cast(struct sockaddr *)&conn->host, sizeof(conn->host));
+    }
     if (result == SOCKET_ERROR) {
-        LogError("'connect' failed. (%d)", os_errno);
+        LogError("AuthSrv_Connect: connect() failed after %d retries.", retries, os_errno);
         NetConn_Reset(conn);
         return false;
     }
@@ -510,18 +515,19 @@ bool AuthSrv_Connect(Connection *conn)
 
     result = send(conn->fd.handle, cast(char *)&version, sizeof(version), 0);
     if (result == SOCKET_ERROR) {
-        LogError("'send' failed. (%d)", os_errno);
+        LogError("AuthSrv_Connect: send() failed. (%d)", os_errno);
         NetConn_Reset(conn);
         return false;
     }
 
     if (!key_exchange_helper(conn, &official_server_keys)) {
+        LogError("AuthSrv_Connect: key_exchange_helper() failed.");
         NetConn_Reset(conn);
         return false;        
     }
 
     socket_set_nonblock(&conn->fd);
-    LogInfo("Auth Handshake successful!");
+    LogInfo("AuthSrv_Connect: Auth Handshake successful!");
     return true;
 }
 
@@ -536,18 +542,24 @@ bool GameSrv_Connect(Connection *conn,
     conn->proto = ConnectionType_Game;
 
     conn->fd = create_socket();
-    conn->t0 = time_get_ms();
-    conn->secured = false;
 
     if (conn->fd.handle == INVALID_SOCKET) {
-        LogError("'socket' failed. (%d)", os_errno);
+        LogError("GameSrv_Connect: create_socket() failed. (%d)", os_errno);
         NetConn_Reset(conn);
         return false;
     }
 
-    result = connect(conn->fd.handle, cast(struct sockaddr *)&conn->host, sizeof(conn->host));
+    conn->t0 = time_get_ms();
+    conn->secured = false;
+
+    // 3 retries
+    int retries = 5;
+    result = SOCKET_ERROR;
+    for (int i = 0; i < retries && result == SOCKET_ERROR; i++) {
+        result = connect(conn->fd.handle, cast(struct sockaddr *)&conn->host, sizeof(conn->host));
+    }
     if (result == SOCKET_ERROR) {
-        LogError("'connect' failed. (%d)", os_errno);
+        LogError("GameSrv_Connect: connect() failed after %d retries.", retries, os_errno);
         NetConn_Reset(conn);
         return false;
     }
@@ -572,18 +584,19 @@ bool GameSrv_Connect(Connection *conn,
 
     result = send(conn->fd.handle, cast(char *)&version, sizeof(version), 0);
     if (result == SOCKET_ERROR) {
-        LogError("'send' failed. (%d)", os_errno);
+        LogError("GameSrv_Connect: send() failed. (%d)", os_errno);
         NetConn_Reset(conn);
         return false;
     }
 
     if (!key_exchange_helper(conn, &official_server_keys)) {
+        LogError("GameSrv_Connect: key_exchange_helper() failed.");
         NetConn_Reset(conn);
         return false;
     }
 
     socket_set_nonblock(&conn->fd);
-    LogInfo("Game Handshake successful!");
+    LogInfo("GameSrv_Connect: Game Handshake successful!");
     return true;
 }
 
@@ -644,8 +657,10 @@ size_t NetMsg_Unpack(const uint8_t *data, size_t data_size,
     Packet *packet, size_t pack_size, MsgFormat *format)
 {
     int retval = unpack(data, data_size, cast(uint8_t *)packet, pack_size, format->fields, format->count);
-    if (retval < 0)
+    if (retval < 0) {
+        LogError("NetMsg_Unpack: Failed to unpack() for message header %u", format->header);
         return 0;
+    }
     return (size_t)retval;
 }
 
@@ -707,7 +722,7 @@ void NetConn_Send(Connection *conn)
 
     mbedtls_arc4_crypt(&conn->encrypt, size, buff, buff);
 
-    int result = send(conn->fd.handle, cast(const char *)out->data, out->size, 0);
+    int result = send(conn->fd.handle, cast(const char *)out->data, (int)out->size, 0);
     if (result == SOCKET_ERROR) {
         LogError("send failed: %d", os_errno);
         NetConn_HardShutdown(conn);
@@ -729,12 +744,12 @@ void NetConn_Recv(Connection *conn)
 
     uint8_t buffer[5840];
     size_t size = conn->in.capacity - conn->in.size;
-    int iresult = recv(conn->fd.handle, cast(char *)buffer, size, 0);
+    int iresult = recv(conn->fd.handle, cast(char *)buffer, (int)size, 0);
 
     int err = os_errno;
     if (iresult == SOCKET_ERROR) {
         if (!socket_would_block(err)) {
-            LogError("WSARecv failed. (%d)", err);
+            LogError("NetConn_Recv: recv() on %s failed. (%d)", conn->name, err);
             NetConn_HardShutdown(conn);
             client->ingame = false;
         }
@@ -974,7 +989,7 @@ int pack(const uint8_t *data, size_t data_size,
                 memrcpy(wpos, rpos, bytes_to_write);
             #endif
 
-            readed  += static_elem_count * elem_size;
+            readed  += (int)(static_elem_count * elem_size);
             written += bytes_to_write;
         } else { // field.type == TYPE_NESTED_STRUCT
             assert(i + 1 < fields_count);
@@ -984,10 +999,10 @@ int pack(const uint8_t *data, size_t data_size,
 
             for (size_t j = 0; j < packed_elem_count; j++) {
                 const uint8_t *d = data + readed;
-                int d_size = data_size - readed;
+                size_t d_size = data_size - readed;
 
                 uint8_t *b = buffer + written;
-                int b_size = buff_size - written;
+                size_t b_size = buff_size - written;
 
                 int tmp = pack(d, d_size, b, b_size, struct_fields, struct_fields_count);
                 if (tmp < 0) return -1;
@@ -996,11 +1011,11 @@ int pack(const uint8_t *data, size_t data_size,
             }
 
             // readed += field.size * remaining_count;
-            return written;
+            return (int)written;
         }
     }
 
-    return written;
+    return (int)written;
 }
 
 int unpack(const uint8_t *data, size_t data_size, uint8_t *buffer,
@@ -1050,14 +1065,14 @@ int unpack(const uint8_t *data, size_t data_size, uint8_t *buffer,
             static_elem_count = field.param;
             if (field.type == TYPE_STRING_16) {
                 // We want to ensure last character is null.
-                uint32_t end = MIN(field.param - 1, packed_elem_count);
+                uint32_t end = MIN(field.param - 1, (uint32_t)packed_elem_count);
                 s[end] = 0;
             } else {
                 written += sizeof(struct array);
-                a->size = packed_elem_count;
+                a->size = (uint32_t)packed_elem_count;
             }
             
-            readed += prefix_size;
+            readed += (int)prefix_size;
             // written += sizeof(array);
 
             rpos = data   + readed;
@@ -1080,19 +1095,19 @@ int unpack(const uint8_t *data, size_t data_size, uint8_t *buffer,
                 memrcpy(wpos, rpos, bytes_to_read);
             #endif
 
-            readed  += bytes_to_read;
-            written += static_elem_count * elem_size;
+            readed  += (int)bytes_to_read;
+            written += (int)(static_elem_count * elem_size);
         } else { // field.type == TYPE_NESTED_STRUCT
             assert(i + 1 < fields_count);
             MsgField *next_fields = fields + i + 1;
-            int next_fields_count = fields_count - i - 1;
+            int next_fields_count = (int)(fields_count - i - 1);
 
             for (size_t j = 0; j < packed_elem_count; j++) {
                 const uint8_t *d = data + readed;
-                int d_size = data_size - readed;
+                int d_size = (int)data_size - readed;
 
                 uint8_t *b = buffer + written;
-                int b_size = buff_size - written;
+                int b_size = (int)buff_size - written;
 
                 int tmp = unpack(d, d_size, b, b_size, next_fields, next_fields_count);
                 if (tmp < 0) return -1;

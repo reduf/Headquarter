@@ -988,7 +988,15 @@ void HandlePlayerUpdateProfession(Connection *conn, size_t psize, Packet *packet
     assert(client && client->game_srv.secured);
     World *world = get_world_or_abort(client);
 
-    // @Remark: The agent structure profession are updated by GAME_SMSG_AGENT_UPDATE_PROFESSION
+    // 1. Update in agents array
+    ensure_agent_exist(&client->world, pack->agent_id);
+    Agent* agent = array_at(&client->world.agents, pack->agent_id);
+    assert(agent);
+
+    agent->prof1 = (Profession)pack->prof1;
+    agent->prof2 = (Profession)pack->prof2;
+
+    // 2. Update in players array
     Skillbar *sb;
     array_foreach(sb, &world->skillbars) {
         if (sb->owner_agent_id == pack->agent_id)

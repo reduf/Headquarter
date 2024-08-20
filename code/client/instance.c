@@ -85,6 +85,8 @@ void HandleGameServerInfo(Connection *conn, size_t psize, Packet *packet)
 
     assert(client->state == AwaitGameServerInfo);
 
+    LogDebug("HandleGameServerInfo { world_id %d, map_id %d, player_id %d }", pack->world_id, pack->map_id, pack->player_id);
+
     struct sockaddr host;
     memcpy(&host, pack->host, sizeof(host));
     start_loading_new_zone(client, &host, pack->map_id, pack->world_id, pack->player_id);

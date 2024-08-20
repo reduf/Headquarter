@@ -138,6 +138,7 @@ World* get_world(GwClient *client);
 World* get_world_or_abort(GwClient *client);
 
 uint32_t issue_next_transaction(GwClient *client, AsyncType type);
+uint32_t find_map_type_from_map_id(uint32_t map_id);
 
 void client_frame_update(GwClient *client, msec_t diff);
 

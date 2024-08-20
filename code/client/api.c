@@ -92,7 +92,7 @@ HQAPI void LogTrace(const char *fmt, ...)
 
 HQAPI void FreePluginAndExitThread(PluginObject *plugin, int retval)
 {
-    assert(client != NULL);
+    assert(client != NULL && plugin != NULL);
     thread_mutex_lock(&client->mutex);
     Plugin *it;
     plugin_foreach(it) {
@@ -226,6 +226,45 @@ HQAPI int GetMapId(void)
 leave:
     thread_mutex_unlock(&client->mutex);
     return map_id;
+} 
+
+HQAPI size_t GetMapsUnlocked(uint32_t *buffer, size_t length)
+{
+    assert(client != NULL);
+
+    size_t written = 0;
+    thread_mutex_lock(&client->mutex);
+    World *world;
+    if ((world = get_world(client)) == NULL)
+        goto leave;
+    if (buffer) {
+        if (client->player_hero.maps_unlocked.size > length)
+            goto leave;
+        memcpy(buffer, client->player_hero.maps_unlocked.data, client->player_hero.maps_unlocked.size * sizeof(*client->player_hero.maps_unlocked.data));
+        written = client->player_hero.maps_unlocked.size;
+    }
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return written;
+}
+
+HQAPI bool IsMapUnlocked(uint32_t map_id)
+{
+    assert(client != NULL);
+    bool ret = false;
+    thread_mutex_lock(&client->mutex);
+    World *world;
+    if ((world = get_world(client)) == NULL)
+        goto leave;
+    uint32_t real_index = map_id / 32;
+    if (real_index >= array_size(&client->player_hero.maps_unlocked))
+        goto leave;
+    uint32_t flag = 1 << (map_id % 32);
+    uint32_t val = array_at(&client->player_hero.maps_unlocked, real_index);
+    ret = (val & flag) != 0;
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return ret;
 }
 
 HQAPI District GetDistrict(void)
@@ -351,7 +390,7 @@ leave:
     thread_mutex_unlock(&client->mutex);
 }
 
-HQAPI void RedirectMap(uint32_t map_id, uint32_t type, District district, int district_number)
+HQAPI void RedirectMap(uint32_t map_id, District district, int district_number)
 {
     assert(client != NULL);
     thread_mutex_lock(&client->mutex);
@@ -362,9 +401,12 @@ HQAPI void RedirectMap(uint32_t map_id, uint32_t type, District district, int di
     DistrictRegion region;
     DistrictLanguage language;
     extract_district(client, district, &region, &language);
+
+    uint32_t map_type = find_map_type_from_map_id(map_id);
+
     uint32_t trans_id = issue_next_transaction(client, AsyncType_None);
     AuthSrv_RequestInstance(&client->auth_srv, trans_id, map_id,
-        type, district_number, region, language);
+        map_type, district_number, region, language);
 leave:
     thread_mutex_unlock(&client->mutex);
 }
@@ -411,6 +453,14 @@ HQAPI size_t GetCharacterName(char *buffer, size_t length)
         written = length;
     }
 leave:
+    thread_mutex_unlock(&client->mutex);
+    return written;
+}
+HQAPI int GetAccountUuid(char* buffer, size_t length)
+{
+    assert(client != NULL);
+    thread_mutex_lock(&client->mutex);
+    int written = uuid_snprint(buffer, length, &client->uuid);
     thread_mutex_unlock(&client->mutex);
     return written;
 }

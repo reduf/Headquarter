@@ -80,7 +80,7 @@ void *read_entire_file(const char *path, size_t *length)
     if (!file) return NULL;
     size_t size = file_size(file);
     char *buffer = cast(char *)malloc(size + 1);
-    int read = fread(buffer, 1, size, file);
+    size_t read = fread(buffer, 1, size, file);
     if (read > 0 && (size_t)read == size) {
         if (length) *length = size;
         buffer[read] = 0;
@@ -325,7 +325,7 @@ void create_file_table(VarFile *file)
 
         slots[index].occupied = true;
         slots[index].hash = hash;
-        slots[index].value = i;
+        slots[index].value = (uint32_t)i;
         slots[index].key = section->name;
 
         create_section_table(section);
@@ -359,7 +359,7 @@ void create_section_table(VarSection *section)
 
         slots[index].occupied = true;
         slots[index].hash = hash;
-        slots[index].value = i;
+        slots[index].value = (uint32_t)i;
         slots[index].key = var->name;
     }
 }

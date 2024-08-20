@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <assert.h>
 
 #define memzero(b, s) memset(b, 0, s)
 

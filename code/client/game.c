@@ -609,7 +609,7 @@ void GameSrv_RegisterCallbacks(Connection *conn)
     handlers[GAME_SMSG_PLAYER_ATTR_MAX_BALTHAZAR]       = HandlePlayerAttrMaxBalthazar;
     handlers[GAME_SMSG_PLAYER_ATTR_MAX_IMPERIAL]        = HandlePlayerAttrMaxImperial;
     handlers[GAME_SMSG_PLAYER_ATTR_UPDATE]              = HandlePlayerAttrUpdate;
-
+    handlers[GAME_SMSG_MAPS_UNLOCKED]                   = HandlePlayerUnlockedAreas;
     // skills
     handlers[GAME_SMSG_SKILLBAR_UPDATE_SKILL]           = HandleSkillbarUpdateSkill;
     handlers[GAME_SMSG_SKILLBAR_UPDATE]                 = HandleSkillbarUpdate;
@@ -732,7 +732,9 @@ void GameSrv_PingReply(Connection *conn)
 void GameSrv_PingRequest(Connection *conn)
 {
     GwClient *client = cast(GwClient *)conn->data;
-    World *world = get_world_or_abort(client);
+    World *world = get_world(client);
+    if (!world)
+        return;
     conn->ping = world->world_time;
 
     Packet packet = NewPacket(GAME_CMSG_PING_REQUEST);
