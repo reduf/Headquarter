@@ -3,42 +3,46 @@
 #endif
 #define OS_DLFUNC_C
 
-#include "../dlfunc.h"
+#include "../paths.h"
 
-void *dllopen(const char *filename)
+int open_dll(const char* filename, void** handle)
 {
-    void* handle = dlopen(filename, RTLD_LAZY);
-    if (handle)
-        return handle;
-    printf("dlopen Error: %s\n", dlerror());
-    return handle;
+    if ((*handle = dlopen(filename, RTLD_LAZY)) == NULL) {
+        printf("dlopen Error: %s\n", dlerror());
+        return 1;
+    }
+    return 0;
 }
 
-int dllclose(void *handle)
-{
+int close_dll(void* handle) {
     return dlclose(handle);
 }
-
-int get_executable_path(char* buffer, int length)
-{
-    int ret = readlink("/proc/self/exe", buffer, length);
-    int bytes = MIN(ret, length - 1);
-    if (bytes >= 0)
-        buffer[bytes] = '\0';
-    return bytes;
+int get_dll_symbol(void* handle, const char* symbol, void** out) {
+    if ((*out = dlsym(handle, symbol)) == NULL) {
+        printf("dlsym Error: %s\n", dlerror());
+        return 1;
+    }
+    return 0;
 }
 
-int get_executable_dir(char* buffer, int length)
+int get_executable_path(char* buffer, size_t capacity, size_t* length)
 {
-    int len = get_executable_path(buffer, length);
-    if (len < 0)
-        return len;
+    int err;
+    if ((err = readlink("/proc/self/exe", buffer, capacity)) < 0)
+        return errno;
+    size_t bytes = min_size_t((size_t)ret, capacity - 1);
+    buffer[bytes] = '\0';
+    *length = bytes;
+    return 0;
+}
+
+int get_executable_dir(char* buffer, size_t capacity, size_t* length)
+{
+    size_t len;
+    if (get_executable_path(buffer, capacity, &len) != 0)
+        return 1;
     char* p = strrchr(buffer, '/');
     if (p) p[0] = 0;
-    return strlen(buffer);
-}
-
-void *dllsym(void *handle, const char *symbol)
-{
-    return dlsym(handle, symbol);
+    *length = strlen(buffer);
+    return 0;
 }
