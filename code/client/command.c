@@ -4,6 +4,8 @@
 #define COMMAND_C_INC
 
 CommandOptions options;
+int    g_Argc;
+char **g_Argv;
 
 void print_help(bool terminate)
 {
@@ -44,7 +46,7 @@ void check_for_more_arguments(int argc, const char **argv, int i, int nargs)
     }
 }
 
-void parse_command_args(int argc, const char **argv)
+void parse_command_args(int argc, char **argv)
 {
     // @Remark: Currently, if the format is not valid, for instance -email with no
     // arguments following, we will print the help and exit. Maybe we just want
@@ -117,6 +119,11 @@ void parse_command_args(int argc, const char **argv)
         } else if (!strcmp(arg, "-file-game-version")) {
             check_for_more_arguments(argc, argv, i, 1);
             safe_strcpy(options.file_game_version, ARRAY_SIZE(options.file_game_version), argv[++i]);
+        } else if (!strcmp(arg, "--")) {
+            ++i;
+            g_Argv = &argv[i];
+            g_Argc = argc - i;
+            break;
         } else {
             if (options.script) {
                 printf("You shouldn't specify more than one script to run\n");

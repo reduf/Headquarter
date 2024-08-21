@@ -139,12 +139,12 @@ static int recv_sts_response(
     }
 
     if (reply->status_code != 200) {
-        fprintf(stderr, "Unexpected status code %u", reply->status_code);
+        fprintf(stderr, "Unexpected status code %u\n", reply->status_code);
         return 1;
     }
 
     if (reply->sequence_number != expected_seq_number) {
-        fprintf(stderr, "Sequence number doesn't match expected sequence number");
+        fprintf(stderr, "Sequence number doesn't match expected sequence number\n");
         return 1;
     }
 

@@ -95,7 +95,7 @@ void main_loop(void)
     }
 }
 
-int main(int argc, const char *argv[])
+int main(int argc, char **argv)
 {
     parse_command_args(argc - 1, argv + 1);
 

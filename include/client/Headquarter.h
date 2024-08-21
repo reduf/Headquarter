@@ -71,6 +71,8 @@ HQAPI void              LogDebug(const char *fmt, ...);
 HQAPI void              LogCritical(const char *fmt, ...);
 HQAPI void              LogInfo(const char *fmt, ...);
 HQAPI void              LogWarn(const char *fmt, ...);
+HQAPI void              LogTrace(const char *fmt, ...);
+HQAPI char**            GetCommandLineArgs(int *argc);
 
 HQAPI _Noreturn void    FreePluginAndExitThread(PluginObject *module, int retval);
 HQAPI size_t            GetPlugins(ApiPlugin *buffer, size_t length);
@@ -89,6 +91,8 @@ HQAPI void              LogoutToCharselect(void);
 
 HQAPI int               GetMapId(void);
 HQAPI District          GetDistrict(void);
+HQAPI DistrictLanguage  GetDistrictLanguage(void);
+HQAPI DistrictRegion    GetDistrictRegion(void);
 HQAPI int               GetDistrictNumber(void);
 HQAPI void              Travel(uint32_t map_id, District district, uint16_t district_number);
 HQAPI void              TravelHall(uint32_t guild_id);

@@ -90,6 +90,12 @@ HQAPI void LogTrace(const char *fmt, ...)
     va_end(args);
 }
 
+HQAPI char** GetCommandLineArgs(int *argc)
+{
+    *argc = g_Argc;
+    return g_Argv;
+}
+
 HQAPI void FreePluginAndExitThread(PluginObject *plugin, int retval)
 {
     assert(client != NULL && plugin != NULL);
@@ -272,65 +278,66 @@ HQAPI District GetDistrict(void)
     assert(client != NULL);
 
     District district = DISTRICT_CURRENT;
-    DistrictRegion region;
-    DistrictLanguage language;
-
-    thread_mutex_lock(&client->mutex);
-
-    World *world;
-    if ((world = get_world(client)) == NULL) {
-        thread_mutex_unlock(&client->mutex);
-        return DISTRICT_CURRENT;
-    }
-
-    region = world->region;
-    language = world->language;
-    
-    thread_mutex_unlock(&client->mutex);
-    switch (region) {
+    switch (GetDistrictRegion()) {
     case DistrictRegion_International:
-        district = DISTRICT_INTERNATIONAL;
-        break;
+        return DISTRICT_INTERNATIONAL;
     case DistrictRegion_America:
-        district = DISTRICT_AMERICAN;
-        break;
+        return DISTRICT_AMERICAN;
     case DistrictRegion_Korea:
-        district = DISTRICT_ASIA_KOREAN;
-        break;
+        return DISTRICT_ASIA_KOREAN;
     case DistrictRegion_Europe:
-        switch (language) {
+        switch (GetDistrictLanguage()) {
         case DistrictLanguage_English:
-            district = DISTRICT_EUROPE_ENGLISH;
-            break;
+            return DISTRICT_EUROPE_ENGLISH;
         case DistrictLanguage_French:
-            district = DISTRICT_EUROPE_FRENCH;
-            break;
+            return DISTRICT_EUROPE_FRENCH;
         case DistrictLanguage_German:
-            district = DISTRICT_EUROPE_GERMAN;
-            break;
+            return DISTRICT_EUROPE_GERMAN;
         case DistrictLanguage_Italian:
-            district = DISTRICT_EUROPE_ITALIAN;
-            break;
+            return DISTRICT_EUROPE_ITALIAN;
         case DistrictLanguage_Spanish:
-            district = DISTRICT_EUROPE_SPANISH;
-            break;
+            return DISTRICT_EUROPE_SPANISH;
         case DistrictLanguage_Polish:
-            district = DISTRICT_EUROPE_POLISH;
-            break;
+            return DISTRICT_EUROPE_POLISH;
         case DistrictLanguage_Russian:
-            district = DISTRICT_EUROPE_RUSSIAN;
-            break;
+            return DISTRICT_EUROPE_RUSSIAN;
         }
         break;
     case DistrictRegion_China:
-        district = DISTRICT_ASIA_CHINESE;
-        break;
+        return DISTRICT_ASIA_CHINESE;
     case DistrictRegion_Japanese:
-        district = DISTRICT_ASIA_JAPANESE;
-        break;
+        return DISTRICT_ASIA_JAPANESE;
     }
 
     return district;
+}
+
+HQAPI DistrictLanguage GetDistrictLanguage(void)
+{
+    assert(client != NULL);
+    DistrictLanguage district_language = DistrictLanguage_Default;
+    thread_mutex_lock(&client->mutex);
+    World* world;
+    if ((world = get_world(client)) == NULL)
+        goto leave;
+    district_language = world->language;
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return district_language;
+}
+
+HQAPI DistrictRegion GetDistrictRegion(void)
+{
+    assert(client != NULL);
+    DistrictRegion district_region = DistrictRegion_America;
+    thread_mutex_lock(&client->mutex);
+    World* world;
+    if ((world = get_world(client)) == NULL)
+        goto leave;
+    district_region = world->region;
+leave:
+    thread_mutex_unlock(&client->mutex);
+    return district_region;
 }
 
 HQAPI int GetDistrictNumber(void)
@@ -547,6 +554,8 @@ HQAPI size_t GetPlayersOfParty(uint32_t party_id, uint32_t *buffer, size_t lengt
     if ((world = get_world(client)) == NULL)
         goto leave;
     Party *party = get_party_safe(world, party_id);
+    if (!party)
+        goto leave;
     ArrayPartyPlayer players = party->players;
     if (!buffer) {
         count = players.size;
@@ -1991,6 +2000,7 @@ leave:
     thread_mutex_unlock(&client->mutex);
     return player_id;
 }
+
 HQAPI int GetTradeGold(void)
 {
     assert(client != NULL);
