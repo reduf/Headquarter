@@ -22,7 +22,36 @@
 #define SSL_ALERT_LEVEL_WARNING 1
 #define SSL_ALERT_LEVEL_FATAL   2
 
-#define SSL_ALERT_DESCRIPTION_BAD_RECORD_MAC 20
+
+#define SSL_ALERT_DESCRIPTION_CLOSE_NOTIFY               0
+#define SSL_ALERT_DESCRIPTION_UNEXPECTED_MESSAGE        10
+#define SSL_ALERT_DESCRIPTION_BAD_RECORD_MAC            20
+#define SSL_ALERT_DESCRIPTION_DECRYPTION_FAILED         21
+#define SSL_ALERT_DESCRIPTION_RECORD_OVERFLOW           22
+#define SSL_ALERT_DESCRIPTION_DECOMPRESSION_FAILURE     30
+#define SSL_ALERT_DESCRIPTION_HANDSHAKE_FAILURE         40
+#define SSL_ALERT_DESCRIPTION_NO_CERT                   41
+#define SSL_ALERT_DESCRIPTION_BAD_CERT                  42
+#define SSL_ALERT_DESCRIPTION_UNSUPPORTED_CERT          43
+#define SSL_ALERT_DESCRIPTION_CERT_REVOKED              44
+#define SSL_ALERT_DESCRIPTION_CERT_EXPIRED              45
+#define SSL_ALERT_DESCRIPTION_CERT_UNKNOWN              46
+#define SSL_ALERT_DESCRIPTION_ILLEGAL_PARAMETER         47
+#define SSL_ALERT_DESCRIPTION_UNKNOWN_CA                48
+#define SSL_ALERT_DESCRIPTION_ACCESS_DENIED             49
+#define SSL_ALERT_DESCRIPTION_DECODE_ERROR              50
+#define SSL_ALERT_DESCRIPTION_DECRYPT_ERROR             51
+#define SSL_ALERT_DESCRIPTION_EXPORT_RESTRICTION        60
+#define SSL_ALERT_DESCRIPTION_PROTOCOL_VERSION          70
+#define SSL_ALERT_DESCRIPTION_INSUFFICIENT_SECURITY     71
+#define SSL_ALERT_DESCRIPTION_INTERNAL_ERROR            80
+#define SSL_ALERT_DESCRIPTION_INAPROPRIATE_FALLBACK     86
+#define SSL_ALERT_DESCRIPTION_USER_CANCELED             90
+#define SSL_ALERT_DESCRIPTION_NO_RENEGOTIATION         100
+#define SSL_ALERT_DESCRIPTION_UNSUPPORTED_EXT          110
+#define SSL_ALERT_DESCRIPTION_UNRECOGNIZED_NAME        112
+#define SSL_ALERT_DESCRIPTION_UNKNOWN_PSK_IDENTITY     115
+#define SSL_ALERT_DESCRIPTION_NO_APPLICATION_PROTOCOL  120
 
 #define SHA1_DIGEST_SIZE 20
 
@@ -638,10 +667,66 @@ static const char *alert_description_to_string(uint8_t description)
 {
     switch (description)
     {
-        case SSL_ALERT_DESCRIPTION_BAD_RECORD_MAC:
-            return "Bad Record MAC";
-        default:
-            return "Unknown";
+    case SSL_ALERT_DESCRIPTION_CLOSE_NOTIFY:
+        return "Close Notify";
+    case SSL_ALERT_DESCRIPTION_UNEXPECTED_MESSAGE:
+        return "Unexpected Message";
+    case SSL_ALERT_DESCRIPTION_BAD_RECORD_MAC:
+        return "Bad Record MAC";
+    case SSL_ALERT_DESCRIPTION_DECRYPTION_FAILED:
+        return "Decryption Failed";
+    case SSL_ALERT_DESCRIPTION_RECORD_OVERFLOW:
+        return "Record Overflow";
+    case SSL_ALERT_DESCRIPTION_DECOMPRESSION_FAILURE:
+        return "Decompression Failure";
+    case SSL_ALERT_DESCRIPTION_HANDSHAKE_FAILURE:
+        return "Handshake Failure";
+    case SSL_ALERT_DESCRIPTION_NO_CERT:
+        return "No Cert";
+    case SSL_ALERT_DESCRIPTION_BAD_CERT:
+        return "Bad Cert";
+    case SSL_ALERT_DESCRIPTION_UNSUPPORTED_CERT:
+        return "Unsupported Cert";
+    case SSL_ALERT_DESCRIPTION_CERT_REVOKED:
+        return "Cert Revoked";
+    case SSL_ALERT_DESCRIPTION_CERT_EXPIRED:
+        return "Cert Expired";
+    case SSL_ALERT_DESCRIPTION_CERT_UNKNOWN:
+        return "Cert Unknown";
+    case SSL_ALERT_DESCRIPTION_ILLEGAL_PARAMETER:
+        return "Illegal Parameter";
+    case SSL_ALERT_DESCRIPTION_UNKNOWN_CA:
+        return "Unknown CA";
+    case SSL_ALERT_DESCRIPTION_ACCESS_DENIED:
+        return "Access Denied";
+    case SSL_ALERT_DESCRIPTION_DECODE_ERROR:
+        return "Decode Error";
+    case SSL_ALERT_DESCRIPTION_DECRYPT_ERROR:
+        return "Decrypt Error";
+    case SSL_ALERT_DESCRIPTION_EXPORT_RESTRICTION:
+        return "Export Restriction";
+    case SSL_ALERT_DESCRIPTION_PROTOCOL_VERSION:
+        return "Protocol Version";
+    case SSL_ALERT_DESCRIPTION_INSUFFICIENT_SECURITY:
+        return "Insufficient Security";
+    case SSL_ALERT_DESCRIPTION_INTERNAL_ERROR:
+        return "Internal Error";
+    case SSL_ALERT_DESCRIPTION_INAPROPRIATE_FALLBACK:
+        return "Inapropriate Fallback";
+    case SSL_ALERT_DESCRIPTION_USER_CANCELED:
+        return "User Canceled";
+    case SSL_ALERT_DESCRIPTION_NO_RENEGOTIATION:
+        return "No Renegotiation";
+    case SSL_ALERT_DESCRIPTION_UNSUPPORTED_EXT:
+        return "Unsupported Ext";
+    case SSL_ALERT_DESCRIPTION_UNRECOGNIZED_NAME:
+        return "Unrecognized Name";
+    case SSL_ALERT_DESCRIPTION_UNKNOWN_PSK_IDENTITY:
+        return "Unknown Psk Identity";
+    case SSL_ALERT_DESCRIPTION_NO_APPLICATION_PROTOCOL:
+        return "No Application Protocol";
+    default:
+        return "Unknown";
     }
 }
 
