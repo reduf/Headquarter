@@ -647,14 +647,13 @@ static const char *alert_description_to_string(uint8_t description)
 
 static void show_alert_message(const uint8_t *data, size_t length)
 {
-    if (length < 2)
-    {
+    if (length < 2) {
         fprintf(stderr, "Not enough bytes (%zu instead of 2) for the alert message\n", length);
         return;
     }
 
     uint8_t level = data[0];
-    uint8_t description = data[0];
+    uint8_t description = data[1];
 
     fprintf(
         stderr, "Alert message, level: %s (%hhu), Description: %s (%hhu)\n",
