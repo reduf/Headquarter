@@ -331,11 +331,7 @@ HQAPI DistrictRegion GetDistrictRegion(void)
     assert(client != NULL);
     DistrictRegion district_region = DistrictRegion_America;
     thread_mutex_lock(&client->mutex);
-    World* world;
-    if ((world = get_world(client)) == NULL)
-        goto leave;
-    district_region = world->region;
-leave:
+    district_region = client->region;
     thread_mutex_unlock(&client->mutex);
     return district_region;
 }

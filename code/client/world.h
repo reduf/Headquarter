@@ -40,7 +40,6 @@ typedef struct World {
     uint32_t            player_id;
     uint32_t            map_id;
     uint32_t            district;
-    DistrictRegion      region;
     DistrictLanguage    language;
 
     size_t              player_count;

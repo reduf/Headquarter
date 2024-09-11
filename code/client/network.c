@@ -40,12 +40,19 @@ void NetConn_Reset(Connection *conn)
 
 void NetConn_HardShutdown(Connection *conn)
 {
-    NetConn_Shutdown(conn);
     shutdown(conn->fd.handle, SHUT_RDWR);
+    closesocket(conn->fd.handle);
+    conn->flags |= NETCONN_SHUTDOWN;
 }
 
 void NetConn_Shutdown(Connection *conn)
 {
+    NetConn_Send(conn);
+    array_reset(&conn->in);
+    array_reset(&conn->out);
+
+    shutdown(conn->fd.handle, SHUT_RDWR);
+    closesocket(conn->fd.handle);
     conn->flags |= NETCONN_SHUTDOWN;
 }
 

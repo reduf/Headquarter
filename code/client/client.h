@@ -115,6 +115,7 @@ typedef struct GwClient {
     CharacterArray      characters;
     size_t              current_character_idx;
     size_t              pending_character_idx;
+    DistrictRegion      region;
 
     Chat                chat;
     World               world;

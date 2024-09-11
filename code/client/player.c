@@ -189,7 +189,7 @@ void HandlePlayerAttrUpdate(Connection *conn, size_t psize, Packet *packet)
 
 void HandlePlayerUnlockedAreas(Connection* conn, size_t psize, Packet* packet) {
 #pragma pack(push, 1)
-        typedef struct {
+    typedef struct {
         Header header;
         uint32_t missions_completed_size;
         uint32_t missions_completed_buffer[32];
