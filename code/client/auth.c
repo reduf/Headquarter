@@ -106,7 +106,6 @@ void HandleSessionInfo(Connection *conn, size_t psize, Packet *packet)
         Header header;
         uint32_t server_salt;
         uint32_t unk0;
-        uint32_t unk1;
     } SessionInfo;
 #pragma pack(pop)
 
@@ -270,29 +269,6 @@ void AuthSrv_ComputerInfo(Connection *conn)
 
     SendPacket(conn, sizeof(info), &info);
     SendPacket(conn, sizeof(hash), &hash);
-}
-
-void AuthSrv_HardwareInfo(Connection *conn)
-{
-    // @Remark: Holy fuck c++ is retarded. Why the fuck it force you to add a null-terminated ?
-    uint8_t hash[/* 16 */] = "\x9B\x99\x78\x8D\x2F\x01\xFA\x4F\x99\x82\xD3\xB8\xBD\x83\xCD\xF6";
-    uint8_t info[/* 92 */] = "\x03\x00\x5C\x00\x04\x00\xDE\x03\x46\x0D\xC3\x06\x47\x65\x6E\x75\x69\x6E\x65\x49\x6E\x74\x65\x6C\x06\x02\x00\x00\x04\x00\x00\x00\xC0\x11\x00\x00\x60\x11\x00\x00\xDE\x10\x00\x00\xC6\x07\x20\x90\x55\x6E\x6B\x6E\x6F\x77\x6E\x20\x44\x65\x76\x69\x63\x65\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x55\x6E\x6B\x6E\x6F\x77\x6E\x20\x56\x65\x6E\x64\x6F\x72\x00\x00\x00\x00\x00\x00";
-
-#pragma pack(push, 1)
-    typedef struct {
-        Header header;
-        uint32_t n_info;
-        uint8_t info[92];
-        uint8_t hash[16];
-    } HardwareInfo;
-#pragma pack(pop)
-
-    HardwareInfo packet = NewPacket(AUTH_CMSG_SEND_HARDWARE_INFO);
-    packet.n_info = 92;
-    memcpy(packet.info, info, 92);
-    memcpy(packet.hash, hash, 16);
-
-    SendPacket(conn, sizeof(packet), &packet);
 }
 
 // 0 = main town

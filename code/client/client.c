@@ -135,7 +135,6 @@ void ContinueAccountLogin(GwClient *client, uint32_t error_code)
 
     uint32_t trans_id = issue_next_transaction(client, AsyncType_SendHardwareInfo);
     client->state = AwaitHardwareInfoReply;
-    AuthSrv_HardwareInfo(&client->auth_srv);
     AuthSrv_AskServerResponse(&client->auth_srv, trans_id);
 }
 

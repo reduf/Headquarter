@@ -25,7 +25,6 @@ void HandleFriendStreamEnd(Connection *conn, size_t psize, Packet *packet);
 void AuthSrv_HeartBeat(Connection *conn, msec_t tick);
 void AuthSrv_AskServerResponse(Connection *conn, uint32_t trans_id);
 void AuthSrv_ComputerInfo(Connection *conn);
-void AuthSrv_HardwareInfo(Connection *conn);
 void AuthSrv_RequestInstance(Connection *conn, uint32_t trans_id,
     uint32_t map_id, uint32_t type, uint32_t region, uint32_t district, uint32_t language);
 void AuthSrv_ChangeCharacter(Connection *conn, uint32_t trans_id, struct kstr *name);
