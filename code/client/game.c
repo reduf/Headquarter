@@ -88,7 +88,7 @@ void HandleGoldCharacterAdd(Connection *conn, size_t psize, Packet *packet)
     } AddGold;
 #pragma pack(pop)
 
-    assert(packet->header == GAME_SMSG_GOLD_CHARACTER_ADD);
+    assert(packet->header == GAME_SMSG_UPDATE_GOLD_CHARACTER);
     assert(sizeof(AddGold) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
@@ -109,7 +109,7 @@ void HandleGoldStorageAdd(Connection *conn, size_t psize, Packet *packet)
     } UpdateGold;
 #pragma pack(pop)
 
-    assert(packet->header == GAME_SMSG_GOLD_STORAGE_ADD);
+    assert(packet->header == GAME_SMSG_UPDATE_GOLD_STORAGE);
     assert(sizeof(UpdateGold) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
@@ -515,8 +515,8 @@ void GameSrv_RegisterCallbacks(Connection *conn)
     handlers[GAME_SMSG_INSTANCE_LOADED]                 = HandleInstanceLoaded;
     handlers[GAME_SMSG_FRIENDLIST_MESSAGE]              = HandleFriendListMessage;
 
-    handlers[GAME_SMSG_GOLD_CHARACTER_ADD]              = HandleGoldCharacterAdd;
-    handlers[GAME_SMSG_GOLD_STORAGE_ADD]                = HandleGoldStorageAdd;
+    handlers[GAME_SMSG_UPDATE_GOLD_CHARACTER]           = HandleGoldCharacterAdd;
+    handlers[GAME_SMSG_UPDATE_GOLD_STORAGE]             = HandleGoldStorageAdd;
     handlers[GAME_SMSG_GOLD_CHARACTER_REMOVE]           = HandleGoldCharacterRemove;
     handlers[GAME_SMSG_GOLD_STORAGE_REMOVE]             = HandleGoldStorageRemove;
 
@@ -559,7 +559,7 @@ void GameSrv_RegisterCallbacks(Connection *conn)
     handlers[GAME_SMSG_AGENT_UPDATE_POSITION]           = HandleAgentUpdatePosition;
     handlers[GAME_SMSG_AGENT_UPDATE_ROTATION]           = HandleAgentUpdateRotation;
     handlers[GAME_SMSG_AGENT_UPDATE_DESTINATION]        = HandleAgentUpdateDestination;
-    handlers[GAME_SMSG_AGENT_CREATE_PLAYER]             = HandleAgentCreatePlayer;
+    handlers[GAME_SMSG_UPDATE_PLAYER_INFO]              = HandleUpdatePlayerInfo;
     handlers[GAME_SMSG_AGENT_DESTROY_PLAYER]            = HandleAgentDestroyPlayer;
     
     handlers[GAME_SMSG_AGENT_CREATE_NPC]                = HandleAgentCreateNPC;
@@ -603,12 +603,12 @@ void GameSrv_RegisterCallbacks(Connection *conn)
     handlers[GAME_SMSG_CHAT_MESSAGE_SERVER]             = HandleChatMessageServer;
 
     // players
-    handlers[GAME_SMSG_PLAYER_ATTR_SET]                 = HandlePlayerAttrSet;
-    handlers[GAME_SMSG_PLAYER_ATTR_MAX_KURZICK]         = HandlePlayerAttrMaxKurzick;
-    handlers[GAME_SMSG_PLAYER_ATTR_MAX_LUXON]           = HandlePlayerAttrMaxLuxon;
-    handlers[GAME_SMSG_PLAYER_ATTR_MAX_BALTHAZAR]       = HandlePlayerAttrMaxBalthazar;
-    handlers[GAME_SMSG_PLAYER_ATTR_MAX_IMPERIAL]        = HandlePlayerAttrMaxImperial;
-    handlers[GAME_SMSG_PLAYER_ATTR_UPDATE]              = HandlePlayerAttrUpdate;
+    handlers[GAME_SMSG_PLAYER_UPDATE_FACTIONS]          = HandlePlayerUpdateFactions;
+    handlers[GAME_SMSG_PLAYER_FACTION_MAX_KURZICK]      = HandlePlayerFactionMaxKurzick;
+    handlers[GAME_SMSG_PLAYER_FACTION_MAX_LUXON]        = HandlePlayerFactionMaxLuxon;
+    handlers[GAME_SMSG_PLAYER_FACTION_MAX_BALTHAZAR]    = HandlePlayerFactionMaxBalthazar;
+    handlers[GAME_SMSG_PLAYER_FACTION_MAX_IMPERIAL]     = HandlePlayerFactionMaxImperial;
+    handlers[GAME_SMSG_PLAYER_FACTION_UPDATE]           = HandlePlayerFactionUpdate;
     handlers[GAME_SMSG_MAPS_UNLOCKED]                   = HandlePlayerUnlockedAreas;
     // skills
     handlers[GAME_SMSG_SKILLBAR_UPDATE_SKILL]           = HandleSkillbarUpdateSkill;
@@ -622,7 +622,7 @@ void GameSrv_RegisterCallbacks(Connection *conn)
     handlers[GAME_SMSG_HERO_BEHAVIOR]                   = HandleHeroBehavior;
     handlers[GAME_SMSG_HERO_SKILL_STATUS]               = HandleHeroSkillStatus;
     handlers[GAME_SMSG_HERO_SKILL_STATUS_BITMAP]        = HandleHeroSkillStatusBitmap;
-    handlers[GAME_SMSG_AGENT_UPDATE_ATTRIBUTE]          = HandleAgentUpdateAttribute;
+    handlers[GAME_SMSG_AGENT_UPDATE_ATTRIBUTES]         = HandleAgentUpdateAttributes;
 
     // quests
     handlers[GAME_SMSG_QUEST_DESCRIPTION]               = HandleQuestDescription;

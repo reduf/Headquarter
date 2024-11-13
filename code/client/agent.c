@@ -593,7 +593,7 @@ void HandleAgentDestroyPlayer(Connection* conn, size_t psize, Packet* packet)
     world->player_count--;
 }
 
-void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
+void HandleUpdatePlayerInfo(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -608,7 +608,7 @@ void HandleAgentCreatePlayer(Connection *conn, size_t psize, Packet *packet)
     } PlayerInfo;
 #pragma pack(pop)
 
-    assert(packet->header == GAME_SMSG_AGENT_CREATE_PLAYER);
+    assert(packet->header == GAME_SMSG_UPDATE_PLAYER_INFO);
     assert(sizeof(PlayerInfo) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;

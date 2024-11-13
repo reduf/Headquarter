@@ -21,7 +21,7 @@ void player_is_created(GwClient *client, AgentId agent_id)
     world->player_id = player->player_id;
 }
 
-void HandlePlayerAttrSet(Connection *conn, size_t psize, Packet *packet)
+void HandlePlayerUpdateFactions(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -44,7 +44,7 @@ void HandlePlayerAttrSet(Connection *conn, size_t psize, Packet *packet)
     } PlayerAttr;
 #pragma pack(pop)
 
-    assert(packet->header == GAME_SMSG_PLAYER_ATTR_SET);
+    assert(packet->header == GAME_SMSG_PLAYER_UPDATE_FACTIONS);
     assert(sizeof(PlayerAttr) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
@@ -69,7 +69,7 @@ void HandlePlayerAttrSet(Connection *conn, size_t psize, Packet *packet)
     client->player_hero.luxon.current     = pack->luxon_current;
 }
 
-void HandlePlayerAttrMaxKurzick(Connection *conn, size_t psize, Packet *packet)
+void HandlePlayerFactionMaxKurzick(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -78,7 +78,7 @@ void HandlePlayerAttrMaxKurzick(Connection *conn, size_t psize, Packet *packet)
     } MaxFaction;
 #pragma pack(pop)
 
-    assert(packet->header == GAME_SMSG_PLAYER_ATTR_MAX_KURZICK);
+    assert(packet->header == GAME_SMSG_PLAYER_FACTION_MAX_KURZICK);
     assert(sizeof(MaxFaction) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
@@ -88,7 +88,7 @@ void HandlePlayerAttrMaxKurzick(Connection *conn, size_t psize, Packet *packet)
     client->player_hero.kurzick.max = pack->value;
 }
 
-void HandlePlayerAttrMaxLuxon(Connection *conn, size_t psize, Packet *packet)
+void HandlePlayerFactionMaxLuxon(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -97,7 +97,7 @@ void HandlePlayerAttrMaxLuxon(Connection *conn, size_t psize, Packet *packet)
     } MaxFaction;
 #pragma pack(pop)
 
-    assert(packet->header == GAME_SMSG_PLAYER_ATTR_MAX_LUXON);
+    assert(packet->header == GAME_SMSG_PLAYER_FACTION_MAX_LUXON);
     assert(sizeof(MaxFaction) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
@@ -107,7 +107,7 @@ void HandlePlayerAttrMaxLuxon(Connection *conn, size_t psize, Packet *packet)
     client->player_hero.luxon.max = pack->value;
 }
 
-void HandlePlayerAttrMaxBalthazar(Connection *conn, size_t psize, Packet *packet)
+void HandlePlayerFactionMaxBalthazar(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -116,7 +116,7 @@ void HandlePlayerAttrMaxBalthazar(Connection *conn, size_t psize, Packet *packet
     } MaxFaction;
 #pragma pack(pop)
 
-    assert(packet->header == GAME_SMSG_PLAYER_ATTR_MAX_BALTHAZAR);
+    assert(packet->header == GAME_SMSG_PLAYER_FACTION_MAX_BALTHAZAR);
     assert(sizeof(MaxFaction) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
@@ -126,7 +126,7 @@ void HandlePlayerAttrMaxBalthazar(Connection *conn, size_t psize, Packet *packet
     client->player_hero.balthazar.max = pack->value;
 }
 
-void HandlePlayerAttrMaxImperial(Connection *conn, size_t psize, Packet *packet)
+void HandlePlayerFactionMaxImperial(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -135,7 +135,7 @@ void HandlePlayerAttrMaxImperial(Connection *conn, size_t psize, Packet *packet)
     } MaxFaction;
 #pragma pack(pop)
     
-    assert(packet->header == GAME_SMSG_PLAYER_ATTR_MAX_IMPERIAL);
+    assert(packet->header == GAME_SMSG_PLAYER_FACTION_MAX_IMPERIAL);
     assert(sizeof(MaxFaction) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
@@ -145,7 +145,7 @@ void HandlePlayerAttrMaxImperial(Connection *conn, size_t psize, Packet *packet)
     client->player_hero.imperial.max = pack->value;
 }
 
-void HandlePlayerAttrUpdate(Connection *conn, size_t psize, Packet *packet)
+void HandlePlayerFactionUpdate(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -155,7 +155,7 @@ void HandlePlayerAttrUpdate(Connection *conn, size_t psize, Packet *packet)
     } UpdateAttr;
 #pragma pack(pop)
 
-    assert(packet->header == GAME_SMSG_PLAYER_ATTR_UPDATE);
+    assert(packet->header == GAME_SMSG_PLAYER_FACTION_UPDATE);
     assert(sizeof(UpdateAttr) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;

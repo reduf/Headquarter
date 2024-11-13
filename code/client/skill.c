@@ -496,7 +496,7 @@ void HandleTomeShowSkills(Connection *conn, size_t psize, Packet *packet)
     (void)pack;
 }
 
-void HandleAgentUpdateAttribute(Connection *conn, size_t psize, Packet *packet)
+void HandleAgentUpdateAttributes(Connection *conn, size_t psize, Packet *packet)
 {
 #pragma pack(push, 1)
     typedef struct {
@@ -507,7 +507,7 @@ void HandleAgentUpdateAttribute(Connection *conn, size_t psize, Packet *packet)
     } UpdateAttribute;
 #pragma pack(pop)
 
-    assert(packet->header == GAME_SMSG_AGENT_UPDATE_ATTRIBUTE);
+    assert(packet->header == GAME_SMSG_AGENT_UPDATE_ATTRIBUTES);
     assert(sizeof(UpdateAttribute) == psize);
 
     GwClient *client = cast(GwClient *)conn->data;
@@ -523,7 +523,7 @@ void HandleAgentUpdateAttribute(Connection *conn, size_t psize, Packet *packet)
     }
 
     if (sb == NULL) {
-        LogError("HandleAgentUpdateAttribute: Skillbar not found for agent %d", pack->agent_id);
+        LogError("HandleAgentUpdateAttributes: Skillbar not found for agent %d", pack->agent_id);
         return;
     }
 
@@ -532,7 +532,7 @@ void HandleAgentUpdateAttribute(Connection *conn, size_t psize, Packet *packet)
 
     size_t count = size / 3;
     if ((3 * count) != size) {
-        LogError("HandleAgentUpdateAttribute: Bad size");
+        LogError("HandleAgentUpdateAttributes: Bad size");
         return;
     }
 
