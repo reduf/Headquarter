@@ -505,7 +505,7 @@ void HandleAgentMoveToPoint(Connection *conn, size_t psize, Packet *packet)
         AgentId agent_id;
         Vec2f dest;
         int16_t plane;
-        int16_t unk0;
+        int16_t current_plane;
     } Destination;
 #pragma pack(pop)
 
