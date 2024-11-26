@@ -11,7 +11,7 @@ def print_bytes(bytes):
     print(str)
 
 def get_build_number(scanner):
-    build_address = scanner.find(b'\xC2\x0C\x00\xCC\xCC\xB8', 6)
+    build_address = scanner.find(b'\xE9\x68\xFF\xFF\xFF\xCC\xCC\xB8', 8)
     build_number, = scanner.read(build_address, '<I')
     return build_number
 
