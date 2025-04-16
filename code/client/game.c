@@ -390,6 +390,25 @@ void HandleCinematicEnd(Connection *conn, size_t psize, Packet *packet)
     world->in_cinematic = false;
 }
 
+void HandleInstanceRedirect(Connection* conn, size_t psize, Packet* packet)
+{
+#pragma pack(push, 1)
+    typedef struct {
+        Header header;
+        uint16_t map_id;
+    } Payload;
+#pragma pack(pop)
+
+    assert(packet->header == GAME_SMSG_INSTANCE_REDIRECT);
+    assert(sizeof(Payload) == psize);
+
+    GwClient* client = cast(GwClient*)conn->data;
+    Payload* pack = cast(Payload*)packet;
+    assert(client && client->game_srv.secured);
+
+    RedirectMap((uint32_t)pack->map_id, GetDistrict(), GetDistrictNumber());
+}
+
 void HandleInstanceShowWin(Connection *conn, size_t psize, Packet *packet)
 {
     assert(packet->header == GAME_SMSG_INSTANCE_SHOW_WIN);
@@ -514,6 +533,7 @@ void GameSrv_RegisterCallbacks(Connection *conn)
     handlers[GAME_SMSG_INSTANCE_LOAD_FINISH]            = HandleInstanceLoadFinish;
     handlers[GAME_SMSG_INSTANCE_LOADED]                 = HandleInstanceLoaded;
     handlers[GAME_SMSG_FRIENDLIST_MESSAGE]              = HandleFriendListMessage;
+    handlers[GAME_SMSG_INSTANCE_REDIRECT]               = HandleInstanceRedirect;
 
     handlers[GAME_SMSG_UPDATE_GOLD_CHARACTER]           = HandleGoldCharacterAdd;
     handlers[GAME_SMSG_UPDATE_GOLD_STORAGE]             = HandleGoldStorageAdd;

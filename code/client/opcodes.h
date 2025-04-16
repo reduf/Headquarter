@@ -344,6 +344,7 @@
 #define GAME_SMSG_CHAR_CREATION_ERROR                   (0x018A) // 394
 #define GAME_SMSG_INSTANCE_LOAD_FINISH                  (0x018D) // 397
 #define GAME_SMSG_JUMBO_MESSAGE                         (0x018F) // 399
+#define GAME_SMSG_INSTANCE_REDIRECT                     (0x0190) // 400
 #define GAME_SMSG_INSTANCE_LOAD_SPAWN_POINT             (0x0194) // 404
 #define GAME_SMSG_INSTANCE_MANIFEST_DATA                (0x0195) // 405
 #define GAME_SMSG_INSTANCE_MANIFEST_DONE                (0x0196) // 406
