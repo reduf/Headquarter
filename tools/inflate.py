@@ -174,10 +174,10 @@ def build_huffman_table(stream):
 
     huffman = HuffmanTable()
 
-    # Build Huffman table for codelen 1-8
-    next_bits_encoding = 1
+    # Build Huffman table for codelen in [0, 8]
+    next_bits_encoding = 0
     symbol_in_huffman_table = 0
-    for enc_len in range(1, 9):
+    for enc_len in range(0, 9):
         current_symbol = symbol_follow_table_root[enc_len]
         while current_symbol != 0xFFFFFFFF:
             assert(current_symbol < symbol_count)
